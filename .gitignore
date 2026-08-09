@@ -1,0 +1,11 @@
+.dotnet/
+.dotnet-home/
+.packages/
+bin/
+obj/
+artifacts/
+*.user
+*.suo
+.vs/
+TestResults/
+dotnet-install.ps1

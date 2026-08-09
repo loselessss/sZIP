@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\sZIP.Domain\sZIP.Domain.csproj" />
+    <ProjectReference Include="..\sZIP.Archive\sZIP.Archive.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Web.Extensions" />
+  </ItemGroup>
+
+</Project>

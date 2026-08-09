@@ -1,0 +1,88 @@
+name: Windows release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+
+      - name: Verify tag and project versions
+        shell: pwsh
+        run: |
+          $version = $env:GITHUB_REF_NAME.TrimStart("v")
+          [xml]$props = Get-Content -LiteralPath Directory.Build.props
+          $projectVersion = [string]$props.Project.PropertyGroup.Version
+          $installerVersion = (Select-String -LiteralPath installer.iss -Pattern '^#define MyAppVersion "([^"]+)"$').Matches[0].Groups[1].Value
+          if ($version -ne $projectVersion -or $version -ne $installerVersion) {
+            throw "Version mismatch: tag=$version project=$projectVersion installer=$installerVersion"
+          }
+
+      - name: Restore dependencies
+        run: dotnet restore sZIP.sln
+
+      - name: Run tests
+        run: dotnet test sZIP.sln --configuration Release --no-restore
+
+      - name: Publish portable application
+        run: dotnet publish src\sZIP.App\sZIP.App.csproj --configuration Release --output artifacts\publish --no-restore
+
+      - name: Install Inno Setup
+        run: choco install innosetup --yes --no-progress
+
+      - name: Build Windows installer
+        run: '& "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer.iss'
+        shell: pwsh
+
+      - name: Create release assets
+        shell: pwsh
+        run: |
+          $version = $env:GITHUB_REF_NAME.TrimStart("v")
+          $installer = "artifacts\sZIP_Setup_$version.exe"
+          $portable = "artifacts\sZIP-$version-net48.zip"
+          Compress-Archive -Path artifacts\publish\* -DestinationPath $portable -CompressionLevel Optimal
+          foreach ($asset in @($installer, $portable)) {
+            if (-not (Test-Path -LiteralPath $asset)) { throw "Missing release asset: $asset" }
+            $hash = (Get-FileHash -Algorithm SHA256 -LiteralPath $asset).Hash.ToLowerInvariant()
+            "$hash  $([IO.Path]::GetFileName($asset))" | Set-Content -Encoding ascii -LiteralPath "$asset.sha256"
+          }
+
+      - name: Preserve release assets
+        uses: actions/upload-artifact@v6
+        with:
+          name: sZIP-${{ github.ref_name }}-windows
+          path: |
+            artifacts/sZIP_Setup_*.exe
+            artifacts/sZIP_Setup_*.exe.sha256
+            artifacts/sZIP-*.zip
+            artifacts/sZIP-*.zip.sha256
+          compression-level: 0
+
+      - name: Publish GitHub release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = $env:GITHUB_REF_NAME
+          $version = $tag.TrimStart("v")
+          gh release create $tag `
+            "artifacts\sZIP_Setup_$version.exe" `
+            "artifacts\sZIP_Setup_$version.exe.sha256" `
+            "artifacts\sZIP-$version-net48.zip" `
+            "artifacts\sZIP-$version-net48.zip.sha256" `
+            --verify-tag `
+            --title "sZIP $version" `
+            --notes-file RELEASE_NOTES.md

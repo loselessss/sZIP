@@ -1,0 +1,55 @@
+<Window x:Class="sZIP.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="sZIP" Height="620" Width="960" MinHeight="480" MinWidth="720"
+        WindowStartupLocation="CenterScreen" Icon="Assets/szip.ico"
+        AllowDrop="True" PreviewDragOver="Window_PreviewDragOver" Drop="Window_Drop">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Orientation="Horizontal">
+            <Button x:Name="OpenArchiveButton" Content="압축 열기" Width="100" Height="34"
+                    Click="OpenArchiveButton_Click" />
+            <Button x:Name="CreateFilesButton" Content="파일 압축" Width="100" Height="34" Margin="8,0,0,0"
+                    Click="CreateFilesButton_Click" />
+            <Button x:Name="CreateFolderButton" Content="폴더 압축" Width="100" Height="34" Margin="8,0,0,0"
+                    Click="CreateFolderButton_Click" />
+            <Button x:Name="ExtractButton" Content="모두 풀기" Width="100" Height="34" Margin="8,0,0,0"
+                    IsEnabled="False" Click="ExtractButton_Click" />
+            <Button x:Name="CancelButton" Content="취소" Width="80" Height="34" Margin="8,0,0,0"
+                    IsEnabled="False" Click="CancelButton_Click" />
+            <CheckBox x:Name="AutoExtractCheckBox" Content="자동 해제"
+                      Margin="14,0,0,0" VerticalAlignment="Center"
+                      Checked="AutoExtractCheckBox_Checked"
+                      Unchecked="AutoExtractCheckBox_Unchecked" />
+        </StackPanel>
+
+        <TextBlock x:Name="ArchivePathText" Grid.Row="1" Margin="0,14,0,10"
+                   Text="압축 파일을 열어 주세요." TextTrimming="CharacterEllipsis" />
+
+        <DataGrid x:Name="EntriesGrid" Grid.Row="2" AutoGenerateColumns="False"
+                  IsReadOnly="True" CanUserAddRows="False" SelectionMode="Extended">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="이름" Binding="{Binding FullName}" Width="*" />
+                <DataGridTextColumn Header="크기" Binding="{Binding Length, StringFormat=N0}" Width="120" />
+                <DataGridTextColumn Header="압축 크기" Binding="{Binding CompressedLength, StringFormat=N0}" Width="120" />
+                <DataGridTextColumn Header="수정 시각" Binding="{Binding LastWriteTime, StringFormat=yyyy-MM-dd HH:mm}" Width="145" />
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <Grid Grid.Row="3" Margin="0,12,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="180" />
+            </Grid.ColumnDefinitions>
+            <TextBlock x:Name="StatusText" VerticalAlignment="Center" Text="준비" TextTrimming="CharacterEllipsis" />
+            <ProgressBar x:Name="OperationProgress" Grid.Column="1" Height="18"
+                         Minimum="0" Maximum="100" Value="0" />
+        </Grid>
+    </Grid>
+</Window>
