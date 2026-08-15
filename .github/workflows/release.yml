@@ -20,6 +20,9 @@ jobs:
         with:
           global-json-file: global.json
 
+      - name: Set up MSBuild
+        uses: microsoft/setup-msbuild@v2
+
       - name: Verify tag and project versions
         shell: pwsh
         run: |
