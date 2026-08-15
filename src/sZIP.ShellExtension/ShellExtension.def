@@ -1,0 +1,5 @@
+LIBRARY "sZIP.ShellExtension"
+
+EXPORTS
+    DllGetClassObject PRIVATE
+    DllCanUnloadNow PRIVATE

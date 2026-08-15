@@ -264,7 +264,7 @@ BOOL APIENTRY DllMain(HMODULE module, DWORD reason, LPVOID)
     return TRUE;
 }
 
-extern "C" __declspec(dllexport) HRESULT __stdcall DllGetClassObject(
+extern "C" HRESULT __stdcall DllGetClassObject(
     REFCLSID classId, REFIID iid, void** object)
 {
     CommandKind kind;
@@ -280,7 +280,7 @@ extern "C" __declspec(dllexport) HRESULT __stdcall DllGetClassObject(
     return result;
 }
 
-extern "C" __declspec(dllexport) HRESULT __stdcall DllCanUnloadNow()
+extern "C" HRESULT __stdcall DllCanUnloadNow()
 {
     return g_objectCount == 0 ? S_OK : S_FALSE;
 }
