@@ -1,4 +1,6 @@
 using Microsoft.Win32;
+using System.Diagnostics;
+using System.IO;
 
 namespace sZIP.App;
 
@@ -27,8 +29,11 @@ internal static class ShellIntegration
             foreach (var extension in ArchiveExtensions)
             {
                 Registry.CurrentUser.DeleteSubKeyTree(GetOpenKey(extension), throwOnMissingSubKey: false);
-                Registry.CurrentUser.DeleteSubKeyTree(GetExtractKey(extension), throwOnMissingSubKey: false);
+                Registry.CurrentUser.DeleteSubKeyTree(GetDirectExtractKey(extension), throwOnMissingSubKey: false);
+                Registry.CurrentUser.DeleteSubKeyTree(GetSmartExtractKey(extension), throwOnMissingSubKey: false);
             }
+
+            SetModernContextMenuEnabled(false);
 
             return;
         }
@@ -45,17 +50,24 @@ internal static class ShellIntegration
             "Player");
         foreach (var extension in ArchiveExtensions)
         {
+            Registry.CurrentUser.DeleteSubKeyTree(GetLegacyExtractKey(extension), throwOnMissingSubKey: false);
             CreateVerb(
                 GetOpenKey(extension),
                 "sZIP으로 열기",
                 BuildCommand(executablePath, "--open"),
                 "Single");
             CreateVerb(
-                GetExtractKey(extension),
-                "sZIP으로 압축 풀기",
-                BuildCommand(executablePath, "--extract"),
+                GetDirectExtractKey(extension),
+                "sZIP 그냥 풀기",
+                BuildCommand(executablePath, "--extract-direct"),
+                "Player");
+            CreateVerb(
+                GetSmartExtractKey(extension),
+                "sZIP 알아서 풀기",
+                BuildCommand(executablePath, "--extract-smart"),
                 "Player");
         }
+        SetModernContextMenuEnabled(true);
     }
 
     internal static string BuildCommand(string executablePath, string option) =>
@@ -64,8 +76,67 @@ internal static class ShellIntegration
     private static string GetOpenKey(string extension) =>
         $@"Software\Classes\SystemFileAssociations\{extension}\shell\sZIP.open";
 
-    private static string GetExtractKey(string extension) =>
+    private static string GetDirectExtractKey(string extension) =>
+        $@"Software\Classes\SystemFileAssociations\{extension}\shell\sZIP.extract-direct";
+
+    private static string GetSmartExtractKey(string extension) =>
+        $@"Software\Classes\SystemFileAssociations\{extension}\shell\sZIP.extract-smart";
+
+    private static string GetLegacyExtractKey(string extension) =>
         $@"Software\Classes\SystemFileAssociations\{extension}\shell\sZIP.extract";
+
+    internal static void SetModernContextMenuEnabled(bool enabled)
+    {
+        if (Environment.OSVersion.Version < new Version(10, 0, 19041))
+        {
+            return;
+        }
+
+        var packagePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "sZIP.ContextMenu.msix");
+        if (enabled && !File.Exists(packagePath))
+        {
+            return;
+        }
+
+        var packageVersion = typeof(ShellIntegration).Assembly.GetName().Version?.ToString()
+            ?? "1.0.0.0";
+        var escapedPackage = EscapePowerShellLiteral(packagePath);
+        var escapedLocation = EscapePowerShellLiteral(AppDomain.CurrentDomain.BaseDirectory.TrimEnd(
+            Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
+        var command = enabled
+            ? "$p=Get-AppxPackage -Name 'sZIP.ContextMenu'; "
+              + $"if(-not $p -or $p.Version.ToString() -ne '{packageVersion}'){{ "
+              + "if($p){$p | Remove-AppxPackage}; "
+              + $"Add-AppxPackage -Path '{escapedPackage}' -ExternalLocation '{escapedLocation}' -AllowUnsigned }}"
+            : "$p=Get-AppxPackage -Name 'sZIP.ContextMenu'; if($p){$p | Remove-AppxPackage}";
+
+        try
+        {
+            var powershell = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.Windows),
+                "System32", "WindowsPowerShell", "v1.0", "powershell.exe");
+            using var process = Process.Start(new ProcessStartInfo(
+                powershell,
+                "-NoLogo -NoProfile -NonInteractive -WindowStyle Hidden -ExecutionPolicy Bypass -Command \""
+                + command.Replace("\"", "\\\"") + "\"")
+            {
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                WindowStyle = ProcessWindowStyle.Hidden
+            });
+            process?.WaitForExit(30000);
+            if (process is not null && process.ExitCode != 0)
+            {
+                DiagnosticLog.Write($"shell-integration.modern.failed exit={process.ExitCode}");
+            }
+        }
+        catch (Exception exception)
+        {
+            DiagnosticLog.Write("shell-integration.modern.failed", exception);
+        }
+    }
+
+    private static string EscapePowerShellLiteral(string value) => value.Replace("'", "''");
 
     private static void CreateVerb(
         string keyPath,

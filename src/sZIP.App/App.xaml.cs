@@ -3,6 +3,8 @@ using System.Drawing;
 using System.IO;
 using System.Windows;
 using System.Windows.Threading;
+using System.Windows.Media;
+using Microsoft.Win32;
 using sZIP.Application;
 using Forms = System.Windows.Forms;
 
@@ -33,7 +35,24 @@ public partial class App : System.Windows.Application
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
+        ApplySystemTheme();
+        SystemEvents.UserPreferenceChanged += SystemEvents_UserPreferenceChanged;
         DiagnosticLog.Write("application.start");
+
+        if (e.Args.Any(argument => string.Equals(
+                argument, "--register-modern-shell", StringComparison.OrdinalIgnoreCase)))
+        {
+            ShellIntegration.SetModernContextMenuEnabled(true);
+            Shutdown();
+            return;
+        }
+        if (e.Args.Any(argument => string.Equals(
+                argument, "--unregister-modern-shell", StringComparison.OrdinalIgnoreCase)))
+        {
+            ShellIntegration.SetModernContextMenuEnabled(false);
+            Shutdown();
+            return;
+        }
 
         _singleInstanceMutex = new Mutex(initiallyOwned: true, MutexName, out var isFirstInstance);
         if (!isFirstInstance)
@@ -60,6 +79,7 @@ public partial class App : System.Windows.Application
         MainWindow = _mainWindow;
         _mainWindow.AutoExtractEnabledChanged += MainWindow_AutoExtractEnabledChanged;
         _mainWindow.HiddenToTray += MainWindow_HiddenToTray;
+        _mainWindow.UpdateCheckRequested += (_, _) => _ = CheckForUpdatesAsync(manual: true);
 
         _commandDebounceTimer = new DispatcherTimer
         {
@@ -91,6 +111,7 @@ public partial class App : System.Windows.Application
     protected override void OnExit(ExitEventArgs e)
     {
         DiagnosticLog.Write("application.exit");
+        SystemEvents.UserPreferenceChanged -= SystemEvents_UserPreferenceChanged;
         _instanceListenerCancellation?.Cancel();
         _commandDebounceTimer?.Stop();
         _updatePollTimer?.Stop();
@@ -114,6 +135,50 @@ public partial class App : System.Windows.Application
         }
 
         base.OnExit(e);
+    }
+
+    private void SystemEvents_UserPreferenceChanged(object sender, UserPreferenceChangedEventArgs e) =>
+        Dispatcher.BeginInvoke(new Action(ApplySystemTheme));
+
+    private void ApplySystemTheme()
+    {
+        var light = true;
+        try
+        {
+            using var key = Registry.CurrentUser.OpenSubKey(
+                @"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
+            light = key?.GetValue("AppsUseLightTheme") is not int value || value != 0;
+        }
+        catch
+        {
+        }
+
+        var colors = light
+            ? new Dictionary<string, string>
+            {
+                ["AppBackgroundBrush"] = "#F4F6FA", ["SurfaceBrush"] = "#FFFFFF",
+                ["SurfaceHoverBrush"] = "#F1F5FB", ["SubtleSurfaceBrush"] = "#F8FAFD",
+                ["BorderBrush"] = "#D9E0EA", ["DividerBrush"] = "#E9EDF3",
+                ["ProgressTrackBrush"] = "#DFE5ED", ["TextBrush"] = "#182230",
+                ["MutedTextBrush"] = "#647185", ["AccentBrush"] = "#356AE6",
+                ["AccentHoverBrush"] = "#285BCB", ["AccentSoftBrush"] = "#E8EFFF",
+                ["DangerBrush"] = "#C63C3C"
+            }
+            : new Dictionary<string, string>
+            {
+                ["AppBackgroundBrush"] = "#11161E", ["SurfaceBrush"] = "#1B222C",
+                ["SurfaceHoverBrush"] = "#252E3A", ["SubtleSurfaceBrush"] = "#202833",
+                ["BorderBrush"] = "#343E4C", ["DividerBrush"] = "#2C3541",
+                ["ProgressTrackBrush"] = "#313B49", ["TextBrush"] = "#EDF2F7",
+                ["MutedTextBrush"] = "#9DA9B8", ["AccentBrush"] = "#78A5FF",
+                ["AccentHoverBrush"] = "#91B6FF", ["AccentSoftBrush"] = "#243454",
+                ["DangerBrush"] = "#FF9292"
+            };
+        foreach (var pair in colors)
+        {
+            Resources[pair.Key] = new SolidColorBrush(
+                (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(pair.Value));
+        }
     }
 
     private void CreateTrayIcon()
@@ -549,10 +614,16 @@ public partial class App : System.Windows.Application
                     new[] { "--compress" }.Concat(batch.CompressionPaths).ToArray());
             }
 
-            if (batch.ExtractionPaths.Count > 0)
+            if (batch.DirectExtractionPaths.Count > 0)
             {
                 await _mainWindow.HandleCommandLineAsync(
-                    new[] { "--extract" }.Concat(batch.ExtractionPaths).ToArray());
+                    new[] { "--extract-direct" }.Concat(batch.DirectExtractionPaths).ToArray());
+            }
+
+            if (batch.SmartExtractionPaths.Count > 0)
+            {
+                await _mainWindow.HandleCommandLineAsync(
+                    new[] { "--extract-smart" }.Concat(batch.SmartExtractionPaths).ToArray());
             }
 
             foreach (var command in batch.OtherCommands)

@@ -43,6 +43,28 @@ public sealed class MultiFormatArchiveServiceTests : IDisposable
         Assert.Equal(expected, new MultiFormatArchiveService().Supports(fileName));
     }
 
+    [Fact]
+    public async Task ExtractSelected_ExtractsOnlyRequestedEntriesAndKeepsFolders()
+    {
+        Directory.CreateDirectory(_testRoot);
+        var archivePath = Path.Combine(_testRoot, "selected.tar");
+        CreateTarArchive(archivePath, new Dictionary<string, string>
+        {
+            ["docs/keep.txt"] = "keep",
+            ["docs/skip.txt"] = "skip",
+            ["root.txt"] = "root"
+        });
+        var outputPath = Path.Combine(_testRoot, "selected-output");
+        var service = new MultiFormatArchiveService();
+
+        await service.ExtractSelectedAsync(
+            archivePath, outputPath, new[] { "docs/keep.txt", "root.txt" });
+
+        Assert.Equal("keep", File.ReadAllText(Path.Combine(outputPath, "docs", "keep.txt")));
+        Assert.Equal("root", File.ReadAllText(Path.Combine(outputPath, "root.txt")));
+        Assert.False(File.Exists(Path.Combine(outputPath, "docs", "skip.txt")));
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(_testRoot))
@@ -81,5 +103,21 @@ public sealed class MultiFormatArchiveServiceTests : IDisposable
             ArchiveType.GZip,
             WriterOptions.ForGZip());
         gzipWriter.Write("sample.tar", tarStream, DateTime.UtcNow);
+    }
+
+    private static void CreateTarArchive(
+        string archivePath,
+        IReadOnlyDictionary<string, string> entries)
+    {
+        using var file = File.Create(archivePath);
+        using var writer = WriterFactory.OpenWriter(
+            file,
+            ArchiveType.Tar,
+            new WriterOptions(CompressionType.None));
+        foreach (var entry in entries)
+        {
+            using var content = new MemoryStream(Encoding.UTF8.GetBytes(entry.Value), writable: false);
+            writer.Write(entry.Key, content, DateTime.UtcNow);
+        }
     }
 }
