@@ -27,8 +27,13 @@ jobs:
           [xml]$props = Get-Content -LiteralPath Directory.Build.props
           $projectVersion = [string]$props.Project.PropertyGroup.Version
           $installerVersion = (Select-String -LiteralPath installer.iss -Pattern '^#define MyAppVersion "([^"]+)"$').Matches[0].Groups[1].Value
-          if ($version -ne $projectVersion -or $version -ne $installerVersion) {
-            throw "Version mismatch: tag=$version project=$projectVersion installer=$installerVersion"
+          [xml]$identityManifest = Get-Content -LiteralPath packaging\AppxManifest.xml
+          $identityVersion = ([string]$identityManifest.Package.Identity.Version) -replace '\.0$', ''
+          [xml]$appManifest = Get-Content -LiteralPath src\sZIP.App\app.manifest
+          $appVersion = ([string]$appManifest.assembly.assemblyIdentity.version) -replace '\.0$', ''
+          if ($version -ne $projectVersion -or $version -ne $installerVersion -or
+              $version -ne $identityVersion -or $version -ne $appVersion) {
+            throw "Version mismatch: tag=$version project=$projectVersion installer=$installerVersion identity=$identityVersion app=$appVersion"
           }
 
       - name: Restore dependencies
@@ -39,6 +44,14 @@ jobs:
 
       - name: Publish portable application
         run: dotnet publish src\sZIP.App\sZIP.App.csproj --configuration Release --output artifacts\publish --no-restore
+
+      - name: Build Windows 11 context menu extension
+        shell: pwsh
+        run: msbuild src\sZIP.ShellExtension\sZIP.ShellExtension.vcxproj /p:Configuration=Release /p:Platform=x64
+
+      - name: Build sparse identity package
+        shell: pwsh
+        run: .\build_identity_package.ps1 artifacts\publish
 
       - name: Install Inno Setup
         run: choco install innosetup --yes --no-progress

@@ -77,6 +77,38 @@ public sealed class MultiFormatArchiveService : IMultiFormatArchiveService
         IProgress<ExtractionProgress>? progress = null,
         CancellationToken cancellationToken = default)
     {
+        await ExtractCoreAsync(
+            archivePath, destinationRoot, null, password, progress, cancellationToken);
+    }
+
+    public async Task ExtractSelectedAsync(
+        string archivePath,
+        string destinationRoot,
+        IReadOnlyCollection<string> selectedEntryNames,
+        string? password = null,
+        IProgress<ExtractionProgress>? progress = null,
+        CancellationToken cancellationToken = default)
+    {
+        if (selectedEntryNames is null || selectedEntryNames.Count == 0)
+        {
+            throw new ArgumentException("풀 압축 항목을 하나 이상 선택해 주세요.", nameof(selectedEntryNames));
+        }
+
+        var selected = new HashSet<string>(
+            selectedEntryNames.Select(NormalizeEntryKey),
+            StringComparer.Ordinal);
+        await ExtractCoreAsync(
+            archivePath, destinationRoot, selected, password, progress, cancellationToken);
+    }
+
+    private async Task ExtractCoreAsync(
+        string archivePath,
+        string destinationRoot,
+        ISet<string>? selectedEntryNames,
+        string? password,
+        IProgress<ExtractionProgress>? progress,
+        CancellationToken cancellationToken)
+    {
         ValidateArchivePath(archivePath);
         if (string.IsNullOrWhiteSpace(destinationRoot))
         {
@@ -101,8 +133,15 @@ public sealed class MultiFormatArchiveService : IMultiFormatArchiveService
             }
 
             ValidateEntries(metrics);
+            var selectedMetrics = selectedEntryNames is null
+                ? metrics
+                : metrics.Where(entry => selectedEntryNames.Contains(NormalizeEntryKey(entry.Key))).ToArray();
+            if (selectedEntryNames is not null && selectedMetrics.Length == 0)
+            {
+                throw new InvalidDataException("선택한 항목을 압축 파일에서 찾을 수 없습니다.");
+            }
             Directory.CreateDirectory(destinationRoot);
-            var totalBytes = metrics.Sum(entry => entry.Size);
+            var totalBytes = selectedMetrics.Sum(entry => entry.Size);
             long processedBytes = 0;
             var completedEntries = 0;
 
@@ -113,6 +152,11 @@ public sealed class MultiFormatArchiveService : IMultiFormatArchiveService
                 {
                     cancellationToken.ThrowIfCancellationRequested();
                     var entryName = entry.Key ?? string.Empty;
+                    if (selectedEntryNames is not null
+                        && !selectedEntryNames.Contains(NormalizeEntryKey(entryName)))
+                    {
+                        continue;
+                    }
                     var destinationPath = ArchivePath.GetSafeDestinationPath(destinationRoot, entryName);
                     if (entry.IsDirectory)
                     {
@@ -133,7 +177,7 @@ public sealed class MultiFormatArchiveService : IMultiFormatArchiveService
                                 copied => progress?.Report(new ExtractionProgress(
                                     entryName,
                                     completedEntries,
-                                    metrics.Length,
+                                    selectedMetrics.Length,
                                     processedBytes + copied,
                                     totalBytes)),
                                 cancellationToken);
@@ -150,7 +194,7 @@ public sealed class MultiFormatArchiveService : IMultiFormatArchiveService
                     progress?.Report(new ExtractionProgress(
                         entryName,
                         completedEntries,
-                        metrics.Length,
+                        selectedMetrics.Length,
                         processedBytes,
                         totalBytes));
                 }
@@ -338,6 +382,9 @@ public sealed class MultiFormatArchiveService : IMultiFormatArchiveService
 
     private static DateTimeOffset ToDateTimeOffset(DateTime? value) =>
         value.HasValue ? new DateTimeOffset(value.Value) : DateTimeOffset.MinValue;
+
+    private static string NormalizeEntryKey(string value) =>
+        value.Replace('\\', '/').TrimEnd('/');
 
     private static string? GetLinkTarget(IArchiveEntry entry)
     {

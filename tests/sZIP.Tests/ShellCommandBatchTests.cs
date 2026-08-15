@@ -18,7 +18,8 @@ public sealed class ShellCommandBatchTests
         Assert.Equal(@"C:\자료\첫째.txt", batch.CompressionPaths[0]);
         Assert.Equal(@"C:\자료\둘째.txt", batch.CompressionPaths[1]);
         Assert.Empty(batch.OtherCommands);
-        Assert.Empty(batch.ExtractionPaths);
+        Assert.Empty(batch.DirectExtractionPaths);
+        Assert.Empty(batch.SmartExtractionPaths);
     }
 
     [Fact]
@@ -29,23 +30,26 @@ public sealed class ShellCommandBatchTests
         var batch = ShellCommandBatch.Create(new IReadOnlyList<string>[] { open });
 
         Assert.Empty(batch.CompressionPaths);
-        Assert.Empty(batch.ExtractionPaths);
+        Assert.Empty(batch.DirectExtractionPaths);
+        Assert.Empty(batch.SmartExtractionPaths);
         Assert.Equal(open, Assert.Single(batch.OtherCommands));
     }
 
     [Fact]
-    public void Create_MergesMultipleExtractInvocations()
+    public void Create_MergesDirectAndSmartExtractInvocationsSeparately()
     {
         var batch = ShellCommandBatch.Create(new IReadOnlyList<string>[]
         {
-            new[] { "--extract", @"C:\자료\first.zip" },
-            new[] { "--extract", @"C:\자료\second.7z" },
-            new[] { "--extract", @"c:\자료\first.zip" }
+            new[] { "--extract-direct", @"C:\자료\first.zip" },
+            new[] { "--extract-direct", @"c:\자료\first.zip" },
+            new[] { "--extract-smart", @"C:\자료\second.7z" },
+            new[] { "--extract", @"C:\자료\legacy.rar" }
         });
 
-        Assert.Equal(2, batch.ExtractionPaths.Count);
-        Assert.Equal(@"C:\자료\first.zip", batch.ExtractionPaths[0]);
-        Assert.Equal(@"C:\자료\second.7z", batch.ExtractionPaths[1]);
+        Assert.Equal(new[] { @"C:\자료\first.zip" }, batch.DirectExtractionPaths);
+        Assert.Equal(
+            new[] { @"C:\자료\second.7z", @"C:\자료\legacy.rar" },
+            batch.SmartExtractionPaths);
         Assert.Empty(batch.CompressionPaths);
         Assert.Empty(batch.OtherCommands);
     }

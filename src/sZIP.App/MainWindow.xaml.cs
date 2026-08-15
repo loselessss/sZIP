@@ -1,5 +1,6 @@
 using System.IO;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Windows;
 using Microsoft.Win32;
 using sZIP.Application;
@@ -20,10 +21,12 @@ public partial class MainWindow : Window
     private readonly CancellationTokenSource _shutdownCancellation = new();
     private CancellationTokenSource? _operationCancellation;
     private RecursiveArchiveWatcher? _automaticWatcher;
+    private Stopwatch? _operationStopwatch;
     private bool _allowExit;
 
     public event EventHandler? AutoExtractEnabledChanged;
     public event EventHandler? HiddenToTray;
+    public event EventHandler? UpdateCheckRequested;
 
     public bool IsAutoExtractEnabled
     {
@@ -85,7 +88,7 @@ public partial class MainWindow : Window
         }
     }
 
-    private async void ExtractButton_Click(object sender, RoutedEventArgs e)
+    private async void ExtractDirectButton_Click(object sender, RoutedEventArgs e)
     {
         using var dialog = new System.Windows.Forms.FolderBrowserDialog
         {
@@ -99,23 +102,107 @@ public partial class MainWindow : Window
         }
 
         var progress = new Progress<ExtractionProgress>(value =>
-        {
-            OperationProgress.Value = Math.Max(0, Math.Min(100, value.Percentage));
-            StatusText.Text = $"해제 중: {value.CurrentEntry} ({value.CompletedEntries:N0}/{value.TotalEntries:N0})";
-        });
+            UpdateExtractionProgress(value, "압축을 풀고 있습니다"));
 
         await RunOperationAsync(async cancellationToken =>
         {
-            await _workspace.ExtractAsync(dialog.SelectedPath, progress, cancellationToken);
-            OperationProgress.Value = 100;
-            StatusText.Text = "압축 해제가 완료되었습니다.";
+            var archivePath = _workspace.CurrentArchivePath
+                ?? throw new InvalidOperationException("먼저 압축 파일을 열어 주세요.");
+            var outputPath = await ExtractCurrentArchiveAsync(
+                archivePath, dialog.SelectedPath, smart: false, progress, cancellationToken);
+            SetOperationCompleted("압축 해제가 완료되었습니다", outputPath);
             System.Windows.MessageBox.Show(this, "압축 해제가 완료되었습니다.", "sZIP",
                 MessageBoxButton.OK, MessageBoxImage.Information);
         });
     }
 
+    private async void ExtractSmartButton_Click(object sender, RoutedEventArgs e)
+    {
+        var archivePath = _workspace.CurrentArchivePath;
+        if (archivePath is null)
+        {
+            return;
+        }
+
+        var progress = new Progress<ExtractionProgress>(value =>
+            UpdateExtractionProgress(value, "알아서 풀고 있습니다"));
+        await RunOperationAsync(async cancellationToken =>
+        {
+            var outputPath = await ExtractCurrentArchiveAsync(
+                archivePath, Path.GetDirectoryName(archivePath)!, smart: true,
+                progress, cancellationToken);
+            SetOperationCompleted("알아서 풀기가 완료되었습니다", outputPath);
+        });
+    }
+
+    private async void ExtractSelectedButton_Click(object sender, RoutedEventArgs e)
+    {
+        var archivePath = _workspace.CurrentArchivePath;
+        if (archivePath is null)
+        {
+            return;
+        }
+
+        var selectedEntries = GetSelectedEntryNames();
+        if (selectedEntries.Count == 0)
+        {
+            ShowError("풀 항목을 선택해 주세요.", "압축 파일 목록에서 파일이나 폴더를 하나 이상 선택하세요.");
+            return;
+        }
+
+        using var dialog = new System.Windows.Forms.FolderBrowserDialog
+        {
+            Description = "선택한 항목을 풀 폴더를 선택하세요.",
+            ShowNewFolderButton = true
+        };
+        if (dialog.ShowDialog() != System.Windows.Forms.DialogResult.OK)
+        {
+            return;
+        }
+
+        var progress = new Progress<ExtractionProgress>(value =>
+            UpdateExtractionProgress(value, "선택한 항목을 풀고 있습니다"));
+        await RunOperationAsync(async cancellationToken =>
+        {
+            var outputPath = await ExtractCurrentArchiveAsync(
+                archivePath, dialog.SelectedPath, smart: false, progress, cancellationToken,
+                selectedEntries);
+            SetOperationCompleted($"선택한 항목 {selectedEntries.Count:N0}개를 풀었습니다", outputPath);
+        });
+    }
+
+    private IReadOnlyCollection<string> GetSelectedEntryNames()
+    {
+        var allEntries = EntriesGrid.ItemsSource as IEnumerable<ArchiveEntryInfo>
+            ?? Enumerable.Empty<ArchiveEntryInfo>();
+        var selected = EntriesGrid.SelectedItems.Cast<ArchiveEntryInfo>().ToArray();
+        var names = new HashSet<string>(
+            selected.Select(entry => entry.FullName),
+            StringComparer.Ordinal);
+
+        foreach (var directory in selected.Where(entry => entry.IsDirectory))
+        {
+            var prefix = directory.FullName.Replace('\\', '/').TrimEnd('/') + "/";
+            foreach (var child in allEntries.Where(entry =>
+                         entry.FullName.Replace('\\', '/').StartsWith(prefix, StringComparison.Ordinal)))
+            {
+                names.Add(child.FullName);
+            }
+        }
+
+        return names.ToArray();
+    }
+
+    private void EntriesGrid_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e) =>
+        ExtractSelectedButton.IsEnabled = !CancelButton.IsEnabled
+            && _workspace.CurrentArchivePath is not null
+            && EntriesGrid.SelectedItems.Count > 0;
+
     private void CancelButton_Click(object sender, RoutedEventArgs e) =>
         _operationCancellation?.Cancel();
+
+    private void UpdateCheckButton_Click(object sender, RoutedEventArgs e) =>
+        UpdateCheckRequested?.Invoke(this, EventArgs.Empty);
 
     private void Window_PreviewDragOver(object sender, System.Windows.DragEventArgs e)
     {
@@ -168,8 +255,11 @@ public partial class MainWindow : Window
             }
             EntriesGrid.ItemsSource = entries;
             ArchivePathText.Text = archivePath;
-            ExtractButton.IsEnabled = true;
+            ExtractDirectButton.IsEnabled = true;
+            ExtractSmartButton.IsEnabled = true;
+            StatusHeadingText.Text = "압축 파일을 열었습니다";
             StatusText.Text = $"{entries.Count:N0}개 항목";
+            ProgressDetailsText.Text = "그냥 풀기 또는 알아서 풀기를 선택하세요.";
         });
     }
 
@@ -193,10 +283,7 @@ public partial class MainWindow : Window
         }
 
         var progress = new Progress<CompressionProgress>(value =>
-        {
-            OperationProgress.Value = Math.Max(0, Math.Min(100, value.Percentage));
-            StatusText.Text = $"압축 중: {value.CurrentEntry} ({value.CompletedEntries:N0}/{value.TotalEntries:N0})";
-        });
+            UpdateCompressionProgress(value));
 
         var completed = false;
         await RunOperationAsync(async cancellationToken =>
@@ -218,13 +305,159 @@ public partial class MainWindow : Window
                     cancellationToken);
             }
             completed = true;
-            OperationProgress.Value = 100;
-            StatusText.Text = $"압축 생성 완료: {saveDialog.FileName}";
+            SetOperationCompleted("압축 파일을 만들었습니다", saveDialog.FileName);
         });
 
         if (completed)
         {
             await OpenArchiveAsync(saveDialog.FileName);
+        }
+    }
+
+    private async Task<string> ExtractCurrentArchiveAsync(
+        string archivePath,
+        string destinationDirectory,
+        bool smart,
+        IProgress<ExtractionProgress> progress,
+        CancellationToken cancellationToken,
+        IReadOnlyCollection<string>? selectedEntryNames = null)
+    {
+        Directory.CreateDirectory(destinationDirectory);
+        var temporaryPath = Path.Combine(
+            destinationDirectory,
+            $".szip-manual-{Guid.NewGuid():N}");
+        using var temporaryExclusion = _automaticWatcher?.ExcludePath(temporaryPath);
+        try
+        {
+            if (selectedEntryNames is null)
+            {
+                await _manualExtractionService.ExtractAsync(
+                    archivePath,
+                    temporaryPath,
+                    _workspace.CurrentPassword,
+                    progress,
+                    cancellationToken);
+            }
+            else
+            {
+                await _manualExtractionService.ExtractSelectedAsync(
+                    archivePath,
+                    temporaryPath,
+                    selectedEntryNames,
+                    _workspace.CurrentPassword,
+                    progress,
+                    cancellationToken);
+            }
+            return CompleteTemporaryExtraction(
+                temporaryPath, archivePath, destinationDirectory, smart);
+        }
+        finally
+        {
+            TryDeleteDirectory(temporaryPath);
+        }
+    }
+
+    private static string CompleteTemporaryExtraction(
+        string temporaryPath,
+        string archivePath,
+        string destinationDirectory,
+        bool smart)
+    {
+        return ExtractionPlacement.Complete(
+            temporaryPath, archivePath, destinationDirectory, smart);
+    }
+
+    private void UpdateExtractionProgress(ExtractionProgress value, string heading)
+    {
+        UpdateOperationProgress(
+            heading,
+            value.CurrentEntry,
+            value.Percentage,
+            value.ProcessedBytes,
+            value.TotalBytes,
+            value.CompletedEntries,
+            value.TotalEntries);
+    }
+
+    private void UpdateCompressionProgress(CompressionProgress value)
+    {
+        UpdateOperationProgress(
+            "압축 파일을 만들고 있습니다",
+            value.CurrentEntry,
+            value.Percentage,
+            value.ProcessedBytes,
+            value.TotalBytes,
+            value.CompletedEntries,
+            value.TotalEntries);
+    }
+
+    private void UpdateOperationProgress(
+        string heading,
+        string currentEntry,
+        double percentage,
+        long processedBytes,
+        long totalBytes,
+        int completedEntries,
+        int totalEntries)
+    {
+        var boundedPercentage = Math.Max(0, Math.Min(100, percentage));
+        OperationProgress.Value = boundedPercentage;
+        ProgressPercentText.Text = $"{boundedPercentage:0}%";
+        StatusHeadingText.Text = heading;
+        StatusText.Text = currentEntry;
+
+        var elapsedSeconds = Math.Max(_operationStopwatch?.Elapsed.TotalSeconds ?? 0, 0.001);
+        var bytesPerSecond = processedBytes / elapsedSeconds;
+        var sizeText = totalBytes > 0
+            ? $"{FormatBytes(processedBytes)} / {FormatBytes(totalBytes)}"
+            : $"{completedEntries:N0} / {totalEntries:N0}개";
+        var remainingText = totalBytes > processedBytes && bytesPerSecond > 0
+            ? $" · 약 {FormatDuration(TimeSpan.FromSeconds((totalBytes - processedBytes) / bytesPerSecond))} 남음"
+            : string.Empty;
+        ProgressDetailsText.Text = $"{sizeText} · {FormatBytes((long)bytesPerSecond)}/s{remainingText}";
+    }
+
+    private void SetOperationCompleted(string heading, string outputPath)
+    {
+        OperationProgress.Value = 100;
+        ProgressPercentText.Text = "100%";
+        StatusHeadingText.Text = heading;
+        StatusText.Text = outputPath;
+        ProgressDetailsText.Text = _operationStopwatch is null
+            ? "완료"
+            : $"{FormatDuration(_operationStopwatch.Elapsed)} 만에 완료";
+    }
+
+    private static string FormatBytes(long bytes)
+    {
+        if (bytes < 1024) return $"{bytes:N0} B";
+        if (bytes < 1024L * 1024) return $"{bytes / 1024d:0.0} KB";
+        if (bytes < 1024L * 1024 * 1024) return $"{bytes / (1024d * 1024):0.0} MB";
+        return $"{bytes / (1024d * 1024 * 1024):0.00} GB";
+    }
+
+    private static string FormatDuration(TimeSpan duration)
+    {
+        if (duration.TotalHours >= 1) return $"{(int)duration.TotalHours}시간 {duration.Minutes}분";
+        if (duration.TotalMinutes >= 1) return $"{(int)duration.TotalMinutes}분 {duration.Seconds}초";
+        return $"{Math.Max(1, (int)Math.Ceiling(duration.TotalSeconds))}초";
+    }
+
+    private static void TryDeleteDirectory(string path)
+    {
+        if (!Directory.Exists(path))
+        {
+            return;
+        }
+        try
+        {
+            Directory.Delete(path, recursive: true);
+        }
+        catch (IOException)
+        {
+        }
+        catch (UnauthorizedAccessException)
+        {
         }
     }
 
@@ -289,7 +522,10 @@ public partial class MainWindow : Window
             using var temporaryExclusion = _automaticWatcher?.ExcludePath(temporaryPath);
 
             await Dispatcher.InvokeAsync(() =>
-                StatusText.Text = $"자동 해제 중: {Path.GetFileName(archivePath)}");
+            {
+                StatusHeadingText.Text = "자동으로 압축을 풀고 있습니다";
+                StatusText.Text = Path.GetFileName(archivePath);
+            });
             await _automaticArchiveService.ExtractAsync(
                 archivePath,
                 temporaryPath,
@@ -301,13 +537,16 @@ public partial class MainWindow : Window
             Directory.Move(temporaryPath, outputPath);
             temporaryPath = null;
             await Dispatcher.InvokeAsync(() =>
-                StatusText.Text = $"자동 해제 완료: {outputPath}");
+                SetOperationCompleted("자동 해제가 완료되었습니다", outputPath));
             DiagnosticLog.Write("automatic-extraction.completed");
         }
         catch (ArchivePasswordRequiredException)
         {
             await Dispatcher.InvokeAsync(() =>
-                StatusText.Text = $"자동 해제 건너뜀(암호 필요): {Path.GetFileName(archivePath)}");
+            {
+                StatusHeadingText.Text = "자동 해제를 건너뛰었습니다";
+                StatusText.Text = $"암호 필요: {Path.GetFileName(archivePath)}";
+            });
             DiagnosticLog.Write("automatic-extraction.password-required");
         }
         catch (OperationCanceledException)
@@ -317,7 +556,10 @@ public partial class MainWindow : Window
         catch (Exception exception)
         {
             await Dispatcher.InvokeAsync(() =>
-                StatusText.Text = $"자동 해제 실패: {Path.GetFileName(archivePath)}");
+            {
+                StatusHeadingText.Text = "자동 해제에 실패했습니다";
+                StatusText.Text = Path.GetFileName(archivePath);
+            });
             DiagnosticLog.Write("automatic-extraction.failed", exception);
         }
         finally
@@ -347,6 +589,7 @@ public partial class MainWindow : Window
     {
         _operationCancellation?.Dispose();
         _operationCancellation = new CancellationTokenSource();
+        _operationStopwatch = Stopwatch.StartNew();
         SetBusy(true);
 
         try
@@ -355,7 +598,9 @@ public partial class MainWindow : Window
         }
         catch (OperationCanceledException)
         {
+            StatusHeadingText.Text = "작업을 취소했습니다";
             StatusText.Text = "작업을 취소했습니다.";
+            ProgressDetailsText.Text = "완료되지 않은 임시 결과는 정리했습니다.";
         }
         catch (ArchiveSecurityException exception)
         {
@@ -371,6 +616,7 @@ public partial class MainWindow : Window
         }
         finally
         {
+            _operationStopwatch?.Stop();
             SetBusy(false);
         }
     }
@@ -380,17 +626,24 @@ public partial class MainWindow : Window
         OpenArchiveButton.IsEnabled = !isBusy;
         CreateFilesButton.IsEnabled = !isBusy;
         CreateFolderButton.IsEnabled = !isBusy;
-        ExtractButton.IsEnabled = !isBusy && _workspace.CurrentArchivePath is not null;
+        ExtractDirectButton.IsEnabled = !isBusy && _workspace.CurrentArchivePath is not null;
+        ExtractSmartButton.IsEnabled = !isBusy && _workspace.CurrentArchivePath is not null;
+        ExtractSelectedButton.IsEnabled = !isBusy
+            && _workspace.CurrentArchivePath is not null
+            && EntriesGrid.SelectedItems.Count > 0;
         CancelButton.IsEnabled = isBusy;
         if (isBusy)
         {
             OperationProgress.Value = 0;
+            ProgressPercentText.Text = "0%";
+            ProgressDetailsText.Text = "작업을 준비하고 있습니다.";
         }
     }
 
     private void ShowError(string summary, string detail)
     {
         StatusText.Text = summary;
+        StatusHeadingText.Text = summary;
         System.Windows.MessageBox.Show(this, $"{summary}\n\n{detail}", "sZIP",
             MessageBoxButton.OK, MessageBoxImage.Error);
     }
@@ -447,9 +700,16 @@ public partial class MainWindow : Window
             return;
         }
 
-        if (string.Equals(option, "--extract", StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(option, "--extract-direct", StringComparison.OrdinalIgnoreCase))
         {
-            await ExtractArchivesFromShellAsync(paths);
+            await ExtractArchivesFromShellAsync(paths, smart: false);
+            return;
+        }
+
+        if (string.Equals(option, "--extract-smart", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(option, "--extract", StringComparison.OrdinalIgnoreCase))
+        {
+            await ExtractArchivesFromShellAsync(paths, smart: true);
             return;
         }
 
@@ -459,7 +719,9 @@ public partial class MainWindow : Window
         }
     }
 
-    private async Task ExtractArchivesFromShellAsync(IReadOnlyCollection<string> paths)
+    private async Task ExtractArchivesFromShellAsync(
+        IReadOnlyCollection<string> paths,
+        bool smart)
     {
         var archives = paths
             .Where(path => File.Exists(path) && _manualExtractionService.Supports(path))
@@ -472,6 +734,7 @@ public partial class MainWindow : Window
 
         await RunOperationAsync(async cancellationToken =>
         {
+            string? lastOutputPath = null;
             for (var index = 0; index < archives.Length; index++)
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -484,12 +747,20 @@ public partial class MainWindow : Window
 
                 try
                 {
-                    StatusText.Text = $"탐색기 압축 해제 중: {Path.GetFileName(archivePath)} ({index + 1}/{archives.Length})";
+                    StatusHeadingText.Text = smart
+                        ? "탐색기에서 알아서 풀고 있습니다"
+                        : "탐색기에서 그냥 풀고 있습니다";
+                    StatusText.Text = $"{Path.GetFileName(archivePath)} ({index + 1}/{archives.Length})";
+                    var progress = new Progress<ExtractionProgress>(value =>
+                        UpdateExtractionProgress(
+                            value,
+                            smart ? "알아서 풀고 있습니다" : "그냥 풀고 있습니다"));
                     try
                     {
                         await _manualExtractionService.ExtractAsync(
                             archivePath,
                             temporaryPath,
+                            progress: progress,
                             cancellationToken: cancellationToken);
                     }
                     catch (ArchivePasswordRequiredException)
@@ -504,34 +775,22 @@ public partial class MainWindow : Window
                             archivePath,
                             temporaryPath,
                             passwordDialog.Password,
+                            progress,
                             cancellationToken: cancellationToken);
                     }
 
-                    var outputPath = GetUniqueDirectoryPath(
-                        Path.Combine(archiveDirectory, GetArchiveBaseName(archivePath)));
-                    using var outputExclusion = _automaticWatcher?.ExcludePath(outputPath);
-                    Directory.Move(temporaryPath, outputPath);
+                    lastOutputPath = CompleteTemporaryExtraction(
+                        temporaryPath, archivePath, archiveDirectory, smart);
                 }
                 finally
                 {
-                    if (Directory.Exists(temporaryPath))
-                    {
-                        try
-                        {
-                            Directory.Delete(temporaryPath, recursive: true);
-                        }
-                        catch (IOException)
-                        {
-                        }
-                        catch (UnauthorizedAccessException)
-                        {
-                        }
-                    }
+                    TryDeleteDirectory(temporaryPath);
                 }
             }
 
-            OperationProgress.Value = 100;
-            StatusText.Text = $"탐색기 압축 해제 완료: {archives.Length:N0}개";
+            SetOperationCompleted(
+                $"압축 파일 {archives.Length:N0}개를 풀었습니다",
+                lastOutputPath ?? string.Empty);
         });
     }
 
@@ -589,4 +848,5 @@ public partial class MainWindow : Window
 
         throw new IOException("자동 해제할 폴더 이름을 만들 수 없습니다.");
     }
+
 }

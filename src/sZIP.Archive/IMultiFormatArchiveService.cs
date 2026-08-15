@@ -19,4 +19,12 @@ public interface IMultiFormatArchiveService
         string? password = null,
         IProgress<ExtractionProgress>? progress = null,
         CancellationToken cancellationToken = default);
+
+    Task ExtractSelectedAsync(
+        string archivePath,
+        string destinationRoot,
+        IReadOnlyCollection<string> selectedEntryNames,
+        string? password = null,
+        IProgress<ExtractionProgress>? progress = null,
+        CancellationToken cancellationToken = default);
 }
