@@ -16,23 +16,87 @@
                 BorderThickness="1">
             <StackPanel>
                 <WrapPanel VerticalAlignment="Center">
-                    <Button x:Name="OpenArchiveButton" Content="압축 열기" MinWidth="86"
-                            Click="OpenArchiveButton_Click" />
-                    <Button x:Name="CreateFilesButton" Content="파일 압축" MinWidth="80" Margin="6,0,0,0"
-                            Click="CreateFilesButton_Click" />
-                    <Button x:Name="CreateFolderButton" Content="폴더 압축" MinWidth="80" Margin="6,0,0,0"
-                            Click="CreateFolderButton_Click" />
+                    <Button x:Name="OpenArchiveButton" MinWidth="108" ToolTip="압축 열기"
+                            Click="OpenArchiveButton_Click">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Width="16" Height="16" Stretch="Uniform" StrokeThickness="1.8"
+                                  StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
+                                  Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                  Data="M 2 4 L 7 4 L 8.5 6 L 14 6 L 14 13 L 2 13 Z M 4.5 9.5 L 11.5 9.5 M 9 7 L 11.5 9.5 L 9 12" />
+                            <TextBlock Text="압축 열기" Margin="7,0,0,0" />
+                        </StackPanel>
+                    </Button>
+                    <Button x:Name="CreateFilesButton" MinWidth="100" Margin="6,0,0,0" ToolTip="파일 압축"
+                            Click="CreateFilesButton_Click">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Width="16" Height="16" Stretch="Uniform" StrokeThickness="1.8"
+                                  StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
+                                  Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                  Data="M 4 2.5 L 10 2.5 L 13 5.5 L 13 13.5 L 4 13.5 Z M 10 2.5 L 10 5.5 L 13 5.5 M 6.5 9 L 10.5 9 M 8.5 7 L 8.5 11" />
+                            <TextBlock Text="파일 압축" Margin="7,0,0,0" />
+                        </StackPanel>
+                    </Button>
+                    <Button x:Name="CreateFolderButton" MinWidth="100" Margin="6,0,0,0" ToolTip="폴더 압축"
+                            Click="CreateFolderButton_Click">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Width="16" Height="16" Stretch="Uniform" StrokeThickness="1.8"
+                                  StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
+                                  Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                  Data="M 2 5 L 6.5 5 L 8 6.7 L 14 6.7 L 14 13 L 2 13 Z M 8 9 L 8 12 M 6.5 10.5 L 9.5 10.5" />
+                            <TextBlock Text="폴더 압축" Margin="7,0,0,0" />
+                        </StackPanel>
+                    </Button>
                     <Border Width="1" Height="28" Margin="10,4" Background="{DynamicResource DividerBrush}" />
-                    <Button x:Name="ExtractDirectButton" Content="그냥 풀기" MinWidth="80" Margin="0,0,0,0"
-                            IsEnabled="False" Click="ExtractDirectButton_Click" />
-                    <Button x:Name="ExtractSmartButton" Content="알아서 풀기" MinWidth="88" Margin="6,0,0,0"
+                    <Button x:Name="ExtractDirectButton" MinWidth="98" Margin="0,0,0,0" ToolTip="그냥 풀기"
+                            IsEnabled="False" Click="ExtractDirectButton_Click">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Width="16" Height="16" Stretch="Uniform" StrokeThickness="1.8"
+                                  StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
+                                  Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                  Data="M 3 3.5 L 13 3.5 L 13 6 L 3 6 Z M 4 6 L 12 6 L 12 13 L 4 13 Z M 8 7.5 L 8 11.5 M 6.2 9.8 L 8 11.6 L 9.8 9.8" />
+                            <TextBlock Text="그냥 풀기" Margin="7,0,0,0" />
+                        </StackPanel>
+                    </Button>
+                    <Button x:Name="ExtractSmartButton" MinWidth="110" Margin="6,0,0,0" ToolTip="알아서 풀기"
                             Style="{StaticResource PrimaryButtonStyle}"
-                            IsEnabled="False" Click="ExtractSmartButton_Click" />
-                    <Button x:Name="ExtractSelectedButton" Content="선택 풀기" MinWidth="80" Margin="6,0,0,0"
-                            IsEnabled="False" Click="ExtractSelectedButton_Click" />
+                            IsEnabled="False" Click="ExtractSmartButton_Click">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Width="16" Height="16" Stretch="Uniform" StrokeThickness="1.8"
+                                  StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
+                                  Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                  Data="M 8 2.5 L 9.1 5.9 L 12.5 7 L 9.1 8.1 L 8 11.5 L 6.9 8.1 L 3.5 7 L 6.9 5.9 Z M 12.5 2.5 L 13 4 L 14.5 4.5 L 13 5 L 12.5 6.5 L 12 5 L 10.5 4.5 L 12 4 Z" />
+                            <TextBlock Text="알아서 풀기" Margin="7,0,0,0" />
+                        </StackPanel>
+                    </Button>
+                    <Button x:Name="ExtractSelectedButton" MinWidth="98" Margin="6,0,0,0" ToolTip="선택 풀기"
+                            IsEnabled="False" Click="ExtractSelectedButton_Click">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Width="16" Height="16" Stretch="Uniform" StrokeThickness="1.8"
+                                  StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
+                                  Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                  Data="M 3 4 L 13 4 L 13 6.5 L 3 6.5 Z M 4 6.5 L 12 6.5 L 12 13 L 4 13 Z M 6.1 9.7 L 7.5 11.1 L 10.3 8.3" />
+                            <TextBlock Text="선택 풀기" Margin="7,0,0,0" />
+                        </StackPanel>
+                    </Button>
                     <Border Width="1" Height="28" Margin="10,4" Background="{DynamicResource DividerBrush}" />
-                    <Button Content="업데이트 확인" MinWidth="96" Click="UpdateCheckButton_Click" />
-                    <Button Content="감사 목록" MinWidth="84" Margin="6,0,0,0" Click="AuditButton_Click" />
+                    <Button MinWidth="118" ToolTip="업데이트 확인" Click="UpdateCheckButton_Click">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Width="16" Height="16" Stretch="Uniform" StrokeThickness="1.8"
+                                  StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
+                                  Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                  Data="M 13 8 A 5 5 0 1 1 11.5 4.5 M 13 3.5 L 13 8 L 9 8" />
+                            <TextBlock Text="업데이트 확인" Margin="7,0,0,0" />
+                        </StackPanel>
+                    </Button>
+                    <Button MinWidth="104" Margin="6,0,0,0" ToolTip="감사 목록" Click="AuditButton_Click">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Width="16" Height="16" Stretch="Uniform" StrokeThickness="1.8"
+                                  StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
+                                  Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                  Data="M 5 3 L 11 3 L 12.5 4.5 L 12.5 13 L 3.5 13 L 3.5 4.5 Z M 6 6.5 L 10 6.5 M 6 9 L 10 9 M 6 11.5 L 8.5 11.5" />
+                            <TextBlock Text="감사 목록" Margin="7,0,0,0" />
+                        </StackPanel>
+                    </Button>
                     <CheckBox x:Name="AutoExtractCheckBox" Content="자동 압축 풀기: Off"
                               Margin="10,0,0,0" VerticalAlignment="Center" Padding="8"
                               Checked="AutoExtractCheckBox_Checked"
