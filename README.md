@@ -29,34 +29,8 @@ GitHub Releases의 `sZIP_Setup_1.5.6.exe`가 권장 설치본입니다. 사용�
 
 설치 프로그램은 선택에 따라 바탕 화면 바로가기, Windows 자동 시작, 탐색기 메뉴와 압축 확장자 연결을 등록합니다. Windows 11에서는 sparse identity package와 x64 `IExplorerCommand` 확장을 등록해 명령을 기본 우클릭 메뉴에 표시하며, 등록할 수 없는 환경과 Windows 10에서는 기존 레거시 메뉴를 대체 경로로 유지합니다.
 
-## 업데이트 정책
-
-설치 앱은 시작 5초 후 업데이트를 확인합니다. 마지막 성공 확인 후 24시간이 지나야 다시 GitHub에 요청하며, 실행 중에는 매시간 재평가합니다. 네트워크 실패는 성공으로 기록하지 않아 다음 매시간 주기에 재시도합니다.
-
-업데이트가 있으면 릴리스 노트와 설치 파일 정보를 보여 줍니다. 설치 파일은 임시 `.part` 파일로 받은 뒤 GitHub 릴리스 자산의 SHA-256 digest와 크기를 검증해야만 실행합니다. 사용자는 나중에 설치하거나 해당 버전만 건너뛸 수 있고, 트레이 메뉴의 `업데이트 확인`으로 언제든 수동 확인할 수 있습니다.
-
-## 개발 및 자동 검증
-
-```powershell
-$szipRoot=(Get-Location).Path
-$env:DOTNET_CLI_HOME="$szipRoot\.dotnet-home"
-$env:NUGET_PACKAGES="$szipRoot\.packages"
-
-& "$szipRoot\.dotnet\dotnet.exe" restore sZIP.sln
-& "$szipRoot\.dotnet\dotnet.exe" test sZIP.sln --configuration Release --no-restore
-& "$szipRoot\.dotnet\dotnet.exe" publish src\sZIP.App\sZIP.App.csproj --configuration Release --output artifacts\publish --no-restore
-```
-
-로컬 설치 프로그램 생성에는 Inno Setup 6, Visual C++ x64 Build Tools와 Windows 10/11 SDK가 필요합니다.
-
-```powershell
-.\build_installer.ps1
-```
-
-`v*.*.*` 태그를 푸시하면 GitHub Actions가 테스트, 포터블 ZIP, Inno Setup 설치본, SHA-256 파일과 GitHub Release를 자동 생성합니다.
-
 ## 라이선스
 
 프로젝트는 MIT 라이선스입니다. 압축 형식 지원에는 MIT 라이선스의 SharpCompress 0.50.1을 사용하며 자세한 고지는 `THIRD-PARTY-NOTICES.md`에 있습니다.
 
-버전별 변경 사항은 [CHANGELOG.md](CHANGELOG.md)에서 확인할 수 있습니다. 수동 UI·탐색기 QA는 사용자 요청에 따라 1.0 정식 QA 단계에서 별도로 진행합니다.
+버전별 변경 사항은 [CHANGELOG.md](CHANGELOG.md)에서 확인할 수 있습니다. 
