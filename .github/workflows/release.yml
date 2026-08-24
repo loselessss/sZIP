@@ -69,6 +69,68 @@ jobs:
         run: '& "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer.iss'
         shell: pwsh
 
+      - name: Test Windows installer
+        shell: pwsh
+        run: |
+          $version = $env:GITHUB_REF_NAME.TrimStart("v")
+          $installer = Resolve-Path -LiteralPath "artifacts\sZIP_Setup_$version.exe"
+          $testInstaller = Join-Path $env:RUNNER_TEMP "sZIP_Setup_$version.exe"
+          $installRoot = Join-Path $env:LOCALAPPDATA "Programs\sZIP"
+          $installLog = Join-Path $env:RUNNER_TEMP "szip-install.log"
+          $uninstallLog = Join-Path $env:RUNNER_TEMP "szip-uninstall.log"
+          Copy-Item -LiteralPath $installer -Destination $testInstaller -Force
+
+          $install = Start-Process -FilePath $testInstaller -Wait -PassThru -ArgumentList @(
+            "/VERYSILENT",
+            "/SUPPRESSMSGBOXES",
+            "/NORESTART",
+            "/MERGETASKS=!desktopicon,!startup,!shellintegration",
+            "/DIR=$installRoot",
+            "/DELETEINSTALLER=$testInstaller",
+            "/LOG=$installLog"
+          )
+          if ($install.ExitCode -ne 0) {
+            if (Test-Path -LiteralPath $installLog) { Get-Content -LiteralPath $installLog }
+            throw "Installer exited with code $($install.ExitCode)"
+          }
+
+          $app = Join-Path $installRoot "sZIP.App.exe"
+          if (-not (Test-Path -LiteralPath $app)) {
+            if (Test-Path -LiteralPath $installLog) { Get-Content -LiteralPath $installLog }
+            throw "Installed app was not found: $app"
+          }
+
+          $fileVersion = [Diagnostics.FileVersionInfo]::GetVersionInfo($app).FileVersion
+          if (-not $fileVersion.StartsWith("$version.")) {
+            throw "Installed app version mismatch: expected $version, got $fileVersion"
+          }
+
+          $uninstaller = Join-Path $installRoot "unins000.exe"
+          if (-not (Test-Path -LiteralPath $uninstaller)) {
+            throw "Uninstaller was not found: $uninstaller"
+          }
+
+          $uninstall = Start-Process -FilePath $uninstaller -Wait -PassThru -ArgumentList @(
+            "/VERYSILENT",
+            "/SUPPRESSMSGBOXES",
+            "/NORESTART",
+            "/LOG=$uninstallLog"
+          )
+          if ($uninstall.ExitCode -ne 0) {
+            if (Test-Path -LiteralPath $uninstallLog) { Get-Content -LiteralPath $uninstallLog }
+            throw "Uninstaller exited with code $($uninstall.ExitCode)"
+          }
+          if (Test-Path -LiteralPath $app) {
+            throw "Installed app still exists after uninstall: $app"
+          }
+
+          for ($i = 0; $i -lt 15 -and (Test-Path -LiteralPath $testInstaller); $i++) {
+            Start-Sleep -Seconds 1
+          }
+          if (Test-Path -LiteralPath $testInstaller) {
+            throw "Temporary installer still exists after install cleanup: $testInstaller"
+          }
+
       - name: Create release assets
         shell: pwsh
         run: |

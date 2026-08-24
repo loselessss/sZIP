@@ -88,7 +88,22 @@ Root: HKCU; Subkey: "Software\Classes\SystemFileAssociations\.tgz\shell\sZIP.ext
 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Parameters: "--register-modern-shell"; Flags: runhidden waituntilterminated; Tasks: shellintegration
+Filename: "{cmd}"; Parameters: "/C ping 127.0.0.1 -n 4 > nul & del /f /q ""{param:DELETEINSTALLER|}"""; Flags: runhidden nowait; Check: ShouldDeleteInstaller
 Filename: "{app}\{#MyAppExeName}"; Description: "sZIP 실행"; Flags: nowait postinstall skipifsilent
 
 [UninstallRun]
 Filename: "{app}\{#MyAppExeName}"; Parameters: "--unregister-modern-shell"; Flags: runhidden waituntilterminated skipifdoesntexist
+
+[Code]
+function ShouldDeleteInstaller: Boolean;
+var
+  InstallerPath: String;
+  InstallerName: String;
+begin
+  InstallerPath := ExpandConstant('{param:DELETEINSTALLER|}');
+  InstallerName := ExtractFileName(InstallerPath);
+  Result :=
+    (InstallerPath <> '') and
+    (CompareText(ExtractFileExt(InstallerPath), '.exe') = 0) and
+    (Pos('sZIP_Setup_', InstallerName) = 1);
+end;

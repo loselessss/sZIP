@@ -290,7 +290,9 @@ public sealed class GitHubUpdateService : IDisposable
         {
             throw new UpdateException("실행할 업데이트 설치 파일이 올바르지 않습니다.");
         }
-        Process.Start(new ProcessStartInfo(fullPath, "/SP- /CLOSEAPPLICATIONS")
+        var arguments = "/SP- /CLOSEAPPLICATIONS /DELETEINSTALLER=\""
+            + fullPath.Replace("\"", "\\\"") + "\"";
+        Process.Start(new ProcessStartInfo(fullPath, arguments)
         {
             UseShellExecute = true,
             WorkingDirectory = Path.GetDirectoryName(fullPath)!
