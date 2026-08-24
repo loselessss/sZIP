@@ -1,17 +1,10 @@
-# sZIP 1.5.6
+# sZIP 1.6.0
 
 Release date: 2026-08-24
 
-## Explorer Menu
+## English Edition
 
-- Renamed the standard archive extraction item to `sZIP Extract`.
-- Added `sZIP Extract` and `sZIP Smart Extract` to the archive context menu.
-
-## Extraction
-
-- Manual `Smart Extract` now sends the window to the tray after the operation succeeds.
-
-## Installation
-
-- Release builds now test install, version detection, uninstall, and temporary installer cleanup.
-- Installers downloaded by the updater are cleaned up after installation completes.
+- Changed the application interface, dialogs, status messages, and error messages to English.
+- Changed the tray menu and Explorer context menu commands to English.
+- Changed the installer and Windows package descriptions to English.
+- Updated the documentation for the English edition.

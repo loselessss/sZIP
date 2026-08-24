@@ -1,4 +1,4 @@
-# sZIP 1.5.6
+# sZIP 1.6.0
 
 sZIP is a free archive utility for Windows. It is built on .NET Framework 4.8, so it can run on typical Windows 10/11 PCs without a C# development environment or .NET SDK. Archives smaller than the configured size limit can be extracted automatically.
 
@@ -25,7 +25,7 @@ The window close button hides sZIP to the tray instead of exiting. To quit compl
 
 ## Installation and Distributions
 
-The recommended installer is `sZIP_Setup_1.5.6.exe` from GitHub Releases. It installs to `%LOCALAPPDATA%\Programs\sZIP`, so administrator privileges are not required. `sZIP-1.5.6-net48.zip` is the portable distribution.
+The recommended installer is `sZIP_Setup_1.6.0.exe` from GitHub Releases. It installs to `%LOCALAPPDATA%\Programs\sZIP`, so administrator privileges are not required. `sZIP-1.6.0-net48.zip` is the portable distribution.
 
 The installer can register a desktop shortcut, Windows startup, Explorer menus, and archive file associations. On Windows 11, it registers a sparse identity package and x64 `IExplorerCommand` extension for the primary context menu. On unsupported environments and Windows 10, legacy context menu entries remain available as a fallback.
 
