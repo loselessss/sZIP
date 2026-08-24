@@ -1,5 +1,5 @@
 #define MyAppName "sZIP"
-#define MyAppVersion "1.5.5"
+#define MyAppVersion "1.5.6"
 #define MyAppPublisher "sZIP contributors"
 #define MyAppExeName "sZIP.App.exe"
 
@@ -60,12 +60,12 @@ Root: HKCU; Subkey: "Software\Classes\Directory\shell\sZIP.compress"; ValueType:
 Root: HKCU; Subkey: "Software\Classes\Directory\shell\sZIP.compress"; ValueType: string; ValueName: "MultiSelectModel"; ValueData: "Player"; Tasks: shellintegration
 Root: HKCU; Subkey: "Software\Classes\Directory\shell\sZIP.compress\command"; ValueType: string; ValueData: """{app}\{#MyAppExeName}"" --compress ""%1"""; Tasks: shellintegration
 
-Root: HKCU; Subkey: "Software\Classes\SystemFileAssociations\.zip\shell\sZIP.extract-direct"; ValueType: string; ValueData: "sZIP 그냥 풀기"; Tasks: shellintegration; Flags: uninsdeletekey
-Root: HKCU; Subkey: "Software\Classes\SystemFileAssociations\.7z\shell\sZIP.extract-direct"; ValueType: string; ValueData: "sZIP 그냥 풀기"; Tasks: shellintegration; Flags: uninsdeletekey
-Root: HKCU; Subkey: "Software\Classes\SystemFileAssociations\.rar\shell\sZIP.extract-direct"; ValueType: string; ValueData: "sZIP 그냥 풀기"; Tasks: shellintegration; Flags: uninsdeletekey
-Root: HKCU; Subkey: "Software\Classes\SystemFileAssociations\.tar\shell\sZIP.extract-direct"; ValueType: string; ValueData: "sZIP 그냥 풀기"; Tasks: shellintegration; Flags: uninsdeletekey
-Root: HKCU; Subkey: "Software\Classes\SystemFileAssociations\.gz\shell\sZIP.extract-direct"; ValueType: string; ValueData: "sZIP 그냥 풀기"; Tasks: shellintegration; Flags: uninsdeletekey
-Root: HKCU; Subkey: "Software\Classes\SystemFileAssociations\.tgz\shell\sZIP.extract-direct"; ValueType: string; ValueData: "sZIP 그냥 풀기"; Tasks: shellintegration; Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\Classes\SystemFileAssociations\.zip\shell\sZIP.extract-direct"; ValueType: string; ValueData: "sZIP 풀기"; Tasks: shellintegration; Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\Classes\SystemFileAssociations\.7z\shell\sZIP.extract-direct"; ValueType: string; ValueData: "sZIP 풀기"; Tasks: shellintegration; Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\Classes\SystemFileAssociations\.rar\shell\sZIP.extract-direct"; ValueType: string; ValueData: "sZIP 풀기"; Tasks: shellintegration; Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\Classes\SystemFileAssociations\.tar\shell\sZIP.extract-direct"; ValueType: string; ValueData: "sZIP 풀기"; Tasks: shellintegration; Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\Classes\SystemFileAssociations\.gz\shell\sZIP.extract-direct"; ValueType: string; ValueData: "sZIP 풀기"; Tasks: shellintegration; Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\Classes\SystemFileAssociations\.tgz\shell\sZIP.extract-direct"; ValueType: string; ValueData: "sZIP 풀기"; Tasks: shellintegration; Flags: uninsdeletekey
 Root: HKCU; Subkey: "Software\Classes\SystemFileAssociations\.zip\shell\sZIP.extract-direct\command"; ValueType: string; ValueData: """{app}\{#MyAppExeName}"" --extract-direct ""%1"""; Tasks: shellintegration
 Root: HKCU; Subkey: "Software\Classes\SystemFileAssociations\.7z\shell\sZIP.extract-direct\command"; ValueType: string; ValueData: """{app}\{#MyAppExeName}"" --extract-direct ""%1"""; Tasks: shellintegration
 Root: HKCU; Subkey: "Software\Classes\SystemFileAssociations\.rar\shell\sZIP.extract-direct\command"; ValueType: string; ValueData: """{app}\{#MyAppExeName}"" --extract-direct ""%1"""; Tasks: shellintegration

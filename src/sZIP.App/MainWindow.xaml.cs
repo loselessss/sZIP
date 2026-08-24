@@ -128,13 +128,19 @@ public partial class MainWindow : Window
 
         var progress = new Progress<ExtractionProgress>(value =>
             UpdateExtractionProgress(value, "알아서 풀고 있습니다"));
+        var completed = false;
         await RunOperationAsync(async cancellationToken =>
         {
             var outputPath = await ExtractCurrentArchiveAsync(
                 archivePath, Path.GetDirectoryName(archivePath)!, smart: true,
                 progress, cancellationToken);
             SetOperationCompleted("알아서 풀기가 완료되었습니다", outputPath);
+            completed = true;
         });
+        if (completed)
+        {
+            HideToTray();
+        }
     }
 
     private async void ExtractSelectedButton_Click(object sender, RoutedEventArgs e)
@@ -732,8 +738,7 @@ public partial class MainWindow : Window
         if (!_allowExit)
         {
             e.Cancel = true;
-            Hide();
-            HiddenToTray?.Invoke(this, EventArgs.Empty);
+            HideToTray();
             return;
         }
 
@@ -796,6 +801,7 @@ public partial class MainWindow : Window
             return;
         }
 
+        var completed = false;
         await RunOperationAsync(async cancellationToken =>
         {
             string? lastOutputPath = null;
@@ -855,7 +861,18 @@ public partial class MainWindow : Window
             SetOperationCompleted(
                 $"압축 파일 {archives.Length:N0}개를 풀었습니다",
                 lastOutputPath ?? string.Empty);
+            completed = true;
         });
+        if (smart && completed)
+        {
+            HideToTray();
+        }
+    }
+
+    private void HideToTray()
+    {
+        Hide();
+        HiddenToTray?.Invoke(this, EventArgs.Empty);
     }
 
     private static string GetInitialDirectory(string sourcePath)

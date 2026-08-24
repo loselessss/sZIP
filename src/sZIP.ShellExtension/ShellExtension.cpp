@@ -150,7 +150,7 @@ namespace
         IFACEMETHODIMP GetTitle(IShellItemArray*, PWSTR* title) override
         {
             if (_kind == CommandKind::Compress) return CopyResult(L"sZIP으로 압축", title);
-            if (_kind == CommandKind::ExtractDirect) return CopyResult(L"sZIP 그냥 풀기", title);
+            if (_kind == CommandKind::ExtractDirect) return CopyResult(L"sZIP 풀기", title);
             return CopyResult(L"sZIP 알아서 풀기", title);
         }
 

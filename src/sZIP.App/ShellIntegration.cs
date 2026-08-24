@@ -58,7 +58,7 @@ internal static class ShellIntegration
                 "Single");
             CreateVerb(
                 GetDirectExtractKey(extension),
-                "sZIP 그냥 풀기",
+                "sZIP 풀기",
                 BuildCommand(executablePath, "--extract-direct"),
                 "Player");
             CreateVerb(
