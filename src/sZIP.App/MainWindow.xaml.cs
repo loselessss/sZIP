@@ -471,6 +471,7 @@ public partial class MainWindow : Window
 
     private void AutoExtractCheckBox_Checked(object sender, RoutedEventArgs e)
     {
+        UpdateAutoExtractToggleLabel();
         if (_automaticWatcher is not null)
         {
             return;
@@ -501,6 +502,7 @@ public partial class MainWindow : Window
 
     private void AutoExtractCheckBox_Unchecked(object sender, RoutedEventArgs e)
     {
+        UpdateAutoExtractToggleLabel();
         if (_automaticWatcher is null)
         {
             AutoExtractEnabledChanged?.Invoke(this, EventArgs.Empty);
@@ -920,6 +922,7 @@ public partial class MainWindow : Window
             AutoExtractMaxMbTextBox.Text = Math.Max(1, UserSettings.Default.AutoExtractMaxArchiveMb)
                 .ToString(System.Globalization.CultureInfo.InvariantCulture);
             DeleteSourceArchiveCheckBox.IsChecked = UserSettings.Default.AutoExtractDeleteSourceArchive;
+            UpdateAutoExtractToggleLabel();
         }
         finally
         {
@@ -992,6 +995,16 @@ public partial class MainWindow : Window
 
     private static string GetDefaultDownloadFolder() =>
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
+
+    private void UpdateAutoExtractToggleLabel()
+    {
+        if (AutoExtractCheckBox is not null)
+        {
+            AutoExtractCheckBox.Content = AutoExtractCheckBox.IsChecked == true
+                ? "자동 압축 풀기: On"
+                : "자동 압축 풀기: Off";
+        }
+    }
 
     private bool TryDeleteSourceArchiveAfterAutomaticExtraction(string archivePath)
     {
