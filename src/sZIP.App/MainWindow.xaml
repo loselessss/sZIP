@@ -98,7 +98,8 @@
                         </StackPanel>
                     </Button>
                     <CheckBox x:Name="AutoExtractCheckBox" Content="자동 압축 풀기: Off"
-                              Margin="10,0,0,0" VerticalAlignment="Center" Padding="8"
+                              Margin="10,0,0,0" VerticalAlignment="Center"
+                              Style="{StaticResource RibbonCheckBoxStyle}"
                               Checked="AutoExtractCheckBox_Checked"
                               Unchecked="AutoExtractCheckBox_Unchecked" />
                 </WrapPanel>
