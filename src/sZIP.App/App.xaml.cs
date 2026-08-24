@@ -514,8 +514,21 @@ public partial class App : System.Windows.Application
             }
             if (install == true && dialog.InstallerPath is not null)
             {
-                GitHubUpdateService.LaunchInstaller(dialog.InstallerPath);
-                ExitApplication();
+                try
+                {
+                    DiagnosticLog.Write("update.installer.launch " + Path.GetFileName(dialog.InstallerPath));
+                    GitHubUpdateService.LaunchInstaller(dialog.InstallerPath);
+                    ExitApplication();
+                }
+                catch (Exception exception)
+                {
+                    DiagnosticLog.Write("update.installer.launch.failed", exception);
+                    System.Windows.MessageBox.Show(_mainWindow,
+                        "설치 파일을 실행하지 못했습니다.\n\n" + dialog.InstallerPath + "\n\n" + exception.Message,
+                        "업데이트 설치 실패",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+                }
             }
         }
         catch (Exception exception)

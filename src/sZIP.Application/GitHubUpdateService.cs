@@ -292,7 +292,7 @@ public sealed class GitHubUpdateService : IDisposable
         }
         Process.Start(new ProcessStartInfo(fullPath, "/SP- /CLOSEAPPLICATIONS")
         {
-            UseShellExecute = false,
+            UseShellExecute = true,
             WorkingDirectory = Path.GetDirectoryName(fullPath)!
         });
     }
