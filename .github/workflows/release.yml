@@ -34,9 +34,15 @@ jobs:
           $identityVersion = ([string]$identityManifest.Package.Identity.Version) -replace '\.0$', ''
           [xml]$appManifest = Get-Content -LiteralPath src\sZIP.App\app.manifest
           $appVersion = ([string]$appManifest.assembly.assemblyIdentity.version) -replace '\.0$', ''
+          $appMsix = $appManifest.assembly.msix
           if ($version -ne $projectVersion -or $version -ne $installerVersion -or
               $version -ne $identityVersion -or $version -ne $appVersion) {
             throw "Version mismatch: tag=$version project=$projectVersion installer=$installerVersion identity=$identityVersion app=$appVersion"
+          }
+          if ([string]$appMsix.packageName -ne [string]$identityManifest.Package.Identity.Name -or
+              [string]$appMsix.publisher -ne [string]$identityManifest.Package.Identity.Publisher -or
+              [string]$appMsix.applicationId -ne [string]$identityManifest.Package.Applications.Application.Id) {
+            throw "Sparse identity mismatch between src\sZIP.App\app.manifest and packaging\AppxManifest.xml"
           }
 
       - name: Restore dependencies
