@@ -18,6 +18,30 @@ internal sealed class UserSettings : ApplicationSettingsBase
     }
 
     [UserScopedSetting]
+    [DefaultSettingValue("")]
+    public string AutoExtractFolder
+    {
+        get => (string)this[nameof(AutoExtractFolder)];
+        set => this[nameof(AutoExtractFolder)] = value;
+    }
+
+    [UserScopedSetting]
+    [DefaultSettingValue("200")]
+    public int AutoExtractMaxArchiveMb
+    {
+        get => (int)this[nameof(AutoExtractMaxArchiveMb)];
+        set => this[nameof(AutoExtractMaxArchiveMb)] = value;
+    }
+
+    [UserScopedSetting]
+    [DefaultSettingValue("False")]
+    public bool AutoExtractDeleteSourceArchive
+    {
+        get => (bool)this[nameof(AutoExtractDeleteSourceArchive)];
+        set => this[nameof(AutoExtractDeleteSourceArchive)] = value;
+    }
+
+    [UserScopedSetting]
     [DefaultSettingValue("False")]
     public bool TrayHintShown
     {

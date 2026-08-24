@@ -1,15 +1,12 @@
-# sZIP 1.4.1 릴리스 노트
+# sZIP 1.5.0 릴리스 노트
 
 릴리스 날짜: 2026-08-24
 
 ## 핵심 변경
 
-- 설치 마지막 단계에서 `sZIP.App.exe` 실행이 side-by-side 구성 오류로 실패하던 문제를 수정했습니다.
-- Windows 11 기본 우클릭 메뉴용 sparse identity publisher 값을 앱 manifest와 identity package manifest 모두에서 유효한 `CN=sZIP` 형식으로 맞췄습니다.
-- GitHub Releases 기반 업데이터를 포함합니다. 릴리스 노트 표시, 설치 파일 다운로드, SHA-256 검증, 버전 건너뛰기, 메인 창과 트레이 메뉴의 수동 확인을 지원합니다.
-- 릴리스 워크플로가 두 manifest의 sparse identity 값 일치를 검증하도록 보강했습니다.
-
-## 자동 검증
-
-- XML sparse identity 일치 검증 통과
-- 이 로컬 환경에는 .NET SDK, Visual C++ Build Tools, Windows SDK, Inno Setup이 설치되어 있지 않아 전체 Release 빌드와 설치본 생성은 GitHub Actions에서 수행합니다.
+- 자동 해제 감시 폴더를 직접 선택할 수 있습니다.
+- 자동 해제 대상 압축 파일의 최대 용량을 MB 단위로 설정할 수 있습니다.
+- 자동 해제 완료 후 원본 압축 파일을 삭제하는 옵션을 추가했습니다.
+- 자동 해제 결과를 별도 감사 창에서 확인할 수 있습니다.
+- macOS에서 만든 ZIP 파일의 한글 파일명이 깨져 보이는 경우를 줄였습니다.
+- 상단의 `sZIP` 텍스트를 제거하고 아이콘만 남겼습니다.

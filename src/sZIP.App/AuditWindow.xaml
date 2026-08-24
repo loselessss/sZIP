@@ -1,0 +1,47 @@
+<Window x:Class="sZIP.App.AuditWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="자동 해제 감사" Width="980" Height="560" MinWidth="760" MinHeight="420"
+        WindowStartupLocation="CenterOwner" Icon="Assets/szip.ico">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel>
+                <TextBlock Text="자동 해제 감사" FontSize="18" FontWeight="SemiBold" />
+                <TextBlock x:Name="AuditPathText" Margin="0,4,0,0"
+                           Foreground="{DynamicResource MutedTextBrush}"
+                           TextTrimming="CharacterEllipsis" />
+            </StackPanel>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                <Button Content="새로고침" Click="RefreshButton_Click" />
+                <Button Content="로그 폴더" Margin="8,0,0,0" Click="OpenFolderButton_Click" />
+            </StackPanel>
+        </Grid>
+
+        <DataGrid x:Name="AuditGrid" Grid.Row="1" Margin="0,16,0,0"
+                  AutoGenerateColumns="False" IsReadOnly="True"
+                  CanUserAddRows="False" SelectionMode="Single">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="시각" Binding="{Binding Time}" Width="160" />
+                <DataGridTextColumn Header="상태" Binding="{Binding Status}" Width="95" />
+                <DataGridTextColumn Header="압축 파일" Binding="{Binding ArchivePath}" Width="2*" />
+                <DataGridTextColumn Header="출력 폴더" Binding="{Binding OutputPath}" Width="2*" />
+                <DataGridTextColumn Header="원본" Binding="{Binding SourceArchive}" Width="85" />
+                <DataGridTextColumn Header="상세" Binding="{Binding Detail}" Width="*" />
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <TextBlock Grid.Row="2" Margin="0,10,0,0"
+                   Text="최근 500개 항목"
+                   Foreground="{DynamicResource MutedTextBrush}" />
+    </Grid>
+</Window>

@@ -1,5 +1,7 @@
 using System.Security.Cryptography;
+using System.Text;
 using SharpCompress.Archives;
+using SharpCompress.Common;
 using SharpCompress.Readers;
 using sZIP.Domain;
 
@@ -43,7 +45,8 @@ public sealed class MultiFormatArchiveService : IMultiFormatArchiveService
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 using var prepared = OpenArchiveSource(archivePath);
-                using var archive = ArchiveFactory.OpenArchive(prepared.Stream, CreateOptions(password));
+                using var archive = ArchiveFactory.OpenArchive(
+                    prepared.Stream, CreateOptions(archivePath, password));
                 var entries = archive.Entries.ToArray();
                 EnsurePasswordProvided(entries.Any(entry => entry.IsEncrypted), password);
                 ValidateEntries(entries.Select(entry => new EntryMetrics(
@@ -56,7 +59,7 @@ public sealed class MultiFormatArchiveService : IMultiFormatArchiveService
                     GetAttributes(entry))));
 
                 return entries.Select(entry => new ArchiveEntryInfo(
-                    entry.Key ?? string.Empty,
+                    GetEntryKey(entry),
                     entry.Size,
                     entry.CompressedSize,
                     entry.IsDirectory,
@@ -64,7 +67,7 @@ public sealed class MultiFormatArchiveService : IMultiFormatArchiveService
                     entry.IsEncrypted)).ToArray();
             }, cancellationToken);
         }
-        catch (CryptographicException exception)
+        catch (System.Security.Cryptography.CryptographicException exception)
         {
             throw new ArchivePasswordRequiredException("압축 파일 암호가 필요하거나 올바르지 않습니다.", exception);
         }
@@ -119,10 +122,11 @@ public sealed class MultiFormatArchiveService : IMultiFormatArchiveService
         {
             EntryMetrics[] metrics;
             using (var prepared = OpenArchiveSource(archivePath))
-            using (var archive = ArchiveFactory.OpenArchive(prepared.Stream, CreateOptions(password)))
+            using (var archive = ArchiveFactory.OpenArchive(
+                       prepared.Stream, CreateOptions(archivePath, password)))
             {
                 metrics = archive.Entries.Select(entry => new EntryMetrics(
-                    entry.Key ?? string.Empty,
+                    GetEntryKey(entry),
                     entry.Size,
                     entry.CompressedSize,
                     entry.IsDirectory,
@@ -146,12 +150,13 @@ public sealed class MultiFormatArchiveService : IMultiFormatArchiveService
             var completedEntries = 0;
 
             using (var prepared = OpenArchiveSource(archivePath))
-            using (var archive = ArchiveFactory.OpenArchive(prepared.Stream, CreateOptions(password)))
+            using (var archive = ArchiveFactory.OpenArchive(
+                       prepared.Stream, CreateOptions(archivePath, password)))
             {
                 foreach (var entry in archive.Entries)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    var entryName = entry.Key ?? string.Empty;
+                    var entryName = GetEntryKey(entry);
                     if (selectedEntryNames is not null
                         && !selectedEntryNames.Contains(NormalizeEntryKey(entryName)))
                     {
@@ -200,7 +205,7 @@ public sealed class MultiFormatArchiveService : IMultiFormatArchiveService
                 }
             }
         }
-        catch (CryptographicException exception)
+        catch (System.Security.Cryptography.CryptographicException exception)
         {
             throw new ArchivePasswordRequiredException("압축 파일 암호가 필요하거나 올바르지 않습니다.", exception);
         }
@@ -303,12 +308,24 @@ public sealed class MultiFormatArchiveService : IMultiFormatArchiveService
         }
     }
 
-    private static ReaderOptions CreateOptions(string? password) => new()
+    private static ReaderOptions CreateOptions(string archivePath, string? password)
     {
-        LeaveStreamOpen = false,
-        Password = string.IsNullOrEmpty(password) ? null : password,
-        BufferSize = BufferSize
-    };
+        var options = new ReaderOptions
+        {
+            LeaveStreamOpen = false,
+            Password = string.IsNullOrEmpty(password) ? null : password,
+            BufferSize = BufferSize
+        };
+        if (string.Equals(Path.GetExtension(archivePath), ".zip", StringComparison.OrdinalIgnoreCase))
+        {
+            options.ArchiveEncoding = new ArchiveEncoding
+            {
+                CustomDecoder = (data, _, _, _) => DecodeArchiveName(data)
+            };
+        }
+
+        return options;
+    }
 
     private static void EnsurePasswordProvided(bool isEncrypted, string? password)
     {
@@ -385,6 +402,24 @@ public sealed class MultiFormatArchiveService : IMultiFormatArchiveService
 
     private static string NormalizeEntryKey(string value) =>
         value.Replace('\\', '/').TrimEnd('/');
+
+    private static string GetEntryKey(IArchiveEntry entry) =>
+        NormalizeArchiveName(entry.Key ?? string.Empty);
+
+    private static string NormalizeArchiveName(string value) =>
+        value.TrimEnd('\0', ' ').Normalize(NormalizationForm.FormC);
+
+    private static string DecodeArchiveName(byte[] data)
+    {
+        try
+        {
+            return NormalizeArchiveName(new UTF8Encoding(false, true).GetString(data));
+        }
+        catch (DecoderFallbackException)
+        {
+            return NormalizeArchiveName(Encoding.GetEncoding(437).GetString(data));
+        }
+    }
 
     private static string? GetLinkTarget(IArchiveEntry entry)
     {

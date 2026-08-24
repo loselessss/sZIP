@@ -23,6 +23,7 @@ public partial class MainWindow : Window
     private RecursiveArchiveWatcher? _automaticWatcher;
     private Stopwatch? _operationStopwatch;
     private bool _allowExit;
+    private bool _loadingSettings;
 
     public event EventHandler? AutoExtractEnabledChanged;
     public event EventHandler? HiddenToTray;
@@ -38,6 +39,7 @@ public partial class MainWindow : Window
     {
         _workspace = new ArchiveWorkspace(_manualExtractionService);
         InitializeComponent();
+        LoadAutomaticExtractionSettings();
     }
 
     private async void OpenArchiveButton_Click(object sender, RoutedEventArgs e)
@@ -203,6 +205,12 @@ public partial class MainWindow : Window
 
     private void UpdateCheckButton_Click(object sender, RoutedEventArgs e) =>
         UpdateCheckRequested?.Invoke(this, EventArgs.Empty);
+
+    private void AuditButton_Click(object sender, RoutedEventArgs e)
+    {
+        var window = new AuditWindow { Owner = this };
+        window.Show();
+    }
 
     private void Window_PreviewDragOver(object sender, System.Windows.DragEventArgs e)
     {
@@ -468,18 +476,20 @@ public partial class MainWindow : Window
             return;
         }
 
-        var downloadsPath = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
+        SaveAutomaticExtractionSettings();
+        var watchPath = GetAutomaticExtractionFolder();
+        var maxArchiveBytes = GetAutomaticExtractionMaxArchiveBytes();
 
         try
         {
             _automaticWatcher = new RecursiveArchiveWatcher(new ArchiveWatchOptions(
-                downloadsPath,
+                watchPath,
+                maxArchiveBytes: maxArchiveBytes,
                 supportedExtensions: _automaticArchiveService.SupportedExtensions,
                 requireZipSignature: false));
             _automaticWatcher.ArchiveReady += AutomaticWatcher_ArchiveReady;
             _automaticWatcher.Start();
-            StatusText.Text = $"자동 해제 감시 중: {downloadsPath}";
+            StatusText.Text = $"자동 해제 감시 중: {watchPath}";
             AutoExtractEnabledChanged?.Invoke(this, EventArgs.Empty);
         }
         catch (Exception exception)
@@ -502,6 +512,40 @@ public partial class MainWindow : Window
         _automaticWatcher = null;
         StatusText.Text = "자동 해제를 중지했습니다.";
         AutoExtractEnabledChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void BrowseAutoExtractFolderButton_Click(object sender, RoutedEventArgs e)
+    {
+        using var dialog = new System.Windows.Forms.FolderBrowserDialog
+        {
+            Description = "자동 해제할 압축 파일을 감시할 폴더를 선택하세요.",
+            SelectedPath = Directory.Exists(GetAutomaticExtractionFolder())
+                ? GetAutomaticExtractionFolder()
+                : GetDefaultDownloadFolder(),
+            ShowNewFolderButton = true
+        };
+
+        if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+        {
+            AutoExtractFolderTextBox.Text = dialog.SelectedPath;
+        }
+    }
+
+    private void AutoExtractSettings_Changed(object sender, RoutedEventArgs e) =>
+        HandleAutomaticExtractionSettingsChanged();
+
+    private void AutoExtractSettings_Changed(object sender, System.Windows.Controls.TextChangedEventArgs e) =>
+        HandleAutomaticExtractionSettingsChanged();
+
+    private void HandleAutomaticExtractionSettingsChanged()
+    {
+        if (_loadingSettings)
+        {
+            return;
+        }
+
+        SaveAutomaticExtractionSettings();
+        RestartAutomaticWatcherIfEnabled();
     }
 
     private void AutomaticWatcher_ArchiveReady(object? sender, string archivePath) =>
@@ -536,9 +580,16 @@ public partial class MainWindow : Window
             using var outputExclusion = _automaticWatcher?.ExcludePath(outputPath);
             Directory.Move(temporaryPath, outputPath);
             temporaryPath = null;
+            var sourceDeleted = TryDeleteSourceArchiveAfterAutomaticExtraction(archivePath);
             await Dispatcher.InvokeAsync(() =>
                 SetOperationCompleted("자동 해제가 완료되었습니다", outputPath));
             DiagnosticLog.Write("automatic-extraction.completed");
+            AutomaticExtractionAudit.Write(
+                AutomaticExtractionAuditStatus.Completed,
+                archivePath,
+                outputPath,
+                sourceDeleted ? "source archive deleted" : null,
+                sourceDeleted);
         }
         catch (ArchivePasswordRequiredException)
         {
@@ -548,10 +599,17 @@ public partial class MainWindow : Window
                 StatusText.Text = $"암호 필요: {Path.GetFileName(archivePath)}";
             });
             DiagnosticLog.Write("automatic-extraction.password-required");
+            AutomaticExtractionAudit.Write(
+                AutomaticExtractionAuditStatus.Skipped,
+                archivePath,
+                detail: "password required");
         }
         catch (OperationCanceledException)
         {
             DiagnosticLog.Write("automatic-extraction.cancelled");
+            AutomaticExtractionAudit.Write(
+                AutomaticExtractionAuditStatus.Cancelled,
+                archivePath);
         }
         catch (Exception exception)
         {
@@ -561,6 +619,10 @@ public partial class MainWindow : Window
                 StatusText.Text = Path.GetFileName(archivePath);
             });
             DiagnosticLog.Write("automatic-extraction.failed", exception);
+            AutomaticExtractionAudit.Write(
+                AutomaticExtractionAuditStatus.Failed,
+                archivePath,
+                detail: exception.Message);
         }
         finally
         {
@@ -847,6 +909,123 @@ public partial class MainWindow : Window
         }
 
         throw new IOException("자동 해제할 폴더 이름을 만들 수 없습니다.");
+    }
+
+    private void LoadAutomaticExtractionSettings()
+    {
+        _loadingSettings = true;
+        try
+        {
+            AutoExtractFolderTextBox.Text = GetAutomaticExtractionFolder();
+            AutoExtractMaxMbTextBox.Text = Math.Max(1, UserSettings.Default.AutoExtractMaxArchiveMb)
+                .ToString(System.Globalization.CultureInfo.InvariantCulture);
+            DeleteSourceArchiveCheckBox.IsChecked = UserSettings.Default.AutoExtractDeleteSourceArchive;
+        }
+        finally
+        {
+            _loadingSettings = false;
+        }
+    }
+
+    private void SaveAutomaticExtractionSettings()
+    {
+        UserSettings.Default.AutoExtractFolder = GetAutomaticExtractionFolder();
+        UserSettings.Default.AutoExtractMaxArchiveMb = GetAutomaticExtractionMaxArchiveMb();
+        UserSettings.Default.AutoExtractDeleteSourceArchive = DeleteSourceArchiveCheckBox.IsChecked == true;
+        TrySaveSettings();
+    }
+
+    private void RestartAutomaticWatcherIfEnabled()
+    {
+        if (AutoExtractCheckBox.IsChecked != true)
+        {
+            return;
+        }
+
+        StopAutomaticWatcher(updateStatus: false);
+        AutoExtractCheckBox_Checked(this, new RoutedEventArgs());
+    }
+
+    private void StopAutomaticWatcher(bool updateStatus)
+    {
+        if (_automaticWatcher is null)
+        {
+            return;
+        }
+
+        _automaticWatcher.ArchiveReady -= AutomaticWatcher_ArchiveReady;
+        _automaticWatcher.Dispose();
+        _automaticWatcher = null;
+        if (updateStatus)
+        {
+            StatusText.Text = "자동 해제를 중지했습니다.";
+        }
+    }
+
+    private string GetAutomaticExtractionFolder()
+    {
+        var path = AutoExtractFolderTextBox.Text;
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            path = UserSettings.Default.AutoExtractFolder;
+        }
+
+        return string.IsNullOrWhiteSpace(path) ? GetDefaultDownloadFolder() : path.Trim();
+    }
+
+    private int GetAutomaticExtractionMaxArchiveMb()
+    {
+        if (!int.TryParse(
+                AutoExtractMaxMbTextBox.Text,
+                System.Globalization.NumberStyles.Integer,
+                System.Globalization.CultureInfo.InvariantCulture,
+                out var value))
+        {
+            value = UserSettings.Default.AutoExtractMaxArchiveMb;
+        }
+
+        return Math.Max(1, Math.Min(10240, value));
+    }
+
+    private long GetAutomaticExtractionMaxArchiveBytes() =>
+        GetAutomaticExtractionMaxArchiveMb() * 1024L * 1024L;
+
+    private static string GetDefaultDownloadFolder() =>
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
+
+    private bool TryDeleteSourceArchiveAfterAutomaticExtraction(string archivePath)
+    {
+        if (!UserSettings.Default.AutoExtractDeleteSourceArchive)
+        {
+            return false;
+        }
+
+        try
+        {
+            File.Delete(archivePath);
+            return true;
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            DiagnosticLog.Write("automatic-extraction.source-delete.failed", exception);
+            AutomaticExtractionAudit.Write(
+                AutomaticExtractionAuditStatus.Failed,
+                archivePath,
+                detail: "source delete failed: " + exception.Message);
+            return false;
+        }
+    }
+
+    private static void TrySaveSettings()
+    {
+        try
+        {
+            UserSettings.Default.Save();
+        }
+        catch (Exception exception)
+        {
+            DiagnosticLog.Write("settings.save.failed", exception);
+        }
     }
 
 }
