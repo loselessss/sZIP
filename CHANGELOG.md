@@ -1,17 +1,17 @@
 # sZIP 1.5.6
 
-릴리스 날짜: 2026-08-24
+Release date: 2026-08-24
 
-## 탐색기 메뉴
+## Explorer Menu
 
-- 압축 파일 오른쪽 메뉴의 일반 해제 항목 이름을 `sZIP 풀기`로 정리했습니다.
-- 압축 파일 오른쪽 메뉴에서 `sZIP 풀기`와 `sZIP 알아서 풀기`를 사용할 수 있습니다.
+- Renamed the standard archive extraction item to `sZIP Extract`.
+- Added `sZIP Extract` and `sZIP Smart Extract` to the archive context menu.
 
-## 풀기
+## Extraction
 
-- 수동 `알아서 풀기`가 성공하면 작업 완료 후 창을 트레이로 내립니다.
+- Manual `Smart Extract` now sends the window to the tray after the operation succeeds.
 
-## 설치
+## Installation
 
-- 릴리스 빌드에서 설치, 버전 확인, 제거, 임시 설치 파일 정리를 확인합니다.
-- 업데이터로 받은 설치 파일은 설치 완료 후 정리되도록 했습니다.
+- Release builds now test install, version detection, uninstall, and temporary installer cleanup.
+- Installers downloaded by the updater are cleaned up after installation completes.

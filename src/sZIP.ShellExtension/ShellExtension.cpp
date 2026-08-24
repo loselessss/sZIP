@@ -149,9 +149,9 @@ namespace
 
         IFACEMETHODIMP GetTitle(IShellItemArray*, PWSTR* title) override
         {
-            if (_kind == CommandKind::Compress) return CopyResult(L"sZIP으로 압축", title);
-            if (_kind == CommandKind::ExtractDirect) return CopyResult(L"sZIP 풀기", title);
-            return CopyResult(L"sZIP 알아서 풀기", title);
+            if (_kind == CommandKind::Compress) return CopyResult(L"Compress with sZIP", title);
+            if (_kind == CommandKind::ExtractDirect) return CopyResult(L"sZIP Extract", title);
+            return CopyResult(L"sZIP Smart Extract", title);
         }
 
         IFACEMETHODIMP GetIcon(IShellItemArray*, PWSTR* icon) override

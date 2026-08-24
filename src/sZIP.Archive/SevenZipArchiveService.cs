@@ -17,12 +17,12 @@ public sealed class SevenZipArchiveService
     {
         if (string.IsNullOrWhiteSpace(archivePath))
         {
-            throw new ArgumentException("저장할 7Z 파일 경로가 필요합니다.", nameof(archivePath));
+            throw new ArgumentException("A 7Z output path is required.", nameof(archivePath));
         }
 
         if (sourcePaths is null || sourcePaths.Count == 0)
         {
-            throw new ArgumentException("압축할 파일이나 폴더를 선택해 주세요.", nameof(sourcePaths));
+            throw new ArgumentException("Select files or folders to archive.", nameof(sourcePaths));
         }
 
         var outputPath = Path.GetFullPath(archivePath);
@@ -30,7 +30,7 @@ public sealed class SevenZipArchiveService
             () => CollectSourceItems(sourcePaths, outputPath, cancellationToken),
             cancellationToken);
         var parent = Path.GetDirectoryName(outputPath)
-            ?? throw new IOException("7Z 파일을 저장할 폴더를 확인할 수 없습니다.");
+            ?? throw new IOException("The folder for the 7Z file could not be determined.");
         Directory.CreateDirectory(parent);
         var temporaryPath = Path.Combine(
             parent,
@@ -124,13 +124,13 @@ public sealed class SevenZipArchiveService
             }
             else
             {
-                throw new FileNotFoundException("압축할 파일이나 폴더를 찾을 수 없습니다.", sourcePath);
+                throw new FileNotFoundException("A file or folder to archive was not found.", sourcePath);
             }
         }
 
         if (items.Count == 0)
         {
-            throw new InvalidOperationException("압축할 항목이 없습니다.");
+            throw new InvalidOperationException("There are no items to archive.");
         }
 
         return items;
@@ -177,7 +177,7 @@ public sealed class SevenZipArchiveService
     {
         if ((File.GetAttributes(path) & FileAttributes.ReparsePoint) != 0)
         {
-            throw new ArchiveSecurityException($"링크 항목은 압축할 수 없습니다: {path}");
+            throw new ArchiveSecurityException($"Link entries cannot be archived: {path}");
         }
     }
 
@@ -200,7 +200,7 @@ public sealed class SevenZipArchiveService
             }
         }
 
-        throw new IOException("압축 항목 이름을 만들 수 없습니다.");
+        throw new IOException("Could not create an archive entry name.");
     }
 
     private static string NormalizeEntryName(string name) =>

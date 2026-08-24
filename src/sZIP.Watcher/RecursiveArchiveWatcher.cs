@@ -36,7 +36,7 @@ namespace sZIP.Watcher
 
             if (!Directory.Exists(_options.RootPath))
             {
-                throw new DirectoryNotFoundException($"감시 폴더를 찾을 수 없습니다: {_options.RootPath}");
+                throw new DirectoryNotFoundException($"Watch folder not found: {_options.RootPath}");
             }
 
             _watcher = new FileSystemWatcher(_options.RootPath)

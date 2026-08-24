@@ -1,60 +1,60 @@
-# sZIP 개발 계획 및 완료 기록
+# sZIP Development Plan and Completion Log
 
-## 목표
+## Goal
 
-별도 개발 런타임 설치 없이 사용할 수 있는 Windows용 무료 압축·해제 앱을 제공한다. 수동 압축·해제와 함께 다운로드 폴더의 모든 하위 폴더를 감시해 작은 압축 파일을 안전하게 자동 해제한다.
+Provide a free Windows archive app that works without requiring users to install a separate development runtime. sZIP supports manual compression and extraction, and it can safely auto extract small archives while watching the Downloads folder and its subfolders.
 
-## 확정 기술
+## Chosen Stack
 
 - C# / WPF / .NET Framework 4.8
 - SharpCompress 0.50.1
-- 사용자 계정 범위 Inno Setup 6 설치본
-- GitHub Actions 및 GitHub Releases 배포
+- Per-user Inno Setup 6 installer
+- GitHub Actions and GitHub Releases distribution
 
-## 완료된 릴리스
+## Completed Releases
 
-- `0.1.0`: ZIP 목록·안전 해제와 다운로드 감시 초기 구현
-- `0.2.0`: 전용 아이콘, 트레이, 설정 저장
-- `0.3.0`: ZIP 생성, 드래그 앤 드롭, 감시 복구, 자동 시작, 단일 인스턴스
-- `1.0.0`: 다중 압축 형식, 암호 UI, 재귀 자동 해제, 탐색기 연동과 안전 제한
-- `1.0.1`: 다운로드 폴더 누락 복구 주기를 10초로 단축
-- `1.1.0`: 탐색기 다중 선택 압축
-- `1.2.0`: 탐색기 다중 선택 압축 해제
-- `1.3.0`: 설치본·확장자 연결, Paper Organizer 기반 검증형 자동 업데이트, GitHub 태그 릴리스 자동화
-- `1.4.0`: Fluent UI, 그냥 풀기·알아서 풀기·선택 풀기, Paper Organizer 기반 업데이트 흐름, Windows 11 기본 우클릭 메뉴 확장
+- `0.1.0`: Initial ZIP listing, safe extraction, and download-folder watching.
+- `0.2.0`: Dedicated icon, tray support, and saved settings.
+- `0.3.0`: ZIP creation, drag and drop, watcher recovery, startup registration, and single-instance behavior.
+- `1.0.0`: Multiple archive formats, password UI, recursive auto extraction, Explorer integration, and safety limits.
+- `1.0.1`: Shortened missing Downloads folder recovery checks to 10 seconds.
+- `1.1.0`: Explorer multi-select compression.
+- `1.2.0`: Explorer multi-select extraction.
+- `1.3.0`: Installer, file associations, Paper Organizer-style update flow, and GitHub tag release automation.
+- `1.4.0`: Fluent UI, Extract, Smart Extract, Extract Selected, Paper Organizer-style update flow, and Windows 11 modern context menu integration.
 
-## 자동 업데이트 흐름
+## Automatic Update Flow
 
-1. 시작 5초 후 확인하고 마지막 성공 확인이 24시간 이내면 요청하지 않는다.
-2. 실행 중에는 매시간 확인 시각을 재평가하며 네트워크 실패는 성공 시각으로 기록하지 않는다.
-3. GitHub 최신 릴리스의 버전, 릴리스 URL, 정확한 버전 설치 자산을 검증한다.
-4. 설치 파일을 `.part`로 스트리밍 다운로드한다.
-5. 자산 크기와 GitHub의 `sha256:` digest를 검증한다.
-6. 검증된 파일만 최종 이름으로 이동해 실행하고 앱을 종료한다.
-7. 사용자는 나중에 설치하거나 특정 버전만 건너뛸 수 있다.
+1. Check 5 seconds after startup, and skip automatic checks if the last successful check was within 24 hours.
+2. While running, reevaluate the check time every hour; network failures are not recorded as successful checks.
+3. Validate the latest GitHub release version, release URL, and exact-version installer asset.
+4. Stream the installer to a `.part` file.
+5. Validate the asset size and GitHub `sha256:` digest.
+6. Move only a verified installer to its final name, run it, and exit the app.
+7. Let the user install later or skip a specific version.
 
-## UI 현대화 적용 상태
+## UI Modernization Status
 
-현대적인 압축 해제 진행 화면의 기준 목업은 [`szip-modern-progress.html`](szip-modern-progress.html)이다. 1.4.0에서 이 방향을 WPF 공통 리소스와 메인 진행 화면으로 이식했다.
+The reference mockup for the modern extraction progress screen is [`szip-modern-progress.html`](szip-modern-progress.html). Version 1.4.0 carried this direction into shared WPF resources and the main progress surface.
 
-### 적용 범위
+### Scope
 
-1. 진행률, 처리 용량, 속도, 남은 시간과 현재 파일 표시 — 완료
-2. 버튼, 여백, 모서리, 색상과 글꼴의 공통 WPF 리소스 — 완료
-3. 메인 화면, 암호 입력, 업데이트 창의 공통 디자인 — 완료
-4. Windows 밝은/어두운 앱 테마 자동 대응 — 완료
-5. 파일·폴더 다중 선택과 선택 폴더 하위 항목만 압축 해제 — 완료
-6. 화면 폭과 Windows 배율별 배치 확인 — 수동 QA 예정
-7. 일시 정지·계속 — 압축 라이브러리의 안전한 중단·재개 지원 검토 후 후속 적용
+1. Progress, processed size, speed, remaining time, and current file display - complete.
+2. Shared WPF resources for buttons, spacing, radius, colors, and typography - complete.
+3. Shared design treatment for the main window, password dialog, and update dialog - complete.
+4. Automatic Windows light/dark app theme support - complete.
+5. Multi-select files and folders, plus extraction of selected folder children - complete.
+6. Layout review across window widths and Windows scaling - manual QA pending.
+7. Pause/resume - follow-up after reviewing safe cancellation and resume support in the archive libraries.
 
-### 진행 순서
+### Next Checks
 
-1. 설치본에서 Windows 11 modern 메뉴 등록과 제거를 검증한다.
-2. 수동 UI QA에서 배율, 키보드 접근성과 테마 전환을 확인한다.
-3. 후속 후보로 안전한 작업 일시 정지를 검토한다.
+1. Verify Windows 11 modern menu registration and removal from the installer.
+2. Manually review scaling, keyboard access, and theme switching.
+3. Consider safe operation pause/resume as a follow-up candidate.
 
-## 검증 정책
+## Verification Policy
 
-- 커밋 전 전체 자동 테스트와 WPF Release 빌드를 실행한다.
-- 태그 워크플로가 프로젝트·설치 프로그램·태그 버전의 일치를 검사한다.
-- 수동 QA는 사용자 요청대로 1.0 정식 QA 단계에서 수행한다.
+- Run the full automated test suite and WPF Release build before committing.
+- The tag workflow checks that project, installer, and tag versions match.
+- Manual QA is performed when requested for production release milestones.

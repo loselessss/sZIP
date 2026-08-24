@@ -1,36 +1,48 @@
 # sZIP 1.5.6
 
-sZIP은 Windows용 무료 압축·해제 도구입니다. `.NET Framework 4.8` 기반이라 일반적인 Windows 10/11 PC에서 별도의 C# 개발 환경이나 .NET SDK 없이 설치해 사용할 수 있습니다. 설정한 용량보다 작은 압축파일은 자동으로 압축을 풀어 놓습니다.
+sZIP is a free archive utility for Windows. It is built on .NET Framework 4.8, so it can run on typical Windows 10/11 PCs without a C# development environment or .NET SDK. Archives smaller than the configured size limit can be extracted automatically.
 
-## 주요 기능
+## Key Features
 
-- ZIP 및 7Z 압축 파일 생성
-- ZIP, 7Z, RAR, TAR, GZ, TGZ/TAR.GZ 열기 및 안전한 압축 해제
-- `그냥 풀기`: 선택한 폴더 또는 압축 파일 옆에 내용물을 바로 배치
-- `알아서 풀기`: 단일 최상위 폴더는 그대로 사용하고, 혼합된 내용은 압축파일명 폴더에 정리
-- `선택 풀기`: 압축 목록에서 선택한 파일·폴더와 선택 폴더의 하위 항목만 원래 경로를 유지해 해제
-- 압축 파일 안의 모든 하위 폴더와 빈 폴더 보존
-- 다운로드 폴더와 모든 하위 폴더 감시, 설정용량 이하 파일 자동 해제
-- 다운로드 완료 안정성 확인과 10초 주기 누락 복구
-- 암호 파일 수동 입력, 작업 취소, 충돌 없는 결과 이름 생성
-- 트레이 상주, Windows 로그인 시 실행, 단일 인스턴스
-- Fluent 스타일, 밝은/어두운 Windows 앱 테마 자동 대응, 처리량·속도·남은 시간 진행 표시
-- 탐색기 다중 선택 `sZIP으로 압축`, `sZIP 그냥 풀기`, `sZIP 알아서 풀기`
-- Windows 11 기본 우클릭 메뉴용 네이티브 `IExplorerCommand` 확장
-- ZIP/7Z/RAR/TAR/GZ/TGZ 확장자의 `연결 프로그램` 등록
-- GitHub Releases 기반 자동 업데이트, SHA-256 검증 후 설치
-- 메인 창과 트레이 메뉴에서 수동 업데이트 확인
+- Create ZIP and 7Z archives.
+- Open and safely extract ZIP, 7Z, RAR, TAR, GZ, and TGZ/TAR.GZ archives.
+- `Extract`: place contents directly in the selected folder or next to the archive.
+- `Smart Extract`: keep a single top-level folder as-is, or organize mixed contents into a folder named after the archive.
+- `Extract Selected`: extract selected files or folders while preserving their paths.
+- Preserve nested folders and empty folders inside archives.
+- Watch the selected folder and subfolders, then auto-extract archives within the configured size limit.
+- Check download completion stability and recover missed files every 10 seconds.
+- Manual password input, cancellation, and conflict-free output naming.
+- Tray resident mode, Windows startup support, and single-instance command routing.
+- Fluent-style light/dark theme support with throughput, speed, and remaining-time progress.
+- Explorer multi-select actions: `Compress with sZIP`, `sZIP Extract`, and `sZIP Smart Extract`.
+- Native `IExplorerCommand` extension for the Windows 11 primary context menu.
+- `Open with` registration for ZIP/7Z/RAR/TAR/GZ/TGZ extensions.
+- GitHub Releases based automatic updates with SHA-256 verification before installation.
+- Manual update checks from the main window and tray menu.
 
-창의 X 버튼은 앱을 종료하지 않고 트레이로 숨깁니다. 완전히 종료하려면 트레이 아이콘을 오른쪽 클릭한 뒤 `종료`를 선택합니다.
+The window close button hides sZIP to the tray instead of exiting. To quit completely, right-click the tray icon and choose `Exit`.
 
-## 설치와 배포본
+## Installation and Distributions
 
-GitHub Releases의 `sZIP_Setup_1.5.6.exe`가 권장 설치본입니다. 사용자 계정의 `%LOCALAPPDATA%\Programs\sZIP`에 설치하므로 관리자 권한이 필요하지 않습니다. `sZIP-1.5.6-net48.zip`은 설치하지 않고 사용할 수 있는 포터블 배포본입니다.
+The recommended installer is `sZIP_Setup_1.5.6.exe` from GitHub Releases. It installs to `%LOCALAPPDATA%\Programs\sZIP`, so administrator privileges are not required. `sZIP-1.5.6-net48.zip` is the portable distribution.
 
-설치 프로그램은 선택에 따라 바탕 화면 바로가기, Windows 자동 시작, 탐색기 메뉴와 압축 확장자 연결을 등록합니다. Windows 11에서는 sparse identity package와 x64 `IExplorerCommand` 확장을 등록해 명령을 기본 우클릭 메뉴에 표시하며, 등록할 수 없는 환경과 Windows 10에서는 기존 레거시 메뉴를 대체 경로로 유지합니다.
+The installer can register a desktop shortcut, Windows startup, Explorer menus, and archive file associations. On Windows 11, it registers a sparse identity package and x64 `IExplorerCommand` extension for the primary context menu. On unsupported environments and Windows 10, legacy context menu entries remain available as a fallback.
 
-## 라이선스
+## Update Policy
 
-프로젝트는 MIT 라이선스입니다. 압축 형식 지원에는 MIT 라이선스의 SharpCompress 0.50.1을 사용하며 자세한 고지는 `THIRD-PARTY-NOTICES.md`에 있습니다.
+The installed app checks for updates 5 seconds after startup. After a successful check, it waits 24 hours before contacting GitHub again; while running, it re-evaluates every hour. Network failures are not recorded as successful checks, so the next hourly cycle can retry.
 
-버전별 변경 사항은 [CHANGELOG.md](CHANGELOG.md)에서 확인할 수 있습니다. 
+When an update is available, sZIP shows release notes and installer information. The installer is downloaded to a temporary `.part` file and only runs after its size and SHA-256 digest match the GitHub release asset. Users can install later, skip a specific version, or run `Check for Updates` from the tray menu at any time.
+
+## Development and Automated Verification
+
+Local installer builds require Inno Setup 6, Visual C++ x64 Build Tools, and the Windows 10/11 SDK.
+
+Pushing a `v*.*.*` tag runs GitHub Actions to test, build the portable ZIP, build the Inno Setup installer, generate SHA-256 files, run an installer smoke test, and publish the GitHub Release.
+
+## License
+
+This project is licensed under the MIT License. Archive format support uses SharpCompress 0.50.1 under the MIT License; see `THIRD-PARTY-NOTICES.md` for details.
+
+See [CHANGELOG.md](CHANGELOG.md) for version changes.

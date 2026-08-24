@@ -16,48 +16,48 @@
                 BorderThickness="1">
             <StackPanel>
                 <WrapPanel VerticalAlignment="Center">
-                    <Button x:Name="OpenArchiveButton" MinWidth="108" ToolTip="압축 열기"
+                    <Button x:Name="OpenArchiveButton" MinWidth="108" ToolTip="Open Archive"
                             Click="OpenArchiveButton_Click">
                         <StackPanel Orientation="Horizontal">
                             <Path Width="16" Height="16" Stretch="Uniform" StrokeThickness="1.8"
                                   StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
                                   Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                   Data="M 2 4 L 7 4 L 8.5 6 L 14 6 L 14 13 L 2 13 Z M 4.5 9.5 L 11.5 9.5 M 9 7 L 11.5 9.5 L 9 12" />
-                            <TextBlock Text="압축 열기" Margin="7,0,0,0" />
+                            <TextBlock Text="Open Archive" Margin="7,0,0,0" />
                         </StackPanel>
                     </Button>
-                    <Button x:Name="CreateFilesButton" MinWidth="100" Margin="6,0,0,0" ToolTip="파일 압축"
+                    <Button x:Name="CreateFilesButton" MinWidth="100" Margin="6,0,0,0" ToolTip="Compress Files"
                             Click="CreateFilesButton_Click">
                         <StackPanel Orientation="Horizontal">
                             <Path Width="16" Height="16" Stretch="Uniform" StrokeThickness="1.8"
                                   StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
                                   Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                   Data="M 4 2.5 L 10 2.5 L 13 5.5 L 13 13.5 L 4 13.5 Z M 10 2.5 L 10 5.5 L 13 5.5 M 6.5 9 L 10.5 9 M 8.5 7 L 8.5 11" />
-                            <TextBlock Text="파일 압축" Margin="7,0,0,0" />
+                            <TextBlock Text="Compress Files" Margin="7,0,0,0" />
                         </StackPanel>
                     </Button>
-                    <Button x:Name="CreateFolderButton" MinWidth="100" Margin="6,0,0,0" ToolTip="폴더 압축"
+                    <Button x:Name="CreateFolderButton" MinWidth="100" Margin="6,0,0,0" ToolTip="Compress Folder"
                             Click="CreateFolderButton_Click">
                         <StackPanel Orientation="Horizontal">
                             <Path Width="16" Height="16" Stretch="Uniform" StrokeThickness="1.8"
                                   StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
                                   Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                   Data="M 2 5 L 6.5 5 L 8 6.7 L 14 6.7 L 14 13 L 2 13 Z M 8 9 L 8 12 M 6.5 10.5 L 9.5 10.5" />
-                            <TextBlock Text="폴더 압축" Margin="7,0,0,0" />
+                            <TextBlock Text="Compress Folder" Margin="7,0,0,0" />
                         </StackPanel>
                     </Button>
                     <Border Width="1" Height="28" Margin="10,4" Background="{DynamicResource DividerBrush}" />
-                    <Button x:Name="ExtractDirectButton" MinWidth="98" Margin="0,0,0,0" ToolTip="그냥 풀기"
+                    <Button x:Name="ExtractDirectButton" MinWidth="98" Margin="0,0,0,0" ToolTip="Extract"
                             IsEnabled="False" Click="ExtractDirectButton_Click">
                         <StackPanel Orientation="Horizontal">
                             <Path Width="16" Height="16" Stretch="Uniform" StrokeThickness="1.8"
                                   StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
                                   Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                   Data="M 3 3.5 L 13 3.5 L 13 6 L 3 6 Z M 4 6 L 12 6 L 12 13 L 4 13 Z M 8 7.5 L 8 11.5 M 6.2 9.8 L 8 11.6 L 9.8 9.8" />
-                            <TextBlock Text="그냥 풀기" Margin="7,0,0,0" />
+                            <TextBlock Text="Extract" Margin="7,0,0,0" />
                         </StackPanel>
                     </Button>
-                    <Button x:Name="ExtractSmartButton" MinWidth="110" Margin="6,0,0,0" ToolTip="알아서 풀기"
+                    <Button x:Name="ExtractSmartButton" MinWidth="110" Margin="6,0,0,0" ToolTip="Smart Extract"
                             Style="{StaticResource PrimaryButtonStyle}"
                             IsEnabled="False" Click="ExtractSmartButton_Click">
                         <StackPanel Orientation="Horizontal">
@@ -65,39 +65,39 @@
                                   StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
                                   Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                   Data="M 8 2.5 L 9.1 5.9 L 12.5 7 L 9.1 8.1 L 8 11.5 L 6.9 8.1 L 3.5 7 L 6.9 5.9 Z M 12.5 2.5 L 13 4 L 14.5 4.5 L 13 5 L 12.5 6.5 L 12 5 L 10.5 4.5 L 12 4 Z" />
-                            <TextBlock Text="알아서 풀기" Margin="7,0,0,0" />
+                            <TextBlock Text="Smart Extract" Margin="7,0,0,0" />
                         </StackPanel>
                     </Button>
-                    <Button x:Name="ExtractSelectedButton" MinWidth="98" Margin="6,0,0,0" ToolTip="선택 풀기"
+                    <Button x:Name="ExtractSelectedButton" MinWidth="98" Margin="6,0,0,0" ToolTip="Extract Selected"
                             IsEnabled="False" Click="ExtractSelectedButton_Click">
                         <StackPanel Orientation="Horizontal">
                             <Path Width="16" Height="16" Stretch="Uniform" StrokeThickness="1.8"
                                   StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
                                   Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                   Data="M 3 4 L 13 4 L 13 6.5 L 3 6.5 Z M 4 6.5 L 12 6.5 L 12 13 L 4 13 Z M 6.1 9.7 L 7.5 11.1 L 10.3 8.3" />
-                            <TextBlock Text="선택 풀기" Margin="7,0,0,0" />
+                            <TextBlock Text="Extract Selected" Margin="7,0,0,0" />
                         </StackPanel>
                     </Button>
                     <Border Width="1" Height="28" Margin="10,4" Background="{DynamicResource DividerBrush}" />
-                    <Button MinWidth="118" ToolTip="업데이트 확인" Click="UpdateCheckButton_Click">
+                    <Button MinWidth="118" ToolTip="Check for Updates" Click="UpdateCheckButton_Click">
                         <StackPanel Orientation="Horizontal">
                             <Path Width="16" Height="16" Stretch="Uniform" StrokeThickness="1.8"
                                   StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
                                   Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                   Data="M 13 8 A 5 5 0 1 1 11.5 4.5 M 13 3.5 L 13 8 L 9 8" />
-                            <TextBlock Text="업데이트 확인" Margin="7,0,0,0" />
+                            <TextBlock Text="Check for Updates" Margin="7,0,0,0" />
                         </StackPanel>
                     </Button>
-                    <Button MinWidth="104" Margin="6,0,0,0" ToolTip="감사 목록" Click="AuditButton_Click">
+                    <Button MinWidth="104" Margin="6,0,0,0" ToolTip="Audit Log" Click="AuditButton_Click">
                         <StackPanel Orientation="Horizontal">
                             <Path Width="16" Height="16" Stretch="Uniform" StrokeThickness="1.8"
                                   StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
                                   Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                   Data="M 5 3 L 11 3 L 12.5 4.5 L 12.5 13 L 3.5 13 L 3.5 4.5 Z M 6 6.5 L 10 6.5 M 6 9 L 10 9 M 6 11.5 L 8.5 11.5" />
-                            <TextBlock Text="감사 목록" Margin="7,0,0,0" />
+                            <TextBlock Text="Audit Log" Margin="7,0,0,0" />
                         </StackPanel>
                     </Button>
-                    <CheckBox x:Name="AutoExtractCheckBox" Content="자동 압축 풀기: Off"
+                    <CheckBox x:Name="AutoExtractCheckBox" Content="Auto Extract: Off"
                               Margin="10,0,0,0" VerticalAlignment="Center"
                               Style="{StaticResource RibbonCheckBoxStyle}"
                               Checked="AutoExtractCheckBox_Checked"
@@ -111,14 +111,14 @@
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <TextBlock Text="감시 폴더" VerticalAlignment="Center"
+                    <TextBlock Text="Watch Folder" VerticalAlignment="Center"
                                Foreground="{DynamicResource MutedTextBrush}" />
                     <TextBox x:Name="AutoExtractFolderTextBox" Grid.Column="1" Margin="10,0,8,0"
                              MinWidth="260" TextChanged="AutoExtractSettings_Changed" />
-                    <Button Grid.Column="2" Content="변경" Click="BrowseAutoExtractFolderButton_Click" />
+                    <Button Grid.Column="2" Content="Change" Click="BrowseAutoExtractFolderButton_Click" />
                     <StackPanel Grid.Column="3" Orientation="Horizontal" Margin="14,0,0,0"
                                 VerticalAlignment="Center">
-                        <TextBlock Text="최대" VerticalAlignment="Center"
+                        <TextBlock Text="Max" VerticalAlignment="Center"
                                    Foreground="{DynamicResource MutedTextBrush}" />
                         <TextBox x:Name="AutoExtractMaxMbTextBox" Width="64" Margin="8,0,6,0"
                                  TextChanged="AutoExtractSettings_Changed" />
@@ -126,7 +126,7 @@
                                    Foreground="{DynamicResource MutedTextBrush}" />
                     </StackPanel>
                     <CheckBox x:Name="DeleteSourceArchiveCheckBox" Grid.Column="4"
-                              Content="완료 후 원본 삭제" Margin="14,0,0,0"
+                              Content="Delete source after completion" Margin="14,0,0,0"
                               VerticalAlignment="Center"
                               Checked="AutoExtractSettings_Changed"
                               Unchecked="AutoExtractSettings_Changed" />
@@ -146,10 +146,10 @@
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
-                    <TextBlock Text="현재 압축 파일" Foreground="{DynamicResource MutedTextBrush}"
+                    <TextBlock Text="Current Archive" Foreground="{DynamicResource MutedTextBrush}"
                                VerticalAlignment="Center" />
                     <TextBlock x:Name="ArchivePathText" Grid.Column="1" Margin="14,0,0,0"
-                               Text="압축 파일을 열거나 이곳에 끌어 놓으세요."
+                               Text="Open an archive or drop one here."
                                FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
                 </Grid>
                 <DataGrid x:Name="EntriesGrid" Grid.Row="1" AutoGenerateColumns="False"
@@ -157,10 +157,10 @@
                           SelectionChanged="EntriesGrid_SelectionChanged"
                           AlternationCount="2">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="이름" Binding="{Binding FullName}" Width="*" />
-                        <DataGridTextColumn Header="크기" Binding="{Binding Length, StringFormat=N0}" Width="120" />
-                        <DataGridTextColumn Header="압축 크기" Binding="{Binding CompressedLength, StringFormat=N0}" Width="120" />
-                        <DataGridTextColumn Header="수정 시각" Binding="{Binding LastWriteTime, StringFormat=yyyy-MM-dd HH:mm}" Width="150" />
+                        <DataGridTextColumn Header="Name" Binding="{Binding FullName}" Width="*" />
+                        <DataGridTextColumn Header="Size" Binding="{Binding Length, StringFormat=N0}" Width="120" />
+                        <DataGridTextColumn Header="Compressed Size" Binding="{Binding CompressedLength, StringFormat=N0}" Width="120" />
+                        <DataGridTextColumn Header="Modified" Binding="{Binding LastWriteTime, StringFormat=yyyy-MM-dd HH:mm}" Width="150" />
                     </DataGrid.Columns>
                 </DataGrid>
             </Grid>
@@ -181,8 +181,8 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <StackPanel>
-                        <TextBlock x:Name="StatusHeadingText" Text="준비" FontSize="16" FontWeight="SemiBold" />
-                        <TextBlock x:Name="StatusText" Text="작업할 압축 파일을 선택하세요."
+                        <TextBlock x:Name="StatusHeadingText" Text="Ready" FontSize="16" FontWeight="SemiBold" />
+                        <TextBlock x:Name="StatusText" Text="Select an archive to work with."
                                    Margin="0,4,0,0" Foreground="{DynamicResource MutedTextBrush}"
                                    TextTrimming="CharacterEllipsis" />
                     </StackPanel>
@@ -197,9 +197,9 @@
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <TextBlock x:Name="ProgressDetailsText" Text="대기 중"
+                    <TextBlock x:Name="ProgressDetailsText" Text="Waiting"
                                Foreground="{DynamicResource MutedTextBrush}" />
-                    <Button x:Name="CancelButton" Grid.Column="1" Content="취소" MinWidth="78"
+                    <Button x:Name="CancelButton" Grid.Column="1" Content="Cancel" MinWidth="78"
                             Margin="12,-2,0,-2" Style="{StaticResource DangerButtonStyle}"
                             IsEnabled="False" Click="CancelButton_Click" />
                 </Grid>

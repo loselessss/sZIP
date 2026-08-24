@@ -69,7 +69,7 @@ public sealed class MultiFormatArchiveService : IMultiFormatArchiveService
         }
         catch (System.Security.Cryptography.CryptographicException exception)
         {
-            throw new ArchivePasswordRequiredException("압축 파일 암호가 필요하거나 올바르지 않습니다.", exception);
+            throw new ArchivePasswordRequiredException("The archive password is required or incorrect.", exception);
         }
     }
 
@@ -94,7 +94,7 @@ public sealed class MultiFormatArchiveService : IMultiFormatArchiveService
     {
         if (selectedEntryNames is null || selectedEntryNames.Count == 0)
         {
-            throw new ArgumentException("풀 압축 항목을 하나 이상 선택해 주세요.", nameof(selectedEntryNames));
+            throw new ArgumentException("Select at least one archive entry to extract.", nameof(selectedEntryNames));
         }
 
         var selected = new HashSet<string>(
@@ -115,7 +115,7 @@ public sealed class MultiFormatArchiveService : IMultiFormatArchiveService
         ValidateArchivePath(archivePath);
         if (string.IsNullOrWhiteSpace(destinationRoot))
         {
-            throw new ArgumentException("출력 폴더가 필요합니다.", nameof(destinationRoot));
+            throw new ArgumentException("An output folder is required.", nameof(destinationRoot));
         }
 
         try
@@ -142,7 +142,7 @@ public sealed class MultiFormatArchiveService : IMultiFormatArchiveService
                 : metrics.Where(entry => selectedEntryNames.Contains(NormalizeEntryKey(entry.Key))).ToArray();
             if (selectedEntryNames is not null && selectedMetrics.Length == 0)
             {
-                throw new InvalidDataException("선택한 항목을 압축 파일에서 찾을 수 없습니다.");
+                throw new InvalidDataException("The selected entries were not found in the archive.");
             }
             Directory.CreateDirectory(destinationRoot);
             var totalBytes = selectedMetrics.Sum(entry => entry.Size);
@@ -170,7 +170,7 @@ public sealed class MultiFormatArchiveService : IMultiFormatArchiveService
                     else
                     {
                         var parent = Path.GetDirectoryName(destinationPath)
-                            ?? throw new InvalidDataException("출력 폴더를 확인할 수 없습니다.");
+                            ?? throw new InvalidDataException("The output folder could not be determined.");
                         Directory.CreateDirectory(parent);
                         destinationPath = GetUniquePath(destinationPath);
 
@@ -207,7 +207,7 @@ public sealed class MultiFormatArchiveService : IMultiFormatArchiveService
         }
         catch (System.Security.Cryptography.CryptographicException exception)
         {
-            throw new ArchivePasswordRequiredException("압축 파일 암호가 필요하거나 올바르지 않습니다.", exception);
+            throw new ArchivePasswordRequiredException("The archive password is required or incorrect.", exception);
         }
     }
 
@@ -217,7 +217,7 @@ public sealed class MultiFormatArchiveService : IMultiFormatArchiveService
         if (entries.Length > _policy.MaxEntryCount)
         {
             throw new ArchiveSecurityException(
-                $"압축 파일의 항목 수가 허용 한도({_policy.MaxEntryCount:N0}개)를 초과합니다.");
+                $"The archive entry count exceeds the allowed limit({_policy.MaxEntryCount:N0} entries).");
         }
 
         long totalSize = 0;
@@ -226,19 +226,19 @@ public sealed class MultiFormatArchiveService : IMultiFormatArchiveService
         {
             if (string.IsNullOrWhiteSpace(entry.Key))
             {
-                throw new ArchiveSecurityException("이름이 없는 압축 항목을 발견했습니다.");
+                throw new ArchiveSecurityException("An archive entry without a name was found.");
             }
 
             if (!string.IsNullOrWhiteSpace(entry.LinkTarget)
                 || (entry.Attributes.HasValue && ArchivePath.IsLink(entry.Attributes.Value)))
             {
-                throw new ArchiveSecurityException($"링크 항목은 해제할 수 없습니다: {entry.Key}");
+                throw new ArchiveSecurityException($"Link entries cannot be extracted: {entry.Key}");
             }
 
             _ = ArchivePath.GetSafeDestinationPath(Path.GetTempPath(), entry.Key);
             if (entry.Size > _policy.MaxSingleFileBytes)
             {
-                throw new ArchiveSecurityException($"'{entry.Key}'의 크기가 단일 파일 한도를 초과합니다.");
+                throw new ArchiveSecurityException($"'{entry.Key}' exceeds the per-file size limit.");
             }
 
             try
@@ -248,20 +248,20 @@ public sealed class MultiFormatArchiveService : IMultiFormatArchiveService
             }
             catch (OverflowException)
             {
-                throw new ArchiveSecurityException("압축 해제 예상 크기가 올바르지 않습니다.");
+                throw new ArchiveSecurityException("The estimated extraction size is invalid.");
             }
         }
 
         if (totalSize > _policy.MaxTotalBytes)
         {
             throw new ArchiveSecurityException(
-                $"전체 해제 크기가 허용 한도({_policy.MaxTotalBytes:N0}바이트)를 초과합니다.");
+                $"The total extraction size exceeds the allowed limit({_policy.MaxTotalBytes:N0} bytes).");
         }
 
         if (totalCompressedSize > 0 && totalSize / (double)totalCompressedSize > _policy.MaxExpansionRatio)
         {
             throw new ArchiveSecurityException(
-                $"압축률이 안전 한도({_policy.MaxExpansionRatio:0.#}배)를 초과합니다.");
+                $"The expansion ratio exceeds the safety limit({_policy.MaxExpansionRatio:0.#}x).");
         }
     }
 
@@ -331,7 +331,7 @@ public sealed class MultiFormatArchiveService : IMultiFormatArchiveService
     {
         if (isEncrypted && string.IsNullOrEmpty(password))
         {
-            throw new ArchivePasswordRequiredException("압축 파일 암호가 필요합니다.");
+            throw new ArchivePasswordRequiredException("An archive password is required.");
         }
     }
 
@@ -368,7 +368,7 @@ public sealed class MultiFormatArchiveService : IMultiFormatArchiveService
                     total = checked(total + read);
                     if (total > _policy.MaxTotalBytes + 64L * 1024 * 1024)
                     {
-                        throw new ArchiveSecurityException("TAR 압축 해제 준비 크기가 안전 한도를 초과합니다.");
+                        throw new ArchiveSecurityException("The TAR extraction staging size exceeds the safety limit.");
                     }
 
                     output.Write(buffer, 0, read);
@@ -449,12 +449,12 @@ public sealed class MultiFormatArchiveService : IMultiFormatArchiveService
     {
         if (string.IsNullOrWhiteSpace(archivePath))
         {
-            throw new ArgumentException("압축 파일 경로가 필요합니다.", nameof(archivePath));
+            throw new ArgumentException("An archive path is required.", nameof(archivePath));
         }
 
         if (!File.Exists(archivePath))
         {
-            throw new FileNotFoundException("압축 파일을 찾을 수 없습니다.", archivePath);
+            throw new FileNotFoundException("Archive file not found.", archivePath);
         }
     }
 
@@ -498,7 +498,7 @@ public sealed class MultiFormatArchiveService : IMultiFormatArchiveService
             }
         }
 
-        throw new IOException("사용 가능한 출력 파일 이름을 만들 수 없습니다.");
+        throw new IOException("Could not create an available output file name.");
     }
 
     private sealed class EntryMetrics

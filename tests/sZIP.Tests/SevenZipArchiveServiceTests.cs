@@ -10,9 +10,9 @@ public sealed class SevenZipArchiveServiceTests : IDisposable
     [Fact]
     public async Task CreateAndExtract_PreservesSubfoldersAndEmptyDirectory()
     {
-        var source = Path.Combine(_testRoot, "자료");
-        Directory.CreateDirectory(Path.Combine(source, "하위", "빈 폴더"));
-        File.WriteAllText(Path.Combine(source, "하위", "문서.txt"), "sZIP 7Z 왕복 테스트");
+        var source = Path.Combine(_testRoot, "Cafe");
+        Directory.CreateDirectory(Path.Combine(source, "Resume", "Empty Folder"));
+        File.WriteAllText(Path.Combine(source, "Resume", "notes.txt"), "sZIP 7Z round trip test");
         var archivePath = Path.Combine(_testRoot, "created.7z");
         var outputPath = Path.Combine(_testRoot, "output");
 
@@ -21,11 +21,11 @@ public sealed class SevenZipArchiveServiceTests : IDisposable
         var entries = await reader.ListEntriesAsync(archivePath);
         await reader.ExtractAsync(archivePath, outputPath);
 
-        Assert.Contains(entries, entry => entry.FullName == "자료/하위/문서.txt");
-        Assert.Contains(entries, entry => entry.FullName.TrimEnd('/') == "자료/하위/빈 폴더");
-        Assert.Equal("sZIP 7Z 왕복 테스트", File.ReadAllText(
-            Path.Combine(outputPath, "자료", "하위", "문서.txt")));
-        Assert.True(Directory.Exists(Path.Combine(outputPath, "자료", "하위", "빈 폴더")));
+        Assert.Contains(entries, entry => entry.FullName == "Cafe/Resume/notes.txt");
+        Assert.Contains(entries, entry => entry.FullName.TrimEnd('/') == "Cafe/Resume/Empty Folder");
+        Assert.Equal("sZIP 7Z round trip test", File.ReadAllText(
+            Path.Combine(outputPath, "Cafe", "Resume", "notes.txt")));
+        Assert.True(Directory.Exists(Path.Combine(outputPath, "Cafe", "Resume", "Empty Folder")));
     }
 
     public void Dispose()

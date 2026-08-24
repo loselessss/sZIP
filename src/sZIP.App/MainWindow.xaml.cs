@@ -46,8 +46,8 @@ public partial class MainWindow : Window
     {
         var dialog = new Microsoft.Win32.OpenFileDialog
         {
-            Title = "압축 파일 열기",
-            Filter = "압축 파일|*.zip;*.7z;*.rar;*.tar;*.gz;*.tgz;*.tar.gz|모든 파일 (*.*)|*.*",
+            Title = "Open Archive",
+            Filter = "Archive|*.zip;*.7z;*.rar;*.tar;*.gz;*.tgz;*.tar.gz|All Files (*.*)|*.*",
             CheckFileExists = true,
             Multiselect = false
         };
@@ -64,8 +64,8 @@ public partial class MainWindow : Window
     {
         var dialog = new Microsoft.Win32.OpenFileDialog
         {
-            Title = "압축할 파일 선택",
-            Filter = "모든 파일 (*.*)|*.*",
+            Title = "Select Files to Compress",
+            Filter = "All Files (*.*)|*.*",
             CheckFileExists = true,
             Multiselect = true
         };
@@ -80,7 +80,7 @@ public partial class MainWindow : Window
     {
         using var dialog = new System.Windows.Forms.FolderBrowserDialog
         {
-            Description = "압축할 폴더를 선택하세요.",
+            Description = "Select a folder to compress.",
             ShowNewFolderButton = false
         };
 
@@ -94,7 +94,7 @@ public partial class MainWindow : Window
     {
         using var dialog = new System.Windows.Forms.FolderBrowserDialog
         {
-            Description = "압축을 풀 폴더를 선택하세요.",
+            Description = "Select a folder to extract to.",
             ShowNewFolderButton = true
         };
 
@@ -104,16 +104,16 @@ public partial class MainWindow : Window
         }
 
         var progress = new Progress<ExtractionProgress>(value =>
-            UpdateExtractionProgress(value, "압축을 풀고 있습니다"));
+            UpdateExtractionProgress(value, "Extracting"));
 
         await RunOperationAsync(async cancellationToken =>
         {
             var archivePath = _workspace.CurrentArchivePath
-                ?? throw new InvalidOperationException("먼저 압축 파일을 열어 주세요.");
+                ?? throw new InvalidOperationException("Open an archive first.");
             var outputPath = await ExtractCurrentArchiveAsync(
                 archivePath, dialog.SelectedPath, smart: false, progress, cancellationToken);
-            SetOperationCompleted("압축 해제가 완료되었습니다", outputPath);
-            System.Windows.MessageBox.Show(this, "압축 해제가 완료되었습니다.", "sZIP",
+            SetOperationCompleted("Extraction completed", outputPath);
+            System.Windows.MessageBox.Show(this, "Extraction completed.", "sZIP",
                 MessageBoxButton.OK, MessageBoxImage.Information);
         });
     }
@@ -127,14 +127,14 @@ public partial class MainWindow : Window
         }
 
         var progress = new Progress<ExtractionProgress>(value =>
-            UpdateExtractionProgress(value, "알아서 풀고 있습니다"));
+            UpdateExtractionProgress(value, "Smart extracting"));
         var completed = false;
         await RunOperationAsync(async cancellationToken =>
         {
             var outputPath = await ExtractCurrentArchiveAsync(
                 archivePath, Path.GetDirectoryName(archivePath)!, smart: true,
                 progress, cancellationToken);
-            SetOperationCompleted("알아서 풀기가 완료되었습니다", outputPath);
+            SetOperationCompleted("Smart extraction completed", outputPath);
             completed = true;
         });
         if (completed)
@@ -154,13 +154,13 @@ public partial class MainWindow : Window
         var selectedEntries = GetSelectedEntryNames();
         if (selectedEntries.Count == 0)
         {
-            ShowError("풀 항목을 선택해 주세요.", "압축 파일 목록에서 파일이나 폴더를 하나 이상 선택하세요.");
+            ShowError("Select items to extract.", "Select at least one file or folder in the archive list.");
             return;
         }
 
         using var dialog = new System.Windows.Forms.FolderBrowserDialog
         {
-            Description = "선택한 항목을 풀 폴더를 선택하세요.",
+            Description = "Select a folder for the selected items.",
             ShowNewFolderButton = true
         };
         if (dialog.ShowDialog() != System.Windows.Forms.DialogResult.OK)
@@ -169,13 +169,13 @@ public partial class MainWindow : Window
         }
 
         var progress = new Progress<ExtractionProgress>(value =>
-            UpdateExtractionProgress(value, "선택한 항목을 풀고 있습니다"));
+            UpdateExtractionProgress(value, "Extracting selected items"));
         await RunOperationAsync(async cancellationToken =>
         {
             var outputPath = await ExtractCurrentArchiveAsync(
                 archivePath, dialog.SelectedPath, smart: false, progress, cancellationToken,
                 selectedEntries);
-            SetOperationCompleted($"선택한 항목 {selectedEntries.Count:N0}개를 풀었습니다", outputPath);
+            SetOperationCompleted($"Extracted {selectedEntries.Count:N0} selected items", outputPath);
         });
     }
 
@@ -248,7 +248,7 @@ public partial class MainWindow : Window
     {
         await RunOperationAsync(async cancellationToken =>
         {
-            StatusText.Text = "압축 파일을 읽는 중...";
+            StatusText.Text = "Reading archive...";
             IReadOnlyList<ArchiveEntryInfo> entries;
             try
             {
@@ -271,9 +271,9 @@ public partial class MainWindow : Window
             ArchivePathText.Text = archivePath;
             ExtractDirectButton.IsEnabled = true;
             ExtractSmartButton.IsEnabled = true;
-            StatusHeadingText.Text = "압축 파일을 열었습니다";
-            StatusText.Text = $"{entries.Count:N0}개 항목";
-            ProgressDetailsText.Text = "그냥 풀기 또는 알아서 풀기를 선택하세요.";
+            StatusHeadingText.Text = "Archive opened";
+            StatusText.Text = $"{entries.Count:N0} items";
+            ProgressDetailsText.Text = "Choose Extract or Smart Extract.";
         });
     }
 
@@ -282,8 +282,8 @@ public partial class MainWindow : Window
         var initialDirectory = GetInitialDirectory(sourcePaths.First());
         var saveDialog = new Microsoft.Win32.SaveFileDialog
         {
-            Title = "압축 파일 저장",
-            Filter = "ZIP 압축 파일 (*.zip)|*.zip|7Z 압축 파일 (*.7z)|*.7z",
+            Title = "Save Archive",
+            Filter = "ZIP Archive (*.zip)|*.zip|7Z Archive (*.7z)|*.7z",
             DefaultExt = ".zip",
             AddExtension = true,
             OverwritePrompt = true,
@@ -319,7 +319,7 @@ public partial class MainWindow : Window
                     cancellationToken);
             }
             completed = true;
-            SetOperationCompleted("압축 파일을 만들었습니다", saveDialog.FileName);
+            SetOperationCompleted("Archive created", saveDialog.FileName);
         });
 
         if (completed)
@@ -396,7 +396,7 @@ public partial class MainWindow : Window
     private void UpdateCompressionProgress(CompressionProgress value)
     {
         UpdateOperationProgress(
-            "압축 파일을 만들고 있습니다",
+            "Creating archive",
             value.CurrentEntry,
             value.Percentage,
             value.ProcessedBytes,
@@ -424,9 +424,9 @@ public partial class MainWindow : Window
         var bytesPerSecond = processedBytes / elapsedSeconds;
         var sizeText = totalBytes > 0
             ? $"{FormatBytes(processedBytes)} / {FormatBytes(totalBytes)}"
-            : $"{completedEntries:N0} / {totalEntries:N0}개";
+            : $"{completedEntries:N0} / {totalEntries:N0} items";
         var remainingText = totalBytes > processedBytes && bytesPerSecond > 0
-            ? $" · 약 {FormatDuration(TimeSpan.FromSeconds((totalBytes - processedBytes) / bytesPerSecond))} 남음"
+            ? $" · about {FormatDuration(TimeSpan.FromSeconds((totalBytes - processedBytes) / bytesPerSecond))} remaining"
             : string.Empty;
         ProgressDetailsText.Text = $"{sizeText} · {FormatBytes((long)bytesPerSecond)}/s{remainingText}";
     }
@@ -438,8 +438,8 @@ public partial class MainWindow : Window
         StatusHeadingText.Text = heading;
         StatusText.Text = outputPath;
         ProgressDetailsText.Text = _operationStopwatch is null
-            ? "완료"
-            : $"{FormatDuration(_operationStopwatch.Elapsed)} 만에 완료";
+            ? "Done"
+            : $"{FormatDuration(_operationStopwatch.Elapsed)} elapsed";
     }
 
     private static string FormatBytes(long bytes)
@@ -452,9 +452,9 @@ public partial class MainWindow : Window
 
     private static string FormatDuration(TimeSpan duration)
     {
-        if (duration.TotalHours >= 1) return $"{(int)duration.TotalHours}시간 {duration.Minutes}분";
-        if (duration.TotalMinutes >= 1) return $"{(int)duration.TotalMinutes}분 {duration.Seconds}초";
-        return $"{Math.Max(1, (int)Math.Ceiling(duration.TotalSeconds))}초";
+        if (duration.TotalHours >= 1) return $"{(int)duration.TotalHours}h {duration.Minutes}m";
+        if (duration.TotalMinutes >= 1) return $"{(int)duration.TotalMinutes}m {duration.Seconds}s";
+        return $"{Math.Max(1, (int)Math.Ceiling(duration.TotalSeconds))}s";
     }
 
     private static void TryDeleteDirectory(string path)
@@ -496,13 +496,13 @@ public partial class MainWindow : Window
                 requireZipSignature: false));
             _automaticWatcher.ArchiveReady += AutomaticWatcher_ArchiveReady;
             _automaticWatcher.Start();
-            StatusText.Text = $"자동 해제 감시 중: {watchPath}";
+            StatusText.Text = $"Watching for auto extraction: {watchPath}";
             AutoExtractEnabledChanged?.Invoke(this, EventArgs.Empty);
         }
         catch (Exception exception)
         {
             AutoExtractCheckBox.IsChecked = false;
-            ShowError("다운로드 폴더 감시를 시작하지 못했습니다.", exception.Message);
+            ShowError("Could not start watching the download folder.", exception.Message);
         }
     }
 
@@ -518,7 +518,7 @@ public partial class MainWindow : Window
         _automaticWatcher.ArchiveReady -= AutomaticWatcher_ArchiveReady;
         _automaticWatcher.Dispose();
         _automaticWatcher = null;
-        StatusText.Text = "자동 해제를 중지했습니다.";
+        StatusText.Text = "Auto extraction stopped.";
         AutoExtractEnabledChanged?.Invoke(this, EventArgs.Empty);
     }
 
@@ -526,7 +526,7 @@ public partial class MainWindow : Window
     {
         using var dialog = new System.Windows.Forms.FolderBrowserDialog
         {
-            Description = "자동 해제할 압축 파일을 감시할 폴더를 선택하세요.",
+            Description = "Select a folder to watch for archives to auto extract.",
             SelectedPath = Directory.Exists(GetAutomaticExtractionFolder())
                 ? GetAutomaticExtractionFolder()
                 : GetDefaultDownloadFolder(),
@@ -575,7 +575,7 @@ public partial class MainWindow : Window
 
             await Dispatcher.InvokeAsync(() =>
             {
-                StatusHeadingText.Text = "자동으로 압축을 풀고 있습니다";
+                StatusHeadingText.Text = "Auto extracting";
                 StatusText.Text = Path.GetFileName(archivePath);
             });
             await _automaticArchiveService.ExtractAsync(
@@ -590,7 +590,7 @@ public partial class MainWindow : Window
             temporaryPath = null;
             var sourceDeleted = TryDeleteSourceArchiveAfterAutomaticExtraction(archivePath);
             await Dispatcher.InvokeAsync(() =>
-                SetOperationCompleted("자동 해제가 완료되었습니다", outputPath));
+                SetOperationCompleted("Auto extraction completed", outputPath));
             DiagnosticLog.Write("automatic-extraction.completed");
             AutomaticExtractionAudit.Write(
                 AutomaticExtractionAuditStatus.Completed,
@@ -603,8 +603,8 @@ public partial class MainWindow : Window
         {
             await Dispatcher.InvokeAsync(() =>
             {
-                StatusHeadingText.Text = "자동 해제를 건너뛰었습니다";
-                StatusText.Text = $"암호 필요: {Path.GetFileName(archivePath)}";
+                StatusHeadingText.Text = "Auto extraction skipped";
+                StatusText.Text = $"Password required: {Path.GetFileName(archivePath)}";
             });
             DiagnosticLog.Write("automatic-extraction.password-required");
             AutomaticExtractionAudit.Write(
@@ -623,7 +623,7 @@ public partial class MainWindow : Window
         {
             await Dispatcher.InvokeAsync(() =>
             {
-                StatusHeadingText.Text = "자동 해제에 실패했습니다";
+                StatusHeadingText.Text = "Auto extraction failed";
                 StatusText.Text = Path.GetFileName(archivePath);
             });
             DiagnosticLog.Write("automatic-extraction.failed", exception);
@@ -668,21 +668,21 @@ public partial class MainWindow : Window
         }
         catch (OperationCanceledException)
         {
-            StatusHeadingText.Text = "작업을 취소했습니다";
-            StatusText.Text = "작업을 취소했습니다.";
-            ProgressDetailsText.Text = "완료되지 않은 임시 결과는 정리했습니다.";
+            StatusHeadingText.Text = "Operation canceled";
+            StatusText.Text = "Operation canceled.";
+            ProgressDetailsText.Text = "Incomplete temporary results were cleaned up.";
         }
         catch (ArchiveSecurityException exception)
         {
-            ShowError("안전을 위해 작업을 중단했습니다.", exception.Message);
+            ShowError("The operation was stopped for safety.", exception.Message);
         }
         catch (InvalidDataException exception)
         {
-            ShowError("올바른 압축 파일이 아니거나 파일이 손상되었습니다.", exception.Message);
+            ShowError("The archive is invalid or damaged.", exception.Message);
         }
         catch (Exception exception)
         {
-            ShowError("작업을 완료하지 못했습니다.", exception.Message);
+            ShowError("Could not complete the operation.", exception.Message);
         }
         finally
         {
@@ -706,7 +706,7 @@ public partial class MainWindow : Window
         {
             OperationProgress.Value = 0;
             ProgressPercentText.Text = "0%";
-            ProgressDetailsText.Text = "작업을 준비하고 있습니다.";
+            ProgressDetailsText.Text = "Preparing operation.";
         }
     }
 
@@ -818,13 +818,13 @@ public partial class MainWindow : Window
                 try
                 {
                     StatusHeadingText.Text = smart
-                        ? "탐색기에서 알아서 풀고 있습니다"
-                        : "탐색기에서 그냥 풀고 있습니다";
+                        ? "Smart extracting from Explorer"
+                        : "Extracting from Explorer";
                     StatusText.Text = $"{Path.GetFileName(archivePath)} ({index + 1}/{archives.Length})";
                     var progress = new Progress<ExtractionProgress>(value =>
                         UpdateExtractionProgress(
                             value,
-                            smart ? "알아서 풀고 있습니다" : "그냥 풀고 있습니다"));
+                            smart ? "Smart extracting" : "Extracting"));
                     try
                     {
                         await _manualExtractionService.ExtractAsync(
@@ -859,7 +859,7 @@ public partial class MainWindow : Window
             }
 
             SetOperationCompleted(
-                $"압축 파일 {archives.Length:N0}개를 풀었습니다",
+                archives.Length == 1 ? "Extracted 1 archive" : $"Extracted {archives.Length:N0} archives",
                 lastOutputPath ?? string.Empty);
             completed = true;
         });
@@ -888,7 +888,7 @@ public partial class MainWindow : Window
     {
         if (sourcePaths.Count != 1)
         {
-            return "새 압축 파일.zip";
+            return "New Archive.zip";
         }
 
         var path = sourcePaths.First().TrimEnd(
@@ -897,7 +897,7 @@ public partial class MainWindow : Window
         var name = Directory.Exists(path)
             ? Path.GetFileName(path)
             : Path.GetFileNameWithoutExtension(path);
-        return string.IsNullOrWhiteSpace(name) ? "새 압축 파일.zip" : name + ".zip";
+        return string.IsNullOrWhiteSpace(name) ? "New Archive.zip" : name + ".zip";
     }
 
     private static string GetArchiveBaseName(string archivePath)
@@ -927,7 +927,7 @@ public partial class MainWindow : Window
             }
         }
 
-        throw new IOException("자동 해제할 폴더 이름을 만들 수 없습니다.");
+        throw new IOException("Could not create an auto-extract folder name.");
     }
 
     private void LoadAutomaticExtractionSettings()
@@ -978,7 +978,7 @@ public partial class MainWindow : Window
         _automaticWatcher = null;
         if (updateStatus)
         {
-            StatusText.Text = "자동 해제를 중지했습니다.";
+            StatusText.Text = "Auto extraction stopped.";
         }
     }
 
@@ -1018,8 +1018,8 @@ public partial class MainWindow : Window
         if (AutoExtractCheckBox is not null)
         {
             AutoExtractCheckBox.Content = AutoExtractCheckBox.IsChecked == true
-                ? "자동 압축 풀기: On"
-                : "자동 압축 풀기: Off";
+                ? "Auto Extract: On"
+                : "Auto Extract: Off";
         }
     }
 

@@ -151,41 +151,41 @@
     }
   </style>
 
-  <section class="szip-window" aria-label="sZIP 현대적인 압축 해제 진행 화면 예시">
+  <section class="szip-window" aria-label="sZIP modern extraction progress example">
     <header class="szip-titlebar">
       <span class="szip-appmark">S</span>
       <span class="szip-appname">sZIP</span>
-      <span class="szip-titlemeta">압축 풀기</span>
+      <span class="szip-titlemeta">Extracting</span>
     </header>
 
     <main class="szip-content">
       <div class="szip-heading">
         <div class="szip-fileicon"><i data-lucide="archive" aria-hidden="true"></i></div>
         <div class="szip-copy">
-          <h2 id="szip-status-heading">압축을 풀고 있습니다</h2>
+          <h2 id="szip-status-heading">Extracting archive</h2>
           <div class="szip-filename">project-resources-2026.zip</div>
         </div>
         <div class="szip-percent" id="szip-percent">68%</div>
       </div>
 
-      <div class="szip-track" role="progressbar" aria-label="압축 해제 진행률" aria-valuemin="0" aria-valuemax="100" aria-valuenow="68">
+      <div class="szip-track" role="progressbar" aria-label="Extraction progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="68">
         <div class="szip-fill" id="szip-fill"></div>
       </div>
 
       <div class="szip-details">
         <span><strong>842 MB</strong> / 1.24 GB</span>
         <span><strong>84.7 MB/s</strong></span>
-        <span>약 <strong>5초</strong> 남음</span>
+        <span>about <strong>5s</strong> remaining</span>
       </div>
 
       <div class="szip-current">
-        <div class="szip-current-label">현재 파일</div>
+        <div class="szip-current-label">Current file</div>
         <div class="szip-current-name">assets/photos/site-inspection-042.jpg</div>
       </div>
 
       <div class="szip-actions">
-        <button type="button" id="szip-cancel"><i data-lucide="x" aria-hidden="true"></i>취소</button>
-        <button type="button" class="szip-primary" id="szip-pause" aria-pressed="false"><i data-lucide="pause" aria-hidden="true"></i><span>일시 정지</span></button>
+        <button type="button" id="szip-cancel"><i data-lucide="x" aria-hidden="true"></i>Cancel</button>
+        <button type="button" class="szip-primary" id="szip-pause" aria-pressed="false"><i data-lucide="pause" aria-hidden="true"></i><span>Pause</span></button>
       </div>
     </main>
   </section>
@@ -202,16 +202,16 @@
       pause.addEventListener('click', () => {
         const paused = pause.getAttribute('aria-pressed') !== 'true';
         pause.setAttribute('aria-pressed', String(paused));
-        pause.querySelector('span').textContent = paused ? '계속' : '일시 정지';
+        pause.querySelector('span').textContent = paused ? 'Resume' : 'Pause';
         pause.querySelector('i')?.setAttribute('data-lucide', paused ? 'play' : 'pause');
-        heading.textContent = paused ? '압축 해제를 잠시 멈췄습니다' : '압축을 풀고 있습니다';
+        heading.textContent = paused ? 'Extraction paused' : 'Extracting archive';
         if (window.lucide) window.lucide.createIcons({ attrs: { width: 16, height: 16 } });
       });
       cancel.addEventListener('click', () => {
         fill.style.width = '0%';
-        percent.textContent = '취소됨';
+        percent.textContent = 'Canceled';
         track.setAttribute('aria-valuenow', '0');
-        heading.textContent = '압축 해제를 취소했습니다';
+        heading.textContent = 'Extraction canceled';
         pause.disabled = true;
         cancel.disabled = true;
       });

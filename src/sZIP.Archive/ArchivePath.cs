@@ -6,17 +6,17 @@ public static class ArchivePath
     {
         if (string.IsNullOrWhiteSpace(destinationRoot))
         {
-            throw new ArgumentException("출력 폴더가 필요합니다.", nameof(destinationRoot));
+            throw new ArgumentException("An output folder is required.", nameof(destinationRoot));
         }
 
         if (string.IsNullOrWhiteSpace(entryName))
         {
-            throw new ArgumentException("압축 항목 경로가 필요합니다.", nameof(entryName));
+            throw new ArgumentException("An archive entry path is required.", nameof(entryName));
         }
 
         if (entryName.IndexOf('\0') >= 0 || Path.IsPathRooted(entryName) || entryName.Contains(':'))
         {
-            throw new ArchiveSecurityException($"안전하지 않은 압축 경로입니다: {entryName}");
+            throw new ArchiveSecurityException($"Unsafe archive path: {entryName}");
         }
 
         var root = Path.GetFullPath(destinationRoot);
@@ -29,7 +29,7 @@ public static class ArchivePath
 
         if (!destination.StartsWith(rootPrefix, StringComparison.OrdinalIgnoreCase))
         {
-            throw new ArchiveSecurityException($"출력 폴더를 벗어나는 압축 경로입니다: {entryName}");
+            throw new ArchiveSecurityException($"Archive path escapes the output folder: {entryName}");
         }
 
         return destination;

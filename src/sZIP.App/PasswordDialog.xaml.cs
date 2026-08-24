@@ -16,7 +16,7 @@ public partial class PasswordDialog : Window
     {
         if (string.IsNullOrEmpty(PasswordInput.Password))
         {
-            System.Windows.MessageBox.Show(this, "암호를 입력하세요.", "sZIP",
+            System.Windows.MessageBox.Show(this, "Enter a password.", "sZIP",
                 MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }

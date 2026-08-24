@@ -26,7 +26,7 @@ namespace sZIP.Archive
             if (entries.Count > MaxEntryCount)
             {
                 throw new ArchiveSecurityException(
-                    $"압축 파일의 항목 수가 허용 한도({MaxEntryCount:N0}개)를 초과합니다.");
+                    $"The archive entry count exceeds the allowed limit({MaxEntryCount:N0} entries).");
             }
 
             long totalLength = 0;
@@ -37,7 +37,7 @@ namespace sZIP.Archive
                 if (entry.Length > MaxSingleFileBytes)
                 {
                     throw new ArchiveSecurityException(
-                        $"'{entry.FullName}'의 크기가 단일 파일 한도를 초과합니다.");
+                        $"'{entry.FullName}' exceeds the per-file size limit.");
                 }
 
                 try
@@ -47,25 +47,25 @@ namespace sZIP.Archive
                 }
                 catch (OverflowException)
                 {
-                    throw new ArchiveSecurityException("압축 해제 예상 크기가 올바르지 않습니다.");
+                    throw new ArchiveSecurityException("The estimated extraction size is invalid.");
                 }
             }
 
             if (totalLength > MaxTotalBytes)
             {
                 throw new ArchiveSecurityException(
-                    $"전체 해제 크기가 허용 한도({MaxTotalBytes:N0}바이트)를 초과합니다.");
+                    $"The total extraction size exceeds the allowed limit({MaxTotalBytes:N0} bytes).");
             }
 
             if (totalLength > 0 && totalCompressedLength == 0)
             {
-                throw new ArchiveSecurityException("비정상적인 압축 크기가 감지되었습니다.");
+                throw new ArchiveSecurityException("An abnormal compressed size was detected.");
             }
 
             if (totalCompressedLength > 0 && totalLength / (double)totalCompressedLength > MaxExpansionRatio)
             {
                 throw new ArchiveSecurityException(
-                    $"압축률이 안전 한도({MaxExpansionRatio:0.#}배)를 초과합니다.");
+                    $"The expansion ratio exceeds the safety limit({MaxExpansionRatio:0.#}x).");
             }
         }
     }

@@ -15,25 +15,25 @@ public partial class UpdateDialog : Window
         InitializeComponent();
         _service = service;
         _update = update;
-        TitleText.Text = $"sZIP {update.Version} 업데이트가 있습니다.";
+        TitleText.Text = $"sZIP {update.Version} is available.";
         CurrentVersionText.Text = service.CurrentVersion.ToString();
         NewVersionText.Text = update.Version.ToString();
         InstallerText.Text = update.Asset is null
-            ? "등록 대기 중"
+            ? "Pending upload"
             : $"{update.Asset.Name} ({FormatSize(update.Asset.Size)})";
         NotesText.Text = string.IsNullOrWhiteSpace(update.ReleaseNotes)
-            ? "변경 기록이 없습니다."
+            ? "No release notes."
             : update.ReleaseNotes;
 
         if (update.Asset is null)
         {
             InstallButton.IsEnabled = false;
-            StatusText.Text = "이 릴리스에는 아직 Windows 설치 파일이 없습니다.";
+            StatusText.Text = "This release does not include a Windows installer yet.";
         }
         else if (string.IsNullOrEmpty(update.Asset.Sha256))
         {
             InstallButton.IsEnabled = false;
-            StatusText.Text = "설치 파일 무결성 정보가 없어 자동 설치할 수 없습니다.";
+            StatusText.Text = "Installer integrity information is missing, so automatic installation is unavailable.";
         }
     }
 
@@ -67,7 +67,7 @@ public partial class UpdateDialog : Window
             _downloadCancellation = null;
             DownloadProgress.IsIndeterminate = false;
             DownloadProgress.Value = 100;
-            StatusText.Text = "SHA-256 검증을 마쳤습니다. 설치를 시작합니다.";
+            StatusText.Text = "SHA-256 verification completed. Starting installation.";
             DialogResult = true;
         }
         catch (UpdateCancelledException exception)
@@ -77,7 +77,7 @@ public partial class UpdateDialog : Window
         catch (Exception exception)
         {
             StatusText.Text = exception.Message;
-            System.Windows.MessageBox.Show(this, exception.Message, "업데이트 다운로드 실패",
+            System.Windows.MessageBox.Show(this, exception.Message, "Update Download Failed",
                 MessageBoxButton.OK, MessageBoxImage.Warning);
         }
         finally
@@ -95,7 +95,7 @@ public partial class UpdateDialog : Window
             && !string.IsNullOrEmpty(_update.Asset.Sha256);
         ReleasePageButton.IsEnabled = !downloading;
         SkipButton.IsEnabled = !downloading;
-        LaterButton.Content = downloading ? "취소" : "나중에";
+        LaterButton.Content = downloading ? "Cancel" : "Later";
     }
 
     private void ReleasePageButton_Click(object sender, RoutedEventArgs e) =>
@@ -104,8 +104,8 @@ public partial class UpdateDialog : Window
     private void SkipButton_Click(object sender, RoutedEventArgs e)
     {
         if (System.Windows.MessageBox.Show(this,
-                $"v{_update.Version} 알림을 자동으로 다시 표시하지 않을까요?\n수동 업데이트 확인은 언제든 사용할 수 있습니다.",
-                "업데이트 건너뛰기", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+                $"Skip v{_update.Version} and stop showing this update automatically?\nYou can still check for updates manually at any time.",
+                "Skip Update", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
         {
             return;
         }
@@ -117,7 +117,7 @@ public partial class UpdateDialog : Window
     {
         if (_downloadCancellation is not null)
         {
-            StatusText.Text = "다운로드를 취소하는 중입니다…";
+            StatusText.Text = "Canceling download...";
             _downloadCancellation.Cancel();
             return;
         }
@@ -134,5 +134,5 @@ public partial class UpdateDialog : Window
         base.OnClosing(e);
     }
 
-    private static string FormatSize(long size) => size <= 0 ? "크기 정보 없음" : $"{size / 1048576d:F1} MB";
+    private static string FormatSize(long size) => size <= 0 ? "Size unknown" : $"{size / 1048576d:F1} MB";
 }

@@ -19,7 +19,7 @@ public sealed class MultiFormatArchiveServiceTests : IDisposable
     {
         Directory.CreateDirectory(_testRoot);
         var archivePath = Path.Combine(_testRoot, fileName);
-        CreateTarArchive(archivePath, "folder/subfolder/hello.txt", "안녕하세요 sZIP", gzip);
+        CreateTarArchive(archivePath, "folder/subfolder/hello.txt", "Hello sZIP cafe", gzip);
         var outputPath = Path.Combine(_testRoot, "output-" + Guid.NewGuid().ToString("N"));
         var service = new MultiFormatArchiveService();
 
@@ -28,7 +28,7 @@ public sealed class MultiFormatArchiveServiceTests : IDisposable
 
         var entry = Assert.Single(entries, item => !item.IsDirectory);
         Assert.Equal("folder/subfolder/hello.txt", entry.FullName);
-        Assert.Equal("안녕하세요 sZIP", File.ReadAllText(
+        Assert.Equal("Hello sZIP cafe", File.ReadAllText(
             Path.Combine(outputPath, "folder", "subfolder", "hello.txt")));
     }
 

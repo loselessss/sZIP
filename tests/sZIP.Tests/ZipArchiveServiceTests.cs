@@ -14,7 +14,7 @@ public sealed class ZipArchiveServiceTests : IDisposable
     {
         Directory.CreateDirectory(_testRoot);
         var archivePath = Path.Combine(_testRoot, "sample.zip");
-        await CreateArchiveAsync(archivePath, "folder/hello.txt", "안녕하세요 sZIP");
+        await CreateArchiveAsync(archivePath, "folder/hello.txt", "Hello sZIP cafe");
         var outputPath = Path.Combine(_testRoot, "output");
         var service = new ZipArchiveService();
 
@@ -23,7 +23,7 @@ public sealed class ZipArchiveServiceTests : IDisposable
 
         var entry = Assert.Single(entries);
         Assert.Equal("folder/hello.txt", entry.FullName);
-        Assert.Equal("안녕하세요 sZIP", File.ReadAllText(
+        Assert.Equal("Hello sZIP cafe", File.ReadAllText(
             Path.Combine(outputPath, "folder", "hello.txt")));
     }
 
@@ -62,9 +62,9 @@ public sealed class ZipArchiveServiceTests : IDisposable
     [Fact]
     public async Task Create_FromDirectory_PreservesRootSubfoldersAndEmptyDirectory()
     {
-        var source = Path.Combine(_testRoot, "자료");
-        Directory.CreateDirectory(Path.Combine(source, "하위", "빈 폴더"));
-        File.WriteAllText(Path.Combine(source, "하위", "문서.txt"), "sZIP 생성 테스트");
+        var source = Path.Combine(_testRoot, "Cafe");
+        Directory.CreateDirectory(Path.Combine(source, "Resume", "Empty Folder"));
+        File.WriteAllText(Path.Combine(source, "Resume", "notes.txt"), "sZIP creation test");
         var archivePath = Path.Combine(_testRoot, "created.zip");
         var service = new ZipArchiveService();
 
@@ -72,13 +72,13 @@ public sealed class ZipArchiveServiceTests : IDisposable
 
         using (var archive = ZipFile.OpenRead(archivePath))
         {
-            Assert.Contains(archive.Entries, entry => entry.FullName == "자료/하위/문서.txt");
-            Assert.Contains(archive.Entries, entry => entry.FullName == "자료/하위/빈 폴더/");
+            Assert.Contains(archive.Entries, entry => entry.FullName == "Cafe/Resume/notes.txt");
+            Assert.Contains(archive.Entries, entry => entry.FullName == "Cafe/Resume/Empty Folder/");
             var document = Assert.Single(
-                archive.Entries, entry => entry.FullName == "자료/하위/문서.txt");
+                archive.Entries, entry => entry.FullName == "Cafe/Resume/notes.txt");
             using (var reader = new StreamReader(document.Open(), Encoding.UTF8))
             {
-                Assert.Equal("sZIP 생성 테스트", reader.ReadToEnd());
+                Assert.Equal("sZIP creation test", reader.ReadToEnd());
             }
         }
     }

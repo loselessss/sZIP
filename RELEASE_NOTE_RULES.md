@@ -1,29 +1,29 @@
 # Release Note Rules
 
-## 목적
+## Purpose
 
-릴리스 노트는 앱의 업데이트 창과 GitHub Release에서 사용자가 바로 읽는 문서입니다. 사용자가 업데이트를 결정하는 데 필요한 내용만 적습니다.
+Release notes are user-facing text shown in the app update window and on GitHub Releases. Include only the information a user needs to decide whether to update.
 
 ## CHANGELOG.md
 
-- 현재 릴리스의 변경 사항만 적습니다.
-- 패치 릴리스라면 해당 패치에서 바뀐 내용만 적습니다.
-- 이전 버전의 큰 기능 설명을 반복하지 않습니다.
-- CI, 빌드, 테스트, 자동 검증, 워크플로 같은 내부 작업은 적지 않습니다.
-- 사용자에게 보이는 기능, 수정, 호환성 변경만 적습니다.
+- Describe only changes in the current release.
+- For patch releases, include only what changed in that patch.
+- Do not repeat major feature descriptions from older versions.
+- Do not mention internal work such as CI, builds, tests, automated verification, or workflow changes.
+- Include only user-visible features, fixes, and compatibility changes.
 
 ## RELEASE_NOTES.md
 
-- 업데이트 창에서 보여줄 사용자-facing 본문입니다.
-- 사용자가 이전 기능 릴리스를 건너뛰고 바로 패치 릴리스를 받을 수 있으면, 직전 기능 릴리스의 주요 변경과 현재 패치 수정 내용을 함께 적습니다.
-- 예: `1.5.1`이 `1.5.0` 직후 패치라면 `1.5.0 주요 변경`과 `1.5.1 수정`을 같이 적습니다.
-- 단, 내부 검증, CI, 빌드 환경, 워크플로 보강 같은 내용은 적지 않습니다.
-- 설치 파일 이름, 해시, 테스트 통과 여부처럼 사용자가 업데이트 판단에 직접 필요하지 않은 내용도 적지 않습니다.
+- This is the user-facing body shown in the update window.
+- If a user may update directly to a patch release after skipping a previous feature release, include both the previous feature release highlights and the current patch fixes.
+- Example: if `1.5.1` follows `1.5.0`, include `1.5.0 Highlights` and `1.5.1 Fixes`.
+- Do not mention internal verification, CI, build environment changes, or workflow hardening.
+- Do not include installer filenames, hashes, or test pass/fail details unless they directly help the user decide whether to update.
 
-## 문체
+## Style
 
-- 한국어로 간결하게 씁니다.
-- 제목은 버전과 릴리스 날짜를 포함합니다.
-- 항목은 사용자 관점의 결과로 씁니다.
-- "수정했습니다", "추가했습니다", "지원합니다"처럼 명확한 동사를 사용합니다.
-- 구현 세부사항보다 사용자가 체감하는 변화를 우선합니다.
+- Write concise English.
+- Include the version and release date in the title.
+- Phrase entries from the user's point of view.
+- Use clear verbs such as "Fixed", "Added", and "Supported".
+- Prefer visible user impact over implementation details.

@@ -59,6 +59,6 @@ public static class ExtractionPlacement
             var candidate = Path.Combine(directory, $"{name} ({index}){extension}");
             if (!File.Exists(candidate) && !Directory.Exists(candidate)) return candidate;
         }
-        throw new IOException("압축 해제할 항목의 고유 이름을 만들 수 없습니다.");
+        throw new IOException("Could not create a unique name for the extracted item.");
     }
 }

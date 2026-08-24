@@ -16,7 +16,7 @@ public class UpdateException : Exception
 
 public sealed class UpdateCancelledException : UpdateException
 {
-    public UpdateCancelledException() : base("업데이트 다운로드를 취소했습니다.") { }
+    public UpdateCancelledException() : base("Update download was canceled.") { }
 }
 
 public sealed class ReleaseAsset
@@ -114,16 +114,16 @@ public sealed class GitHubUpdateService : IDisposable
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
-            throw new UpdateException("GitHub 릴리스 확인 시간이 초과되었습니다.");
+            throw new UpdateException("Checking GitHub releases timed out.");
         }
         catch (HttpRequestException exception)
         {
-            throw new UpdateException("GitHub 릴리스 정보를 확인하지 못했습니다.", exception);
+            throw new UpdateException("Could not check GitHub release information.", exception);
         }
 
         if (payload.Length > MaximumReleaseJsonBytes)
         {
-            throw new UpdateException("GitHub 릴리스 응답이 허용 크기를 초과했습니다.");
+            throw new UpdateException("The GitHub release response exceeded the allowed size.");
         }
 
         ReleaseResponse release;
@@ -131,16 +131,16 @@ public sealed class GitHubUpdateService : IDisposable
         {
             release = new JavaScriptSerializer().Deserialize<ReleaseResponse>(
                 System.Text.Encoding.UTF8.GetString(payload))
-                ?? throw new UpdateException("GitHub 릴리스 응답이 비어 있습니다.");
+                ?? throw new UpdateException("The GitHub release response was empty.");
         }
         catch (InvalidOperationException exception)
         {
-            throw new UpdateException("GitHub 릴리스 응답 형식이 올바르지 않습니다.", exception);
+            throw new UpdateException("The GitHub release response format is invalid.", exception);
         }
 
         if (!ReleaseVersion.TryParseTag(release.tag_name, out var latestVersion))
         {
-            throw new UpdateException("GitHub 릴리스 버전을 확인할 수 없습니다.");
+            throw new UpdateException("Could not determine the GitHub release version.");
         }
         if (latestVersion.CompareTo(CurrentVersion) <= 0)
         {
@@ -148,7 +148,7 @@ public sealed class GitHubUpdateService : IDisposable
         }
         if (!TryTrustedGitHubUrl(release.html_url, false, out var releaseUrl))
         {
-            throw new UpdateException("GitHub 릴리스 주소를 신뢰할 수 없습니다.");
+            throw new UpdateException("The GitHub release URL is not trusted.");
         }
 
         var releaseName = string.IsNullOrWhiteSpace(release.name)
@@ -173,7 +173,7 @@ public sealed class GitHubUpdateService : IDisposable
             || !InstallerNamePattern.IsMatch(item.name ?? string.Empty)
             || !TryTrustedGitHubUrl(item.browser_download_url, true, out var downloadUrl))
         {
-            throw new UpdateException("릴리스 설치 파일 정보가 안전하지 않습니다.");
+            throw new UpdateException("The release installer information is not safe.");
         }
 
         var match = DigestPattern.Match(item.digest ?? string.Empty);
@@ -185,10 +185,10 @@ public sealed class GitHubUpdateService : IDisposable
         IProgress<UpdateDownloadProgress>? progress = null,
         CancellationToken cancellationToken = default)
     {
-        var asset = update.Asset ?? throw new UpdateException("이 릴리스에는 Windows 설치 파일이 없습니다.");
+        var asset = update.Asset ?? throw new UpdateException("This release does not include a Windows installer.");
         if (string.IsNullOrEmpty(asset.Sha256))
         {
-            throw new UpdateException("설치 파일의 SHA-256 정보가 없어 자동 설치할 수 없습니다.");
+            throw new UpdateException("The installer SHA-256 digest is missing, so automatic installation is unavailable.");
         }
 
         Directory.CreateDirectory(_downloadRoot);
@@ -230,12 +230,12 @@ public sealed class GitHubUpdateService : IDisposable
             await destinationStream.FlushAsync(cancellationToken);
             if (asset.Size > 0 && completed != asset.Size)
             {
-                throw new UpdateException($"설치 파일 크기가 다릅니다: {completed:N0} / {asset.Size:N0} bytes");
+                throw new UpdateException($"Installer size mismatch: {completed:N0} / {asset.Size:N0} bytes");
             }
             var actualHash = BitConverter.ToString(sha256.Hash!).Replace("-", string.Empty).ToLowerInvariant();
             if (!string.Equals(actualHash, asset.Sha256, StringComparison.Ordinal))
             {
-                throw new UpdateException("설치 파일 SHA-256 검증에 실패했습니다.");
+                throw new UpdateException("Installer SHA-256 verification failed.");
             }
         }
         catch (OperationCanceledException)
@@ -288,7 +288,7 @@ public sealed class GitHubUpdateService : IDisposable
         var fullPath = Path.GetFullPath(path);
         if (!File.Exists(fullPath) || !InstallerNamePattern.IsMatch(Path.GetFileName(fullPath)))
         {
-            throw new UpdateException("실행할 업데이트 설치 파일이 올바르지 않습니다.");
+            throw new UpdateException("The update installer to run is invalid.");
         }
         var arguments = "/SP- /CLOSEAPPLICATIONS /DELETEINSTALLER=\""
             + fullPath.Replace("\"", "\\\"") + "\"";

@@ -40,12 +40,12 @@ internal static class ShellIntegration
 
         CreateVerb(
             CompressFileKey,
-            "sZIP으로 압축",
+            "Compress with sZIP",
             BuildCommand(executablePath, "--compress"),
             "Player");
         CreateVerb(
             CompressDirectoryKey,
-            "sZIP으로 압축",
+            "Compress with sZIP",
             BuildCommand(executablePath, "--compress"),
             "Player");
         foreach (var extension in ArchiveExtensions)
@@ -53,17 +53,17 @@ internal static class ShellIntegration
             Registry.CurrentUser.DeleteSubKeyTree(GetLegacyExtractKey(extension), throwOnMissingSubKey: false);
             CreateVerb(
                 GetOpenKey(extension),
-                "sZIP으로 열기",
+                "Open with sZIP",
                 BuildCommand(executablePath, "--open"),
                 "Single");
             CreateVerb(
                 GetDirectExtractKey(extension),
-                "sZIP 풀기",
+                "sZIP Extract",
                 BuildCommand(executablePath, "--extract-direct"),
                 "Player");
             CreateVerb(
                 GetSmartExtractKey(extension),
-                "sZIP 알아서 풀기",
+                "sZIP Smart Extract",
                 BuildCommand(executablePath, "--extract-smart"),
                 "Player");
         }

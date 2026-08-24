@@ -189,10 +189,10 @@ public partial class App : System.Windows.Application
             : Icon.ExtractAssociatedIcon(executablePath) ?? (Icon)SystemIcons.Application.Clone();
 
         var menu = new Forms.ContextMenuStrip();
-        menu.Items.Add("sZIP 열기", null, (_, _) => ShowMainWindow());
+        menu.Items.Add("Open sZIP", null, (_, _) => ShowMainWindow());
         menu.Items.Add(new Forms.ToolStripSeparator());
 
-        _automaticExtractionMenuItem = new Forms.ToolStripMenuItem("자동 해제")
+        _automaticExtractionMenuItem = new Forms.ToolStripMenuItem("Auto Extract")
         {
             CheckOnClick = false
         };
@@ -204,23 +204,23 @@ public partial class App : System.Windows.Application
             }
         };
         menu.Items.Add(_automaticExtractionMenuItem);
-        _startWithWindowsMenuItem = new Forms.ToolStripMenuItem("Windows 시작 시 실행")
+        _startWithWindowsMenuItem = new Forms.ToolStripMenuItem("Start with Windows")
         {
             CheckOnClick = false
         };
         _startWithWindowsMenuItem.Click += (_, _) => ToggleStartWithWindows();
         menu.Items.Add(_startWithWindowsMenuItem);
-        _shellIntegrationMenuItem = new Forms.ToolStripMenuItem("탐색기 메뉴 등록")
+        _shellIntegrationMenuItem = new Forms.ToolStripMenuItem("Explorer menu integration")
         {
             CheckOnClick = false
         };
         _shellIntegrationMenuItem.Click += (_, _) => ToggleShellIntegration();
         menu.Items.Add(_shellIntegrationMenuItem);
-        menu.Items.Add("업데이트 확인", null, (_, _) =>
+        menu.Items.Add("Check for Updates", null, (_, _) =>
             Dispatcher.BeginInvoke(new Action(() => _ = CheckForUpdatesAsync(manual: true))));
-        menu.Items.Add("진단 로그 폴더 열기", null, (_, _) => OpenDiagnosticLogFolder());
+        menu.Items.Add("Open Diagnostic Log Folder", null, (_, _) => OpenDiagnosticLogFolder());
         menu.Items.Add(new Forms.ToolStripSeparator());
-        menu.Items.Add("종료", null, (_, _) => ExitApplication());
+        menu.Items.Add("Exit", null, (_, _) => ExitApplication());
 
         _trayIcon = new Forms.NotifyIcon
         {
@@ -248,7 +248,7 @@ public partial class App : System.Windows.Application
         }
         catch
         {
-            // 설정 저장 실패가 현재 자동 해제 작업을 중단시키지 않도록 한다.
+            // Do not stop the current auto-extract task if saving settings fails.
         }
 
         UpdateTrayState();
@@ -263,8 +263,8 @@ public partial class App : System.Windows.Application
 
         _trayIcon.ShowBalloonTip(
             2500,
-            "sZIP이 트레이에서 실행 중입니다",
-            "다운로드 폴더 자동 해제는 계속 동작합니다.",
+            "sZIP is running in the tray",
+            "Download folder auto extraction will keep running.",
             Forms.ToolTipIcon.Info);
         UserSettings.Default.TrayHintShown = true;
         try
@@ -287,12 +287,12 @@ public partial class App : System.Windows.Application
         if (_automaticExtractionMenuItem is not null)
         {
             _automaticExtractionMenuItem.Checked = enabled;
-            _automaticExtractionMenuItem.Text = enabled ? "자동 해제: 켜짐" : "자동 해제: 꺼짐";
+            _automaticExtractionMenuItem.Text = enabled ? "Auto Extract: On" : "Auto Extract: Off";
         }
 
         if (_trayIcon is not null)
         {
-            _trayIcon.Text = enabled ? "sZIP - 자동 해제 켜짐" : "sZIP - 자동 해제 꺼짐";
+            _trayIcon.Text = enabled ? "sZIP - Auto Extract On" : "sZIP - Auto Extract Off";
         }
     }
 
@@ -326,7 +326,7 @@ public partial class App : System.Windows.Application
         {
             _trayIcon?.ShowBalloonTip(
                 3000,
-                "시작 프로그램 설정 실패",
+                "Startup Setting Failed",
                 exception.Message,
                 Forms.ToolTipIcon.Error);
         }
@@ -387,13 +387,13 @@ public partial class App : System.Windows.Application
         try
         {
             var executablePath = Process.GetCurrentProcess().MainModule?.FileName
-                ?? throw new InvalidOperationException("실행 파일 경로를 확인할 수 없습니다.");
+                ?? throw new InvalidOperationException("Could not determine the executable path.");
             ShellIntegration.SetEnabled(!ShellIntegration.IsEnabled, executablePath);
             UpdateShellIntegrationState();
         }
         catch (Exception exception)
         {
-            _trayIcon?.ShowBalloonTip(3000, "탐색기 메뉴 설정 실패", exception.Message, Forms.ToolTipIcon.Error);
+            _trayIcon?.ShowBalloonTip(3000, "Explorer Menu Setup Failed", exception.Message, Forms.ToolTipIcon.Error);
         }
     }
 
@@ -494,8 +494,8 @@ public partial class App : System.Windows.Application
             {
                 if (manual)
                 {
-                    System.Windows.MessageBox.Show(_mainWindow, "현재 최신 버전을 사용하고 있습니다.",
-                        "sZIP 업데이트", MessageBoxButton.OK, MessageBoxImage.Information);
+                    System.Windows.MessageBox.Show(_mainWindow, "You are using the latest version.",
+                        "sZIP Update", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
                 return;
             }
@@ -524,8 +524,8 @@ public partial class App : System.Windows.Application
                 {
                     DiagnosticLog.Write("update.installer.launch.failed", exception);
                     System.Windows.MessageBox.Show(_mainWindow,
-                        "설치 파일을 실행하지 못했습니다.\n\n" + dialog.InstallerPath + "\n\n" + exception.Message,
-                        "업데이트 설치 실패",
+                        "Could not run the installer.\n\n" + dialog.InstallerPath + "\n\n" + exception.Message,
+                        "Update Installation Failed",
                         MessageBoxButton.OK,
                         MessageBoxImage.Warning);
                 }
@@ -536,7 +536,7 @@ public partial class App : System.Windows.Application
             DiagnosticLog.Write("update.check.failed", exception);
             if (manual)
             {
-                System.Windows.MessageBox.Show(_mainWindow, exception.Message, "업데이트 확인 실패",
+                System.Windows.MessageBox.Show(_mainWindow, exception.Message, "Update Check Failed",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }

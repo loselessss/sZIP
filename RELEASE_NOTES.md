@@ -1,41 +1,41 @@
-# sZIP 1.5.6 릴리스 노트
+# sZIP 1.5.6 Release Notes
 
-릴리스 날짜: 2026-08-24
+Release date: 2026-08-24
 
-## 1.5.0 주요 변경
+## 1.5.0 Highlights
 
-- 자동 해제 감시 폴더를 직접 선택할 수 있습니다.
-- 자동 해제 대상 압축 파일의 최대 용량을 MB 단위로 설정할 수 있습니다.
-- 자동 해제 완료 후 원본 압축 파일을 삭제하는 옵션을 추가했습니다.
-- 자동 해제 결과를 별도 감사 창에서 확인할 수 있습니다.
-- macOS에서 만든 ZIP 파일의 한글 파일명이 깨져 보이는 경우를 줄였습니다.
+- Choose the auto-extract watch folder.
+- Set the maximum auto-extract archive size in MB.
+- Optionally delete the source archive after auto extraction completes.
+- Review auto-extract results in a separate audit window.
+- Improved filename recovery for ZIP files created on macOS.
 
-## 1.5.1 수정
+## 1.5.1 Fixes
 
-- 다운로드 후 설치 단계에서 설치 파일 실행이 사용자 화면에 나타나지 않을 수 있던 문제를 수정했습니다.
-- 설치 파일 실행 실패 시 경로와 오류 메시지를 표시하도록 했습니다.
+- Fixed cases where the installer did not appear after the update download step.
+- Show the installer path and error message when launching the installer fails.
 
-## 1.5.2 화면 정리
+## 1.5.2 UI Cleanup
 
-- 메인 화면 상단의 큰 아이콘 영역을 제거했습니다.
-- 압축 열기, 압축 만들기, 압축 풀기, 업데이트, 감사 목록, 자동 압축 풀기를 리본 도구줄로 정리했습니다.
-- 자동 압축 풀기 상태를 `On` / `Off`로 바로 확인할 수 있게 했습니다.
+- Removed the large icon area from the top of the main window.
+- Reorganized archive open, create, extract, update, audit, and auto-extract actions into a ribbon toolbar.
+- Made the auto-extract state visible as `On` / `Off`.
 
-## 1.5.3 수정
+## 1.5.3 Fixes
 
-- 다운로드 완료 후 업데이트 대화상자가 닫히지 않아 설치 파일 실행 단계로 넘어가지 못하던 문제를 수정했습니다.
+- Fixed a dialog close issue that prevented the installer launch step after update download completed.
 
-## 1.5.4 화면 정리
+## 1.5.4 UI Cleanup
 
-- 리본 도구줄의 주요 작업 버튼에 선명한 벡터 아이콘을 추가했습니다.
+- Added crisp vector icons to the main ribbon toolbar actions.
 
-## 1.5.5 화면 정리
+## 1.5.5 UI Cleanup
 
-- 자동 압축 풀기 토글을 리본 버튼 줄에 맞춰 정렬했습니다.
-- HiDPI 배율에서 리본과 얇은 선이 흐릿해 보이는 경우를 줄였습니다.
+- Aligned the auto-extract toggle with the ribbon button row.
+- Reduced blurry ribbon edges and thin lines at HiDPI scaling.
 
-## 1.5.6 탐색기 메뉴와 설치 정리
+## 1.5.6 Explorer Menu and Installer Cleanup
 
-- 압축 파일 오른쪽 메뉴에서 `sZIP 풀기`와 `sZIP 알아서 풀기`를 사용할 수 있습니다.
-- 수동 `알아서 풀기`가 성공하면 작업 완료 후 창을 트레이로 내립니다.
-- 업데이터로 받은 설치 파일은 설치 완료 후 정리되도록 했습니다.
+- Added `sZIP Extract` and `sZIP Smart Extract` to the archive context menu.
+- Manual `Smart Extract` now sends the window to the tray after the operation succeeds.
+- Installers downloaded by the updater are cleaned up after installation completes.

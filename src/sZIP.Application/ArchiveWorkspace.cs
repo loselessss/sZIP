@@ -33,7 +33,7 @@ public sealed class ArchiveWorkspace
     {
         if (CurrentArchivePath is null)
         {
-            throw new InvalidOperationException("먼저 압축 파일을 열어 주세요.");
+            throw new InvalidOperationException("Open an archive first.");
         }
 
         return _archiveService.ExtractAsync(

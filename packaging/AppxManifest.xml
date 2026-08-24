@@ -26,14 +26,14 @@
   <Applications>
     <Application Id="sZIP" Executable="sZIP.App.exe"
                  uap10:RuntimeBehavior="win32App" uap10:TrustLevel="mediumIL">
-      <uap:VisualElements DisplayName="sZIP" Description="sZIP 압축 도구"
+      <uap:VisualElements DisplayName="sZIP" Description="sZIP archive utility"
                           AppListEntry="none" BackgroundColor="transparent"
                           Square150x150Logo="Assets\Square150x150Logo.png"
                           Square44x44Logo="Assets\Square44x44Logo.png" />
       <Extensions>
         <com:Extension Category="windows.comServer">
           <com:ComServer>
-            <com:SurrogateServer DisplayName="sZIP 탐색기 메뉴">
+            <com:SurrogateServer DisplayName="sZIP Explorer menu">
               <com:Class Id="5FD30DB9-B45B-48DD-A359-30BEEA4CA4E1" Path="sZIP.ShellExtension.dll" ThreadingModel="STA" />
               <com:Class Id="F4DA9D54-7593-4D8A-A858-A8F27022FED2" Path="sZIP.ShellExtension.dll" ThreadingModel="STA" />
               <com:Class Id="C98AC2E7-A656-472E-BF79-3FDDA6A0621E" Path="sZIP.ShellExtension.dll" ThreadingModel="STA" />

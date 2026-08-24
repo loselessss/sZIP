@@ -43,7 +43,7 @@ public sealed class ZipArchiveService : IZipArchiveService
         ValidateArchivePath(archivePath);
         if (string.IsNullOrWhiteSpace(destinationRoot))
         {
-            throw new ArgumentException("출력 폴더가 필요합니다.", nameof(destinationRoot));
+            throw new ArgumentException("An output folder is required.", nameof(destinationRoot));
         }
 
         Directory.CreateDirectory(destinationRoot);
@@ -56,7 +56,7 @@ public sealed class ZipArchiveService : IZipArchiveService
         {
             if (ArchivePath.IsLink(entry.ExternalAttributes))
             {
-                throw new ArchiveSecurityException($"링크 항목은 해제할 수 없습니다: {entry.FullName}");
+                throw new ArchiveSecurityException($"Link entries cannot be extracted: {entry.FullName}");
             }
 
             _ = ArchivePath.GetSafeDestinationPath(destinationRoot, entry.FullName);
@@ -78,7 +78,7 @@ public sealed class ZipArchiveService : IZipArchiveService
             else
             {
                 var parent = Path.GetDirectoryName(destinationPath)
-                    ?? throw new InvalidDataException("출력 폴더를 확인할 수 없습니다.");
+                    ?? throw new InvalidDataException("The output folder could not be determined.");
                 Directory.CreateDirectory(parent);
                 destinationPath = GetUniquePath(destinationPath);
 
@@ -114,12 +114,12 @@ public sealed class ZipArchiveService : IZipArchiveService
     {
         if (string.IsNullOrWhiteSpace(archivePath))
         {
-            throw new ArgumentException("저장할 ZIP 파일 경로가 필요합니다.", nameof(archivePath));
+            throw new ArgumentException("A ZIP output path is required.", nameof(archivePath));
         }
 
         if (sourcePaths is null || sourcePaths.Count == 0)
         {
-            throw new ArgumentException("압축할 파일이나 폴더를 선택해 주세요.", nameof(sourcePaths));
+            throw new ArgumentException("Select files or folders to archive.", nameof(sourcePaths));
         }
 
         var outputPath = Path.GetFullPath(archivePath);
@@ -127,7 +127,7 @@ public sealed class ZipArchiveService : IZipArchiveService
             () => CollectSourceItems(sourcePaths, outputPath, cancellationToken),
             cancellationToken);
         var parent = Path.GetDirectoryName(outputPath)
-            ?? throw new IOException("ZIP 파일을 저장할 폴더를 확인할 수 없습니다.");
+            ?? throw new IOException("The folder for the ZIP file could not be determined.");
         Directory.CreateDirectory(parent);
 
         var temporaryPath = Path.Combine(
@@ -300,13 +300,13 @@ public sealed class ZipArchiveService : IZipArchiveService
             }
             else
             {
-                throw new FileNotFoundException("압축할 파일이나 폴더를 찾을 수 없습니다.", sourcePath);
+                throw new FileNotFoundException("A file or folder to archive was not found.", sourcePath);
             }
         }
 
         if (items.Count == 0)
         {
-            throw new InvalidOperationException("압축할 항목이 없습니다.");
+            throw new InvalidOperationException("There are no items to archive.");
         }
 
         return items;
@@ -359,7 +359,7 @@ public sealed class ZipArchiveService : IZipArchiveService
     {
         if ((File.GetAttributes(path) & FileAttributes.ReparsePoint) != 0)
         {
-            throw new ArchiveSecurityException($"링크 항목은 압축할 수 없습니다: {path}");
+            throw new ArchiveSecurityException($"Link entries cannot be archived: {path}");
         }
     }
 
@@ -382,7 +382,7 @@ public sealed class ZipArchiveService : IZipArchiveService
             }
         }
 
-        throw new IOException("압축 항목 이름을 만들 수 없습니다.");
+        throw new IOException("Could not create an archive entry name.");
     }
 
     private static string NormalizeEntryName(string name) =>
@@ -419,11 +419,11 @@ public sealed class ZipArchiveService : IZipArchiveService
     {
         if (string.IsNullOrWhiteSpace(archivePath))
         {
-            throw new ArgumentException("압축 파일 경로가 필요합니다.", nameof(archivePath));
+            throw new ArgumentException("An archive path is required.", nameof(archivePath));
         }
         if (!File.Exists(archivePath))
         {
-            throw new FileNotFoundException("압축 파일을 찾을 수 없습니다.", archivePath);
+            throw new FileNotFoundException("Archive file not found.", archivePath);
         }
     }
 
@@ -451,7 +451,7 @@ public sealed class ZipArchiveService : IZipArchiveService
             }
         }
 
-        throw new IOException("사용 가능한 출력 파일 이름을 만들 수 없습니다.");
+        throw new IOException("Could not create an available output file name.");
     }
 
     private sealed class SourceItem
