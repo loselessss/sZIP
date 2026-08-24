@@ -1,6 +1,6 @@
 # sZIP 1.5.6
 
-sZIP은 Windows용 무료 압축·해제 도구입니다. `.NET Framework 4.8` 기반이라 일반적인 Windows 10/11 PC에서 별도의 C# 개발 환경이나 .NET SDK 없이 설치해 사용할 수 있습니다.
+sZIP은 Windows용 무료 압축·해제 도구입니다. `.NET Framework 4.8` 기반이라 일반적인 Windows 10/11 PC에서 별도의 C# 개발 환경이나 .NET SDK 없이 설치해 사용할 수 있습니다. 설정한 용량보다 작은 압축파일은 자동으로 압축을 풀어 놓습니다.
 
 ## 주요 기능
 
