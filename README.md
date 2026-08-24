@@ -1,4 +1,4 @@
-# sZIP 1.5.2
+# sZIP 1.5.3
 
 sZIP은 Windows용 무료 압축·해제 도구입니다. `.NET Framework 4.8` 기반이라 일반적인 Windows 10/11 PC에서 별도의 C# 개발 환경이나 .NET SDK 없이 설치해 사용할 수 있습니다.
 
@@ -25,7 +25,7 @@ sZIP은 Windows용 무료 압축·해제 도구입니다. `.NET Framework 4.8` �
 
 ## 설치와 배포본
 
-GitHub Releases의 `sZIP_Setup_1.5.2.exe`가 권장 설치본입니다. 사용자 계정의 `%LOCALAPPDATA%\Programs\sZIP`에 설치하므로 관리자 권한이 필요하지 않습니다. `sZIP-1.5.2-net48.zip`은 설치하지 않고 사용할 수 있는 포터블 배포본입니다.
+GitHub Releases의 `sZIP_Setup_1.5.3.exe`가 권장 설치본입니다. 사용자 계정의 `%LOCALAPPDATA%\Programs\sZIP`에 설치하므로 관리자 권한이 필요하지 않습니다. `sZIP-1.5.3-net48.zip`은 설치하지 않고 사용할 수 있는 포터블 배포본입니다.
 
 설치 프로그램은 선택에 따라 바탕 화면 바로가기, Windows 자동 시작, 탐색기 메뉴와 압축 확장자 연결을 등록합니다. Windows 11에서는 sparse identity package와 x64 `IExplorerCommand` 확장을 등록해 명령을 기본 우클릭 메뉴에 표시하며, 등록할 수 없는 환경과 Windows 10에서는 기존 레거시 메뉴를 대체 경로로 유지합니다.
 

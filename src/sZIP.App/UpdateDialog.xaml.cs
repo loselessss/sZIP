@@ -63,6 +63,8 @@ public partial class UpdateDialog : Window
         try
         {
             InstallerPath = await _service.DownloadAsync(_update, progress, _downloadCancellation.Token);
+            _downloadCancellation.Dispose();
+            _downloadCancellation = null;
             DownloadProgress.IsIndeterminate = false;
             DownloadProgress.Value = 100;
             StatusText.Text = "SHA-256 검증을 마쳤습니다. 설치를 시작합니다.";
