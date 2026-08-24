@@ -143,6 +143,10 @@ jobs:
             $hash = (Get-FileHash -Algorithm SHA256 -LiteralPath $asset).Hash.ToLowerInvariant()
             "$hash  $([IO.Path]::GetFileName($asset))" | Set-Content -Encoding ascii -LiteralPath "$asset.sha256"
           }
+          $latestInstaller = "artifacts\sZIP_Setup_latest.exe"
+          Copy-Item -LiteralPath $installer -Destination $latestInstaller -Force
+          $latestHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $latestInstaller).Hash.ToLowerInvariant()
+          "$latestHash  sZIP_Setup_latest.exe" | Set-Content -Encoding ascii -LiteralPath "$latestInstaller.sha256"
 
       - name: Preserve release assets
         uses: actions/upload-artifact@v6
@@ -165,6 +169,8 @@ jobs:
           gh release create $tag `
             "artifacts\sZIP_Setup_$version.exe" `
             "artifacts\sZIP_Setup_$version.exe.sha256" `
+            "artifacts\sZIP_Setup_latest.exe" `
+            "artifacts\sZIP_Setup_latest.exe.sha256" `
             "artifacts\sZIP-$version-net48.zip" `
             "artifacts\sZIP-$version-net48.zip.sha256" `
             --verify-tag `
