@@ -8,6 +8,39 @@ namespace sZIP.Tests;
 
 public sealed class GitHubUpdateServiceTests
 {
+    [Theory]
+    [InlineData("en-US", "English notes")]
+    [InlineData("ko-KR", "한국어 노트")]
+    [InlineData("fr-FR", "English notes")]
+    public void ReleaseNotesUseTheConfiguredLanguage(string language, string expected)
+    {
+        var notes = "<!-- sZIP:lang=en -->\nEnglish notes\n"
+            + "<!-- sZIP:lang=ko -->\n한국어 노트";
+
+        Assert.Equal(expected, ReleaseNotesLocalization.Select(notes, language));
+    }
+
+    [Fact]
+    public void ReleaseNotesWithoutLanguageMarkersRemainCompatible()
+    {
+        Assert.Equal("Legacy notes", ReleaseNotesLocalization.Select("  Legacy notes  ", "ko-KR"));
+    }
+
+    [Fact]
+    public async Task CheckSelectsKoreanReleaseNotes()
+    {
+        var body = "<!-- sZIP:lang=en -->\nEnglish notes\n"
+            + "<!-- sZIP:lang=ko -->\n한국어 노트";
+        using var client = new HttpClient(new StubHandler(_ => JsonResponse(
+            ReleaseJson("1.4.0", new string('a', 64), 10, body))));
+        using var service = new GitHubUpdateService(new ReleaseVersion(1, 3, 0), client,
+            releaseNotesLanguage: "ko-KR");
+
+        var update = await service.CheckAsync();
+
+        Assert.Equal("한국어 노트", update!.ReleaseNotes);
+    }
+
     [Fact]
     public async Task CheckSelectsVersionedInstallerAndDigest()
     {
@@ -119,13 +152,20 @@ public sealed class GitHubUpdateServiceTests
         Content = new StringContent(json, Encoding.UTF8, "application/json")
     };
 
-    private static string ReleaseJson(string version, string digest, int size) =>
+    private static string ReleaseJson(string version, string digest, int size, string body = "notes") =>
         "{\"tag_name\":\"v" + version + "\",\"name\":\"sZIP " + version
-        + "\",\"body\":\"notes\",\"html_url\":\"https://github.com/loselessss/sZIP/releases/tag/v"
+        + "\",\"body\":\"" + EscapeJson(body)
+        + "\",\"html_url\":\"https://github.com/loselessss/sZIP/releases/tag/v"
         + version + "\",\"published_at\":\"2026-08-09T00:00:00Z\",\"assets\":[{\"name\":\"sZIP_Setup_"
         + version + ".exe\",\"browser_download_url\":\"https://github.com/loselessss/sZIP/releases/download/v"
         + version + "/sZIP_Setup_" + version + ".exe\",\"size\":" + size
         + ",\"digest\":\"sha256:" + digest + "\"}]}";
+
+    private static string EscapeJson(string value) => value
+        .Replace("\\", "\\\\")
+        .Replace("\"", "\\\"")
+        .Replace("\r", "\\r")
+        .Replace("\n", "\\n");
 
     private static string Hash(byte[] value)
     {

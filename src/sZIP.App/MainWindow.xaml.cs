@@ -17,7 +17,7 @@ public partial class MainWindow : Window
     private readonly ZipArchiveService _manualArchiveService = new();
     private readonly SevenZipArchiveService _sevenZipArchiveService = new();
     private readonly MultiFormatArchiveService _automaticArchiveService = new();
-    private readonly SemaphoreSlim _automaticExtractionLock = new(1, 1);
+    private readonly SemaphoreSlim _automaticArchiveExtractionLock = new(1, 1);
     private readonly CancellationTokenSource _shutdownCancellation = new();
     private CancellationTokenSource? _operationCancellation;
     private RecursiveArchiveWatcher? _automaticWatcher;
@@ -25,21 +25,21 @@ public partial class MainWindow : Window
     private bool _allowExit;
     private bool _loadingSettings;
 
-    public event EventHandler? AutoExtractEnabledChanged;
+    public event EventHandler? AutomaticArchiveExtractionEnabledChanged;
     public event EventHandler? HiddenToTray;
     public event EventHandler? UpdateCheckRequested;
 
-    public bool IsAutoExtractEnabled
+    public bool IsAutomaticArchiveExtractionEnabled
     {
-        get => AutoExtractCheckBox.IsChecked == true;
-        set => AutoExtractCheckBox.IsChecked = value;
+        get => AutomaticArchiveExtractionCheckBox.IsChecked == true;
+        set => AutomaticArchiveExtractionCheckBox.IsChecked = value;
     }
 
     public MainWindow()
     {
         _workspace = new ArchiveWorkspace(_manualExtractionService);
         InitializeComponent();
-        LoadAutomaticExtractionSettings();
+        LoadAutomaticArchiveExtractionSettings();
     }
 
     private async void OpenArchiveButton_Click(object sender, RoutedEventArgs e)
@@ -475,17 +475,17 @@ public partial class MainWindow : Window
         }
     }
 
-    private void AutoExtractCheckBox_Checked(object sender, RoutedEventArgs e)
+    private void AutomaticArchiveExtractionCheckBox_Checked(object sender, RoutedEventArgs e)
     {
-        UpdateAutoExtractToggleLabel();
+        UpdateAutomaticArchiveExtractionToggleLabel();
         if (_automaticWatcher is not null)
         {
             return;
         }
 
-        SaveAutomaticExtractionSettings();
-        var watchPath = GetAutomaticExtractionFolder();
-        var maxArchiveBytes = GetAutomaticExtractionMaxArchiveBytes();
+        SaveAutomaticArchiveExtractionSettings();
+        var watchPath = GetAutomaticArchiveExtractionFolder();
+        var maxArchiveBytes = GetAutomaticArchiveExtractionMaxArchiveBytes();
 
         try
         {
@@ -496,63 +496,63 @@ public partial class MainWindow : Window
                 requireZipSignature: false));
             _automaticWatcher.ArchiveReady += AutomaticWatcher_ArchiveReady;
             _automaticWatcher.Start();
-            StatusText.Text = $"Watching for auto extraction: {watchPath}";
-            AutoExtractEnabledChanged?.Invoke(this, EventArgs.Empty);
+            StatusText.Text = $"Watching for automatic archive extraction: {watchPath}";
+            AutomaticArchiveExtractionEnabledChanged?.Invoke(this, EventArgs.Empty);
         }
         catch (Exception exception)
         {
-            AutoExtractCheckBox.IsChecked = false;
+            AutomaticArchiveExtractionCheckBox.IsChecked = false;
             ShowError("Could not start watching the download folder.", exception.Message);
         }
     }
 
-    private void AutoExtractCheckBox_Unchecked(object sender, RoutedEventArgs e)
+    private void AutomaticArchiveExtractionCheckBox_Unchecked(object sender, RoutedEventArgs e)
     {
-        UpdateAutoExtractToggleLabel();
+        UpdateAutomaticArchiveExtractionToggleLabel();
         if (_automaticWatcher is null)
         {
-            AutoExtractEnabledChanged?.Invoke(this, EventArgs.Empty);
+            AutomaticArchiveExtractionEnabledChanged?.Invoke(this, EventArgs.Empty);
             return;
         }
 
         _automaticWatcher.ArchiveReady -= AutomaticWatcher_ArchiveReady;
         _automaticWatcher.Dispose();
         _automaticWatcher = null;
-        StatusText.Text = "Auto extraction stopped.";
-        AutoExtractEnabledChanged?.Invoke(this, EventArgs.Empty);
+        StatusText.Text = "Automatic archive extraction stopped.";
+        AutomaticArchiveExtractionEnabledChanged?.Invoke(this, EventArgs.Empty);
     }
 
-    private void BrowseAutoExtractFolderButton_Click(object sender, RoutedEventArgs e)
+    private void BrowseAutomaticArchiveExtractionFolderButton_Click(object sender, RoutedEventArgs e)
     {
         using var dialog = new System.Windows.Forms.FolderBrowserDialog
         {
-            Description = "Select a folder to watch for archives to auto extract.",
-            SelectedPath = Directory.Exists(GetAutomaticExtractionFolder())
-                ? GetAutomaticExtractionFolder()
+            Description = "Select a folder to watch for automatic archive extraction.",
+            SelectedPath = Directory.Exists(GetAutomaticArchiveExtractionFolder())
+                ? GetAutomaticArchiveExtractionFolder()
                 : GetDefaultDownloadFolder(),
             ShowNewFolderButton = true
         };
 
         if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
         {
-            AutoExtractFolderTextBox.Text = dialog.SelectedPath;
+            AutomaticArchiveExtractionFolderTextBox.Text = dialog.SelectedPath;
         }
     }
 
-    private void AutoExtractSettings_Changed(object sender, RoutedEventArgs e) =>
-        HandleAutomaticExtractionSettingsChanged();
+    private void AutomaticArchiveExtractionSettings_Changed(object sender, RoutedEventArgs e) =>
+        HandleAutomaticArchiveExtractionSettingsChanged();
 
-    private void AutoExtractSettings_Changed(object sender, System.Windows.Controls.TextChangedEventArgs e) =>
-        HandleAutomaticExtractionSettingsChanged();
+    private void AutomaticArchiveExtractionSettings_Changed(object sender, System.Windows.Controls.TextChangedEventArgs e) =>
+        HandleAutomaticArchiveExtractionSettingsChanged();
 
-    private void HandleAutomaticExtractionSettingsChanged()
+    private void HandleAutomaticArchiveExtractionSettingsChanged()
     {
         if (_loadingSettings)
         {
             return;
         }
 
-        SaveAutomaticExtractionSettings();
+        SaveAutomaticArchiveExtractionSettings();
         RestartAutomaticWatcherIfEnabled();
     }
 
@@ -565,7 +565,7 @@ public partial class MainWindow : Window
         string? temporaryPath = null;
         try
         {
-            await _automaticExtractionLock.WaitAsync(_shutdownCancellation.Token);
+            await _automaticArchiveExtractionLock.WaitAsync(_shutdownCancellation.Token);
             lockTaken = true;
             var archiveDirectory = Path.GetDirectoryName(archivePath)!;
             temporaryPath = Path.Combine(
@@ -575,7 +575,7 @@ public partial class MainWindow : Window
 
             await Dispatcher.InvokeAsync(() =>
             {
-                StatusHeadingText.Text = "Auto extracting";
+                StatusHeadingText.Text = "Automatically extracting archive";
                 StatusText.Text = Path.GetFileName(archivePath);
             });
             await _automaticArchiveService.ExtractAsync(
@@ -588,12 +588,12 @@ public partial class MainWindow : Window
             using var outputExclusion = _automaticWatcher?.ExcludePath(outputPath);
             Directory.Move(temporaryPath, outputPath);
             temporaryPath = null;
-            var sourceDeleted = TryDeleteSourceArchiveAfterAutomaticExtraction(archivePath);
+            var sourceDeleted = TryDeleteSourceArchiveAfterAutomaticArchiveExtraction(archivePath);
             await Dispatcher.InvokeAsync(() =>
-                SetOperationCompleted("Auto extraction completed", outputPath));
-            DiagnosticLog.Write("automatic-extraction.completed");
-            AutomaticExtractionAudit.Write(
-                AutomaticExtractionAuditStatus.Completed,
+                SetOperationCompleted("Automatic archive extraction completed", outputPath));
+            DiagnosticLog.Write("automatic-archive-extraction.completed");
+            AutomaticArchiveExtractionAudit.Write(
+                AutomaticArchiveExtractionAuditStatus.Completed,
                 archivePath,
                 outputPath,
                 sourceDeleted ? "source archive deleted" : null,
@@ -603,32 +603,32 @@ public partial class MainWindow : Window
         {
             await Dispatcher.InvokeAsync(() =>
             {
-                StatusHeadingText.Text = "Auto extraction skipped";
+                StatusHeadingText.Text = "Automatic archive extraction skipped";
                 StatusText.Text = $"Password required: {Path.GetFileName(archivePath)}";
             });
-            DiagnosticLog.Write("automatic-extraction.password-required");
-            AutomaticExtractionAudit.Write(
-                AutomaticExtractionAuditStatus.Skipped,
+            DiagnosticLog.Write("automatic-archive-extraction.password-required");
+            AutomaticArchiveExtractionAudit.Write(
+                AutomaticArchiveExtractionAuditStatus.Skipped,
                 archivePath,
                 detail: "password required");
         }
         catch (OperationCanceledException)
         {
-            DiagnosticLog.Write("automatic-extraction.cancelled");
-            AutomaticExtractionAudit.Write(
-                AutomaticExtractionAuditStatus.Cancelled,
+            DiagnosticLog.Write("automatic-archive-extraction.cancelled");
+            AutomaticArchiveExtractionAudit.Write(
+                AutomaticArchiveExtractionAuditStatus.Cancelled,
                 archivePath);
         }
         catch (Exception exception)
         {
             await Dispatcher.InvokeAsync(() =>
             {
-                StatusHeadingText.Text = "Auto extraction failed";
+                StatusHeadingText.Text = "Automatic archive extraction failed";
                 StatusText.Text = Path.GetFileName(archivePath);
             });
-            DiagnosticLog.Write("automatic-extraction.failed", exception);
-            AutomaticExtractionAudit.Write(
-                AutomaticExtractionAuditStatus.Failed,
+            DiagnosticLog.Write("automatic-archive-extraction.failed", exception);
+            AutomaticArchiveExtractionAudit.Write(
+                AutomaticArchiveExtractionAuditStatus.Failed,
                 archivePath,
                 detail: exception.Message);
         }
@@ -650,7 +650,7 @@ public partial class MainWindow : Window
 
             if (lockTaken)
             {
-                _automaticExtractionLock.Release();
+                _automaticArchiveExtractionLock.Release();
             }
         }
     }
@@ -927,19 +927,19 @@ public partial class MainWindow : Window
             }
         }
 
-        throw new IOException("Could not create an auto-extract folder name.");
+        throw new IOException("Could not create an automatic archive extraction folder name.");
     }
 
-    private void LoadAutomaticExtractionSettings()
+    private void LoadAutomaticArchiveExtractionSettings()
     {
         _loadingSettings = true;
         try
         {
-            AutoExtractFolderTextBox.Text = GetAutomaticExtractionFolder();
-            AutoExtractMaxMbTextBox.Text = Math.Max(1, UserSettings.Default.AutoExtractMaxArchiveMb)
+            AutomaticArchiveExtractionFolderTextBox.Text = GetAutomaticArchiveExtractionFolder();
+            AutomaticArchiveExtractionMaxMbTextBox.Text = Math.Max(1, UserSettings.Default.AutomaticArchiveExtractionMaxArchiveMb)
                 .ToString(System.Globalization.CultureInfo.InvariantCulture);
-            DeleteSourceArchiveCheckBox.IsChecked = UserSettings.Default.AutoExtractDeleteSourceArchive;
-            UpdateAutoExtractToggleLabel();
+            DeleteSourceArchiveCheckBox.IsChecked = UserSettings.Default.AutomaticArchiveExtractionDeleteSourceArchive;
+            UpdateAutomaticArchiveExtractionToggleLabel();
         }
         finally
         {
@@ -947,23 +947,23 @@ public partial class MainWindow : Window
         }
     }
 
-    private void SaveAutomaticExtractionSettings()
+    private void SaveAutomaticArchiveExtractionSettings()
     {
-        UserSettings.Default.AutoExtractFolder = GetAutomaticExtractionFolder();
-        UserSettings.Default.AutoExtractMaxArchiveMb = GetAutomaticExtractionMaxArchiveMb();
-        UserSettings.Default.AutoExtractDeleteSourceArchive = DeleteSourceArchiveCheckBox.IsChecked == true;
+        UserSettings.Default.AutomaticArchiveExtractionFolder = GetAutomaticArchiveExtractionFolder();
+        UserSettings.Default.AutomaticArchiveExtractionMaxArchiveMb = GetAutomaticArchiveExtractionMaxArchiveMb();
+        UserSettings.Default.AutomaticArchiveExtractionDeleteSourceArchive = DeleteSourceArchiveCheckBox.IsChecked == true;
         TrySaveSettings();
     }
 
     private void RestartAutomaticWatcherIfEnabled()
     {
-        if (AutoExtractCheckBox.IsChecked != true)
+        if (AutomaticArchiveExtractionCheckBox.IsChecked != true)
         {
             return;
         }
 
         StopAutomaticWatcher(updateStatus: false);
-        AutoExtractCheckBox_Checked(this, new RoutedEventArgs());
+        AutomaticArchiveExtractionCheckBox_Checked(this, new RoutedEventArgs());
     }
 
     private void StopAutomaticWatcher(bool updateStatus)
@@ -978,54 +978,54 @@ public partial class MainWindow : Window
         _automaticWatcher = null;
         if (updateStatus)
         {
-            StatusText.Text = "Auto extraction stopped.";
+            StatusText.Text = "Automatic archive extraction stopped.";
         }
     }
 
-    private string GetAutomaticExtractionFolder()
+    private string GetAutomaticArchiveExtractionFolder()
     {
-        var path = AutoExtractFolderTextBox.Text;
+        var path = AutomaticArchiveExtractionFolderTextBox.Text;
         if (string.IsNullOrWhiteSpace(path))
         {
-            path = UserSettings.Default.AutoExtractFolder;
+            path = UserSettings.Default.AutomaticArchiveExtractionFolder;
         }
 
         return string.IsNullOrWhiteSpace(path) ? GetDefaultDownloadFolder() : path.Trim();
     }
 
-    private int GetAutomaticExtractionMaxArchiveMb()
+    private int GetAutomaticArchiveExtractionMaxArchiveMb()
     {
         if (!int.TryParse(
-                AutoExtractMaxMbTextBox.Text,
+                AutomaticArchiveExtractionMaxMbTextBox.Text,
                 System.Globalization.NumberStyles.Integer,
                 System.Globalization.CultureInfo.InvariantCulture,
                 out var value))
         {
-            value = UserSettings.Default.AutoExtractMaxArchiveMb;
+            value = UserSettings.Default.AutomaticArchiveExtractionMaxArchiveMb;
         }
 
         return Math.Max(1, Math.Min(10240, value));
     }
 
-    private long GetAutomaticExtractionMaxArchiveBytes() =>
-        GetAutomaticExtractionMaxArchiveMb() * 1024L * 1024L;
+    private long GetAutomaticArchiveExtractionMaxArchiveBytes() =>
+        GetAutomaticArchiveExtractionMaxArchiveMb() * 1024L * 1024L;
 
     private static string GetDefaultDownloadFolder() =>
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
 
-    private void UpdateAutoExtractToggleLabel()
+    private void UpdateAutomaticArchiveExtractionToggleLabel()
     {
-        if (AutoExtractCheckBox is not null)
+        if (AutomaticArchiveExtractionCheckBox is not null)
         {
-            AutoExtractCheckBox.Content = AutoExtractCheckBox.IsChecked == true
-                ? "Auto Extract: On"
-                : "Auto Extract: Off";
+            AutomaticArchiveExtractionCheckBox.Content = AutomaticArchiveExtractionCheckBox.IsChecked == true
+                ? "Automatic Archive Extraction: On"
+                : "Automatic Archive Extraction: Off";
         }
     }
 
-    private bool TryDeleteSourceArchiveAfterAutomaticExtraction(string archivePath)
+    private bool TryDeleteSourceArchiveAfterAutomaticArchiveExtraction(string archivePath)
     {
-        if (!UserSettings.Default.AutoExtractDeleteSourceArchive)
+        if (!UserSettings.Default.AutomaticArchiveExtractionDeleteSourceArchive)
         {
             return false;
         }
@@ -1037,9 +1037,9 @@ public partial class MainWindow : Window
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
-            DiagnosticLog.Write("automatic-extraction.source-delete.failed", exception);
-            AutomaticExtractionAudit.Write(
-                AutomaticExtractionAuditStatus.Failed,
+            DiagnosticLog.Write("automatic-archive-extraction.source-delete.failed", exception);
+            AutomaticArchiveExtractionAudit.Write(
+                AutomaticArchiveExtractionAuditStatus.Failed,
                 archivePath,
                 detail: "source delete failed: " + exception.Message);
             return false;

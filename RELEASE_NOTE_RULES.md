@@ -15,6 +15,9 @@ Release notes are user-facing text shown in the app update window and on GitHub 
 ## RELEASE_NOTES.md
 
 - This is the user-facing body shown in the update window.
+- Keep English in `RELEASE_NOTES.md` and Korean in `RELEASE_NOTES.ko.md`.
+- Update both language files for every release.
+- GitHub Releases combine both files with language markers; the updater selects Korean for a Korean Windows display language and English otherwise.
 - If a user may update directly to a patch release after skipping a previous feature release, include both the previous feature release highlights and the current patch fixes.
 - Example: if `1.5.1` follows `1.5.0`, include `1.5.0 Highlights` and `1.5.1 Fixes`.
 - Do not mention internal verification, CI, build environment changes, or workflow hardening.

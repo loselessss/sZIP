@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Windows;
 using System.Windows.Threading;
@@ -14,7 +15,7 @@ public partial class App : System.Windows.Application
 {
     private MainWindow? _mainWindow;
     private Forms.NotifyIcon? _trayIcon;
-    private Forms.ToolStripMenuItem? _automaticExtractionMenuItem;
+    private Forms.ToolStripMenuItem? _automaticArchiveExtractionMenuItem;
     private Forms.ToolStripMenuItem? _startWithWindowsMenuItem;
     private Forms.ToolStripMenuItem? _shellIntegrationMenuItem;
     private Icon? _applicationIcon;
@@ -77,7 +78,7 @@ public partial class App : System.Windows.Application
 
         _mainWindow = new MainWindow();
         MainWindow = _mainWindow;
-        _mainWindow.AutoExtractEnabledChanged += MainWindow_AutoExtractEnabledChanged;
+        _mainWindow.AutomaticArchiveExtractionEnabledChanged += MainWindow_AutomaticArchiveExtractionEnabledChanged;
         _mainWindow.HiddenToTray += MainWindow_HiddenToTray;
         _mainWindow.UpdateCheckRequested += (_, _) => _ = CheckForUpdatesAsync(manual: true);
 
@@ -94,7 +95,7 @@ public partial class App : System.Windows.Application
         CreateTrayIcon();
         RefreshShellIntegrationRegistration();
         InitializeUpdates();
-        _mainWindow.IsAutoExtractEnabled = UserSettings.Default.AutoExtractEnabled;
+        _mainWindow.IsAutomaticArchiveExtractionEnabled = UserSettings.Default.AutomaticArchiveExtractionEnabled;
         UpdateTrayState();
         if (!e.Args.Any(argument => string.Equals(argument, "--tray", StringComparison.OrdinalIgnoreCase)))
         {
@@ -192,18 +193,18 @@ public partial class App : System.Windows.Application
         menu.Items.Add("Open sZIP", null, (_, _) => ShowMainWindow());
         menu.Items.Add(new Forms.ToolStripSeparator());
 
-        _automaticExtractionMenuItem = new Forms.ToolStripMenuItem("Auto Extract")
+        _automaticArchiveExtractionMenuItem = new Forms.ToolStripMenuItem("Automatic Archive Extraction")
         {
             CheckOnClick = false
         };
-        _automaticExtractionMenuItem.Click += (_, _) =>
+        _automaticArchiveExtractionMenuItem.Click += (_, _) =>
         {
             if (_mainWindow is not null)
             {
-                _mainWindow.IsAutoExtractEnabled = !_mainWindow.IsAutoExtractEnabled;
+                _mainWindow.IsAutomaticArchiveExtractionEnabled = !_mainWindow.IsAutomaticArchiveExtractionEnabled;
             }
         };
-        menu.Items.Add(_automaticExtractionMenuItem);
+        menu.Items.Add(_automaticArchiveExtractionMenuItem);
         _startWithWindowsMenuItem = new Forms.ToolStripMenuItem("Start with Windows")
         {
             CheckOnClick = false
@@ -234,21 +235,21 @@ public partial class App : System.Windows.Application
         UpdateShellIntegrationState();
     }
 
-    private void MainWindow_AutoExtractEnabledChanged(object? sender, EventArgs e)
+    private void MainWindow_AutomaticArchiveExtractionEnabledChanged(object? sender, EventArgs e)
     {
         if (_mainWindow is null)
         {
             return;
         }
 
-        UserSettings.Default.AutoExtractEnabled = _mainWindow.IsAutoExtractEnabled;
+        UserSettings.Default.AutomaticArchiveExtractionEnabled = _mainWindow.IsAutomaticArchiveExtractionEnabled;
         try
         {
             UserSettings.Default.Save();
         }
         catch
         {
-            // Do not stop the current auto-extract task if saving settings fails.
+            // Do not stop the current automatic archive extraction task if saving settings fails.
         }
 
         UpdateTrayState();
@@ -264,7 +265,7 @@ public partial class App : System.Windows.Application
         _trayIcon.ShowBalloonTip(
             2500,
             "sZIP is running in the tray",
-            "Download folder auto extraction will keep running.",
+            "Automatic archive extraction will keep running.",
             Forms.ToolTipIcon.Info);
         UserSettings.Default.TrayHintShown = true;
         try
@@ -283,16 +284,20 @@ public partial class App : System.Windows.Application
             return;
         }
 
-        var enabled = _mainWindow.IsAutoExtractEnabled;
-        if (_automaticExtractionMenuItem is not null)
+        var enabled = _mainWindow.IsAutomaticArchiveExtractionEnabled;
+        if (_automaticArchiveExtractionMenuItem is not null)
         {
-            _automaticExtractionMenuItem.Checked = enabled;
-            _automaticExtractionMenuItem.Text = enabled ? "Auto Extract: On" : "Auto Extract: Off";
+            _automaticArchiveExtractionMenuItem.Checked = enabled;
+            _automaticArchiveExtractionMenuItem.Text = enabled
+                ? "Automatic Archive Extraction: On"
+                : "Automatic Archive Extraction: Off";
         }
 
         if (_trayIcon is not null)
         {
-            _trayIcon.Text = enabled ? "sZIP - Auto Extract On" : "sZIP - Auto Extract Off";
+            _trayIcon.Text = enabled
+                ? "sZIP - Automatic Archive Extraction On"
+                : "sZIP - Automatic Archive Extraction Off";
         }
     }
 
@@ -451,7 +456,8 @@ public partial class App : System.Windows.Application
             return;
         }
 
-        _updateService = new GitHubUpdateService(currentVersion);
+        _updateService = new GitHubUpdateService(currentVersion,
+            releaseNotesLanguage: CultureInfo.CurrentUICulture.Name);
         foreach (var removed in _updateService.CleanupDownloads())
         {
             DiagnosticLog.Write("update.download.removed " + Path.GetFileName(removed));

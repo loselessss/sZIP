@@ -1,4 +1,6 @@
-# sZIP 1.6.0
+# sZIP 1.6.1
+
+[한국어](README.ko.md)
 
 sZIP is a free archive utility for Windows. It is built on .NET Framework 4.8, so it can run on typical Windows 10/11 PCs without a C# development environment or .NET SDK. Archives smaller than the configured size limit can be extracted automatically.
 
@@ -10,7 +12,7 @@ sZIP is a free archive utility for Windows. It is built on .NET Framework 4.8, s
 - `Smart Extract`: keep a single top-level folder as-is, or organize mixed contents into a folder named after the archive.
 - `Extract Selected`: extract selected files or folders while preserving their paths.
 - Preserve nested folders and empty folders inside archives.
-- Watch the selected folder and subfolders, then auto-extract archives within the configured size limit.
+- Watch the selected folder and subfolders, then automatically extract archives within the configured size limit.
 - Check download completion stability and recover missed files every 10 seconds.
 - Manual password input, cancellation, and conflict-free output naming.
 - Tray resident mode, Windows startup support, and single-instance command routing.
@@ -25,7 +27,7 @@ The window close button hides sZIP to the tray instead of exiting. To quit compl
 
 ## Installation and Distributions
 
-The recommended installer is `sZIP_Setup_1.6.0.exe` from GitHub Releases. It installs to `%LOCALAPPDATA%\Programs\sZIP`, so administrator privileges are not required. `sZIP-1.6.0-net48.zip` is the portable distribution.
+The recommended installer is `sZIP_Setup_1.6.1.exe` from GitHub Releases. It installs to `%LOCALAPPDATA%\Programs\sZIP`, so administrator privileges are not required. `sZIP-1.6.1-net48.zip` is the portable distribution.
 
 The installer can register a desktop shortcut, Windows startup, Explorer menus, and archive file associations. On Windows 11, it registers a sparse identity package and x64 `IExplorerCommand` extension for the primary context menu. On unsupported environments and Windows 10, legacy context menu entries remain available as a fallback.
 
@@ -33,7 +35,7 @@ The installer can register a desktop shortcut, Windows startup, Explorer menus, 
 
 The installed app checks for updates 5 seconds after startup. After a successful check, it waits 24 hours before contacting GitHub again; while running, it re-evaluates every hour. Network failures are not recorded as successful checks, so the next hourly cycle can retry.
 
-When an update is available, sZIP shows release notes and installer information. The installer is downloaded to a temporary `.part` file and only runs after its size and SHA-256 digest match the GitHub release asset. Users can install later, skip a specific version, or run `Check for Updates` from the tray menu at any time.
+When an update is available, sZIP shows release notes in Korean when the Windows display language is Korean, and in English otherwise. The installer is downloaded to a temporary `.part` file and only runs after its size and SHA-256 digest match the GitHub release asset. Users can install later, skip a specific version, or run `Check for Updates` from the tray menu at any time.
 
 ## Development and Automated Verification
 

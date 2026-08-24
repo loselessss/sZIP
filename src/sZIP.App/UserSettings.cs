@@ -11,34 +11,34 @@ internal sealed class UserSettings : ApplicationSettingsBase
 
     [UserScopedSetting]
     [DefaultSettingValue("True")]
-    public bool AutoExtractEnabled
+    public bool AutomaticArchiveExtractionEnabled
     {
-        get => (bool)this[nameof(AutoExtractEnabled)];
-        set => this[nameof(AutoExtractEnabled)] = value;
+        get => (bool)this[nameof(AutomaticArchiveExtractionEnabled)];
+        set => this[nameof(AutomaticArchiveExtractionEnabled)] = value;
     }
 
     [UserScopedSetting]
     [DefaultSettingValue("")]
-    public string AutoExtractFolder
+    public string AutomaticArchiveExtractionFolder
     {
-        get => (string)this[nameof(AutoExtractFolder)];
-        set => this[nameof(AutoExtractFolder)] = value;
+        get => (string)this[nameof(AutomaticArchiveExtractionFolder)];
+        set => this[nameof(AutomaticArchiveExtractionFolder)] = value;
     }
 
     [UserScopedSetting]
     [DefaultSettingValue("200")]
-    public int AutoExtractMaxArchiveMb
+    public int AutomaticArchiveExtractionMaxArchiveMb
     {
-        get => (int)this[nameof(AutoExtractMaxArchiveMb)];
-        set => this[nameof(AutoExtractMaxArchiveMb)] = value;
+        get => (int)this[nameof(AutomaticArchiveExtractionMaxArchiveMb)];
+        set => this[nameof(AutomaticArchiveExtractionMaxArchiveMb)] = value;
     }
 
     [UserScopedSetting]
     [DefaultSettingValue("False")]
-    public bool AutoExtractDeleteSourceArchive
+    public bool AutomaticArchiveExtractionDeleteSourceArchive
     {
-        get => (bool)this[nameof(AutoExtractDeleteSourceArchive)];
-        set => this[nameof(AutoExtractDeleteSourceArchive)] = value;
+        get => (bool)this[nameof(AutomaticArchiveExtractionDeleteSourceArchive)];
+        set => this[nameof(AutomaticArchiveExtractionDeleteSourceArchive)] = value;
     }
 
     [UserScopedSetting]

@@ -166,6 +166,14 @@ jobs:
         run: |
           $tag = $env:GITHUB_REF_NAME
           $version = $tag.TrimStart("v")
+          $releaseNotes = @(
+            "<!-- sZIP:lang=en -->"
+            (Get-Content -LiteralPath RELEASE_NOTES.md -Raw).Trim()
+            ""
+            "<!-- sZIP:lang=ko -->"
+            (Get-Content -LiteralPath RELEASE_NOTES.ko.md -Raw).Trim()
+          ) -join [Environment]::NewLine
+          $releaseNotes | Set-Content -LiteralPath artifacts\RELEASE_NOTES.md -Encoding utf8
           gh release create $tag `
             "artifacts\sZIP_Setup_$version.exe" `
             "artifacts\sZIP_Setup_$version.exe.sha256" `
@@ -175,4 +183,4 @@ jobs:
             "artifacts\sZIP-$version-net48.zip.sha256" `
             --verify-tag `
             --title "sZIP $version" `
-            --notes-file RELEASE_NOTES.md
+            --notes-file artifacts\RELEASE_NOTES.md

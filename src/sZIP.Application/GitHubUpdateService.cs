@@ -85,15 +85,17 @@ public sealed class GitHubUpdateService : IDisposable
     private readonly HttpClient _client;
     private readonly bool _ownsClient;
     private readonly string _downloadRoot;
+    private readonly string _releaseNotesLanguage;
 
     public GitHubUpdateService(ReleaseVersion currentVersion, HttpClient? client = null,
-        string? downloadRoot = null)
+        string? downloadRoot = null, string? releaseNotesLanguage = null)
     {
         CurrentVersion = currentVersion;
         ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12;
         _client = client ?? CreateClient(currentVersion);
         _ownsClient = client is null;
         _downloadRoot = downloadRoot ?? Path.Combine(Path.GetTempPath(), "sZIP", "updates");
+        _releaseNotesLanguage = releaseNotesLanguage ?? "en";
     }
 
     public ReleaseVersion CurrentVersion { get; }
@@ -156,7 +158,8 @@ public sealed class GitHubUpdateService : IDisposable
             : release.name!;
         return new AvailableUpdate(latestVersion, release.tag_name ?? string.Empty,
             releaseName,
-            release.body ?? string.Empty, releaseUrl!, release.published_at ?? string.Empty,
+            ReleaseNotesLocalization.Select(release.body, _releaseNotesLanguage),
+            releaseUrl!, release.published_at ?? string.Empty,
             SelectInstaller(release.assets, latestVersion));
     }
 

@@ -9,7 +9,7 @@ public partial class AuditWindow : Window
     public AuditWindow()
     {
         InitializeComponent();
-        AuditPathText.Text = AutomaticExtractionAudit.AuditPath;
+        AuditPathText.Text = AutomaticArchiveExtractionAudit.AuditPath;
         Refresh();
     }
 
@@ -32,5 +32,5 @@ public partial class AuditWindow : Window
     }
 
     private void Refresh() =>
-        AuditGrid.ItemsSource = AutomaticExtractionAudit.ReadRecent();
+        AuditGrid.ItemsSource = AutomaticArchiveExtractionAudit.ReadRecent();
 }

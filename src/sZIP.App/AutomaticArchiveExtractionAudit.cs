@@ -3,7 +3,7 @@ using System.Text;
 
 namespace sZIP.App;
 
-internal enum AutomaticExtractionAuditStatus
+internal enum AutomaticArchiveExtractionAuditStatus
 {
     Completed,
     Skipped,
@@ -11,12 +11,12 @@ internal enum AutomaticExtractionAuditStatus
     Cancelled
 }
 
-internal static class AutomaticExtractionAudit
+internal static class AutomaticArchiveExtractionAudit
 {
-    public static string AuditPath => Path.Combine(DiagnosticLog.LogDirectory, "automatic-extraction-audit.tsv");
+    public static string AuditPath => Path.Combine(DiagnosticLog.LogDirectory, "automatic-archive-extraction-audit.tsv");
 
     public static void Write(
-        AutomaticExtractionAuditStatus status,
+        AutomaticArchiveExtractionAuditStatus status,
         string archivePath,
         string? outputPath = null,
         string? detail = null,
@@ -42,11 +42,11 @@ internal static class AutomaticExtractionAudit
         }
     }
 
-    public static IReadOnlyList<AutomaticExtractionAuditEntry> ReadRecent(int maxEntries = 500)
+    public static IReadOnlyList<AutomaticArchiveExtractionAuditEntry> ReadRecent(int maxEntries = 500)
     {
         if (!File.Exists(AuditPath))
         {
-            return Array.Empty<AutomaticExtractionAuditEntry>();
+            return Array.Empty<AutomaticArchiveExtractionAuditEntry>();
         }
 
         try
@@ -56,16 +56,16 @@ internal static class AutomaticExtractionAudit
                 .Take(maxEntries)
                 .Select(Parse)
                 .Where(entry => entry is not null)
-                .Cast<AutomaticExtractionAuditEntry>()
+                .Cast<AutomaticArchiveExtractionAuditEntry>()
                 .ToArray();
         }
         catch
         {
-            return Array.Empty<AutomaticExtractionAuditEntry>();
+            return Array.Empty<AutomaticArchiveExtractionAuditEntry>();
         }
     }
 
-    private static AutomaticExtractionAuditEntry? Parse(string line)
+    private static AutomaticArchiveExtractionAuditEntry? Parse(string line)
     {
         var parts = line.Split('\t');
         if (parts.Length < 6)
@@ -73,7 +73,7 @@ internal static class AutomaticExtractionAudit
             return null;
         }
 
-        return new AutomaticExtractionAuditEntry(
+        return new AutomaticArchiveExtractionAuditEntry(
             parts[0],
             parts[1],
             parts[2],
@@ -86,9 +86,9 @@ internal static class AutomaticExtractionAudit
         value.Replace('\t', ' ').Replace("\r", " ").Replace("\n", " ");
 }
 
-internal sealed class AutomaticExtractionAuditEntry
+internal sealed class AutomaticArchiveExtractionAuditEntry
 {
-    public AutomaticExtractionAuditEntry(
+    public AutomaticArchiveExtractionAuditEntry(
         string time,
         string status,
         string archivePath,

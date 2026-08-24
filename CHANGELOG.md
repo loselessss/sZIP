@@ -1,10 +1,15 @@
-# sZIP 1.6.0
+# sZIP 1.6.1
+
+[한국어](CHANGELOG.ko.md)
 
 Release date: 2026-08-24
 
-## English Edition
+## Automatic Archive Extraction
 
-- Changed the application interface, dialogs, status messages, and error messages to English.
-- Changed the tray menu and Explorer context menu commands to English.
-- Changed the installer and Windows package descriptions to English.
-- Updated the documentation for the English edition.
+- Standardized the feature name as `Automatic Archive Extraction` throughout the app.
+- Automatic archive extraction settings now use the same clear terminology and reset to their defaults once after updating.
+
+## Documentation and Updates
+
+- Added separate Korean README and changelog files alongside the default English documents.
+- Update release notes now select Korean or English based on the Windows display language.

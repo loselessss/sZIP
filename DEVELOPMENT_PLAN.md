@@ -2,7 +2,7 @@
 
 ## Goal
 
-Provide a free Windows archive app that works without requiring users to install a separate development runtime. sZIP supports manual compression and extraction, and it can safely auto extract small archives while watching the Downloads folder and its subfolders.
+Provide a free Windows archive app that works without requiring users to install a separate development runtime. sZIP supports manual compression and extraction, and it can safely extract small archives automatically while watching the Downloads folder and its subfolders.
 
 ## Chosen Stack
 
@@ -16,7 +16,7 @@ Provide a free Windows archive app that works without requiring users to install
 - `0.1.0`: Initial ZIP listing, safe extraction, and download-folder watching.
 - `0.2.0`: Dedicated icon, tray support, and saved settings.
 - `0.3.0`: ZIP creation, drag and drop, watcher recovery, startup registration, and single-instance behavior.
-- `1.0.0`: Multiple archive formats, password UI, recursive auto extraction, Explorer integration, and safety limits.
+- `1.0.0`: Multiple archive formats, password UI, recursive automatic archive extraction, Explorer integration, and safety limits.
 - `1.0.1`: Shortened missing Downloads folder recovery checks to 10 seconds.
 - `1.1.0`: Explorer multi-select compression.
 - `1.2.0`: Explorer multi-select extraction.

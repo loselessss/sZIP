@@ -97,11 +97,11 @@
                             <TextBlock Text="Audit Log" Margin="7,0,0,0" />
                         </StackPanel>
                     </Button>
-                    <CheckBox x:Name="AutoExtractCheckBox" Content="Auto Extract: Off"
+                    <CheckBox x:Name="AutomaticArchiveExtractionCheckBox" Content="Automatic Archive Extraction: Off"
                               Margin="10,0,0,0" VerticalAlignment="Center"
                               Style="{StaticResource RibbonCheckBoxStyle}"
-                              Checked="AutoExtractCheckBox_Checked"
-                              Unchecked="AutoExtractCheckBox_Unchecked" />
+                              Checked="AutomaticArchiveExtractionCheckBox_Checked"
+                              Unchecked="AutomaticArchiveExtractionCheckBox_Unchecked" />
                 </WrapPanel>
                 <Grid Margin="0,10,0,0">
                     <Grid.ColumnDefinitions>
@@ -113,23 +113,23 @@
                     </Grid.ColumnDefinitions>
                     <TextBlock Text="Watch Folder" VerticalAlignment="Center"
                                Foreground="{DynamicResource MutedTextBrush}" />
-                    <TextBox x:Name="AutoExtractFolderTextBox" Grid.Column="1" Margin="10,0,8,0"
-                             MinWidth="260" TextChanged="AutoExtractSettings_Changed" />
-                    <Button Grid.Column="2" Content="Change" Click="BrowseAutoExtractFolderButton_Click" />
+                    <TextBox x:Name="AutomaticArchiveExtractionFolderTextBox" Grid.Column="1" Margin="10,0,8,0"
+                             MinWidth="260" TextChanged="AutomaticArchiveExtractionSettings_Changed" />
+                    <Button Grid.Column="2" Content="Change" Click="BrowseAutomaticArchiveExtractionFolderButton_Click" />
                     <StackPanel Grid.Column="3" Orientation="Horizontal" Margin="14,0,0,0"
                                 VerticalAlignment="Center">
                         <TextBlock Text="Max" VerticalAlignment="Center"
                                    Foreground="{DynamicResource MutedTextBrush}" />
-                        <TextBox x:Name="AutoExtractMaxMbTextBox" Width="64" Margin="8,0,6,0"
-                                 TextChanged="AutoExtractSettings_Changed" />
+                        <TextBox x:Name="AutomaticArchiveExtractionMaxMbTextBox" Width="64" Margin="8,0,6,0"
+                                 TextChanged="AutomaticArchiveExtractionSettings_Changed" />
                         <TextBlock Text="MB" VerticalAlignment="Center"
                                    Foreground="{DynamicResource MutedTextBrush}" />
                     </StackPanel>
                     <CheckBox x:Name="DeleteSourceArchiveCheckBox" Grid.Column="4"
                               Content="Delete source after completion" Margin="14,0,0,0"
                               VerticalAlignment="Center"
-                              Checked="AutoExtractSettings_Changed"
-                              Unchecked="AutoExtractSettings_Changed" />
+                              Checked="AutomaticArchiveExtractionSettings_Changed"
+                              Unchecked="AutomaticArchiveExtractionSettings_Changed" />
                 </Grid>
             </StackPanel>
         </Border>

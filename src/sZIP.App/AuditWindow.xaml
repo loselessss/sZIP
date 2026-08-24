@@ -1,7 +1,7 @@
 <Window x:Class="sZIP.App.AuditWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Auto Extract Audit" Width="980" Height="560" MinWidth="760" MinHeight="420"
+        Title="Automatic Archive Extraction Audit" Width="980" Height="560" MinWidth="760" MinHeight="420"
         WindowStartupLocation="CenterOwner" Icon="Assets/szip.ico">
     <Grid Margin="20">
         <Grid.RowDefinitions>
@@ -16,7 +16,7 @@
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <StackPanel>
-                <TextBlock Text="Auto Extract Audit" FontSize="18" FontWeight="SemiBold" />
+                <TextBlock Text="Automatic Archive Extraction Audit" FontSize="18" FontWeight="SemiBold" />
                 <TextBlock x:Name="AuditPathText" Margin="0,4,0,0"
                            Foreground="{DynamicResource MutedTextBrush}"
                            TextTrimming="CharacterEllipsis" />
