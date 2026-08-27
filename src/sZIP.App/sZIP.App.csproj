@@ -22,6 +22,10 @@
 
   <ItemGroup>
     <Resource Include="Assets\szip.ico" />
+    <Content Include="..\..\README.ko.md;..\..\CHANGELOG.ko.md;..\..\RELEASE_NOTES.ko.md">
+      <Link>%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Assets\szip-icon.png">
       <Link>Assets\StoreLogo.png</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

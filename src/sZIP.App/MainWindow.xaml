@@ -16,121 +16,90 @@
                 BorderThickness="1">
             <StackPanel>
                 <WrapPanel VerticalAlignment="Center">
-                    <Button x:Name="OpenArchiveButton" MinWidth="108" ToolTip="Open Archive"
-                            Click="OpenArchiveButton_Click">
+                    <Button x:Name="OpenArchiveButton" MinWidth="108" ToolTip="{DynamicResource Text.OpenArchive}"
+                            Click="OpenArchiveButton_Click" Margin="0,0,6,6" Padding="10,8">
                         <StackPanel Orientation="Horizontal">
                             <Path Width="16" Height="16" Stretch="Uniform" StrokeThickness="1.8"
                                   StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
                                   Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                   Data="M 2 4 L 7 4 L 8.5 6 L 14 6 L 14 13 L 2 13 Z M 4.5 9.5 L 11.5 9.5 M 9 7 L 11.5 9.5 L 9 12" />
-                            <TextBlock Text="Open Archive" Margin="7,0,0,0" />
+                            <TextBlock Text="{DynamicResource Text.OpenArchive}" Margin="7,0,0,0" />
                         </StackPanel>
                     </Button>
-                    <Button x:Name="CreateFilesButton" MinWidth="100" Margin="6,0,0,0" ToolTip="Compress Files"
-                            Click="CreateFilesButton_Click">
+                    <Button x:Name="CreateFilesButton" MinWidth="100" ToolTip="{DynamicResource Text.CompressFiles}"
+                            Click="CreateFilesButton_Click" Margin="0,0,6,6" Padding="10,8">
                         <StackPanel Orientation="Horizontal">
                             <Path Width="16" Height="16" Stretch="Uniform" StrokeThickness="1.8"
                                   StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
                                   Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                   Data="M 4 2.5 L 10 2.5 L 13 5.5 L 13 13.5 L 4 13.5 Z M 10 2.5 L 10 5.5 L 13 5.5 M 6.5 9 L 10.5 9 M 8.5 7 L 8.5 11" />
-                            <TextBlock Text="Compress Files" Margin="7,0,0,0" />
+                            <TextBlock Text="{DynamicResource Text.CompressFiles}" Margin="7,0,0,0" />
                         </StackPanel>
                     </Button>
-                    <Button x:Name="CreateFolderButton" MinWidth="100" Margin="6,0,0,0" ToolTip="Compress Folder"
-                            Click="CreateFolderButton_Click">
+                    <Button x:Name="CreateFolderButton" MinWidth="100" ToolTip="{DynamicResource Text.CompressFolder}"
+                            Click="CreateFolderButton_Click" Margin="0,0,6,6" Padding="10,8">
                         <StackPanel Orientation="Horizontal">
                             <Path Width="16" Height="16" Stretch="Uniform" StrokeThickness="1.8"
                                   StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
                                   Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                   Data="M 2 5 L 6.5 5 L 8 6.7 L 14 6.7 L 14 13 L 2 13 Z M 8 9 L 8 12 M 6.5 10.5 L 9.5 10.5" />
-                            <TextBlock Text="Compress Folder" Margin="7,0,0,0" />
+                            <TextBlock Text="{DynamicResource Text.CompressFolder}" Margin="7,0,0,0" />
                         </StackPanel>
                     </Button>
                     <Border Width="1" Height="28" Margin="10,4" Background="{DynamicResource DividerBrush}" />
-                    <Button x:Name="ExtractDirectButton" MinWidth="98" Margin="0,0,0,0" ToolTip="Extract"
-                            IsEnabled="False" Click="ExtractDirectButton_Click">
+                    <Button x:Name="ExtractDirectButton" MinWidth="98" ToolTip="{DynamicResource Text.Extract}"
+                            IsEnabled="False" Click="ExtractDirectButton_Click" Margin="0,0,6,6" Padding="10,8">
                         <StackPanel Orientation="Horizontal">
                             <Path Width="16" Height="16" Stretch="Uniform" StrokeThickness="1.8"
                                   StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
                                   Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                   Data="M 3 3.5 L 13 3.5 L 13 6 L 3 6 Z M 4 6 L 12 6 L 12 13 L 4 13 Z M 8 7.5 L 8 11.5 M 6.2 9.8 L 8 11.6 L 9.8 9.8" />
-                            <TextBlock Text="Extract" Margin="7,0,0,0" />
+                            <TextBlock Text="{DynamicResource Text.Extract}" Margin="7,0,0,0" />
                         </StackPanel>
                     </Button>
-                    <Button x:Name="ExtractSmartButton" MinWidth="110" Margin="6,0,0,0" ToolTip="Smart Extract"
+                    <Button x:Name="ExtractSmartButton" MinWidth="110" ToolTip="{DynamicResource Text.SmartExtract}"
                             Style="{StaticResource PrimaryButtonStyle}"
-                            IsEnabled="False" Click="ExtractSmartButton_Click">
+                            IsEnabled="False" Click="ExtractSmartButton_Click" Margin="0,0,6,6" Padding="10,8">
                         <StackPanel Orientation="Horizontal">
                             <Path Width="16" Height="16" Stretch="Uniform" StrokeThickness="1.8"
                                   StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
                                   Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                   Data="M 8 2.5 L 9.1 5.9 L 12.5 7 L 9.1 8.1 L 8 11.5 L 6.9 8.1 L 3.5 7 L 6.9 5.9 Z M 12.5 2.5 L 13 4 L 14.5 4.5 L 13 5 L 12.5 6.5 L 12 5 L 10.5 4.5 L 12 4 Z" />
-                            <TextBlock Text="Smart Extract" Margin="7,0,0,0" />
+                            <TextBlock Text="{DynamicResource Text.SmartExtract}" Margin="7,0,0,0" />
                         </StackPanel>
                     </Button>
-                    <Button x:Name="ExtractSelectedButton" MinWidth="98" Margin="6,0,0,0" ToolTip="Extract Selected"
-                            IsEnabled="False" Click="ExtractSelectedButton_Click">
+                    <Button x:Name="ExtractSelectedButton" MinWidth="98" ToolTip="{DynamicResource Text.ExtractSelected}"
+                            IsEnabled="False" Click="ExtractSelectedButton_Click" Margin="0,0,6,6" Padding="10,8">
                         <StackPanel Orientation="Horizontal">
                             <Path Width="16" Height="16" Stretch="Uniform" StrokeThickness="1.8"
                                   StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
                                   Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                   Data="M 3 4 L 13 4 L 13 6.5 L 3 6.5 Z M 4 6.5 L 12 6.5 L 12 13 L 4 13 Z M 6.1 9.7 L 7.5 11.1 L 10.3 8.3" />
-                            <TextBlock Text="Extract Selected" Margin="7,0,0,0" />
+                            <TextBlock Text="{DynamicResource Text.ExtractSelected}" Margin="7,0,0,0" />
                         </StackPanel>
                     </Button>
-                    <Border Width="1" Height="28" Margin="10,4" Background="{DynamicResource DividerBrush}" />
-                    <Button MinWidth="118" ToolTip="Check for Updates" Click="UpdateCheckButton_Click">
-                        <StackPanel Orientation="Horizontal">
-                            <Path Width="16" Height="16" Stretch="Uniform" StrokeThickness="1.8"
-                                  StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
-                                  Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
-                                  Data="M 13 8 A 5 5 0 1 1 11.5 4.5 M 13 3.5 L 13 8 L 9 8" />
-                            <TextBlock Text="Check for Updates" Margin="7,0,0,0" />
-                        </StackPanel>
-                    </Button>
-                    <Button MinWidth="104" Margin="6,0,0,0" ToolTip="Audit Log" Click="AuditButton_Click">
-                        <StackPanel Orientation="Horizontal">
-                            <Path Width="16" Height="16" Stretch="Uniform" StrokeThickness="1.8"
-                                  StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
-                                  Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
-                                  Data="M 5 3 L 11 3 L 12.5 4.5 L 12.5 13 L 3.5 13 L 3.5 4.5 Z M 6 6.5 L 10 6.5 M 6 9 L 10 9 M 6 11.5 L 8.5 11.5" />
-                            <TextBlock Text="Audit Log" Margin="7,0,0,0" />
-                        </StackPanel>
-                    </Button>
-                    <CheckBox x:Name="AutomaticArchiveExtractionCheckBox" Content="Automatic Archive Extraction: Off"
-                              Margin="10,0,0,0" VerticalAlignment="Center"
+                </WrapPanel>
+                <DockPanel Margin="0,4,0,0" LastChildFill="False">
+                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                        <Button Width="36" Height="36" Padding="0" ToolTip="{DynamicResource Text.CheckForUpdates}"
+                                AutomationProperties.Name="{DynamicResource Text.CheckForUpdates}" Click="UpdateCheckButton_Click">
+                            <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE895;" FontSize="16" />
+                        </Button>
+                        <Button Width="36" Height="36" Padding="0" Margin="6,0,0,0" ToolTip="{DynamicResource Text.AuditLog}"
+                                AutomationProperties.Name="{DynamicResource Text.AuditLog}" Click="AuditButton_Click">
+                            <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE8FD;" FontSize="16" />
+                        </Button>
+                        <Button Width="36" Height="36" Padding="0" Margin="6,0,0,0" ToolTip="{DynamicResource Text.Settings}"
+                                AutomationProperties.Name="{DynamicResource Text.Settings}" Click="SettingsButton_Click">
+                            <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE713;" FontSize="16" />
+                        </Button>
+                    </StackPanel>
+                    <CheckBox x:Name="AutomaticArchiveExtractionCheckBox" Content="{DynamicResource Text.AutomaticArchiveExtractionOff}"
+                              MinWidth="300" VerticalAlignment="Center"
                               Style="{StaticResource RibbonCheckBoxStyle}"
                               Checked="AutomaticArchiveExtractionCheckBox_Checked"
                               Unchecked="AutomaticArchiveExtractionCheckBox_Unchecked" />
-                </WrapPanel>
-                <Grid Margin="0,10,0,0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Text="Watch Folder" VerticalAlignment="Center"
-                               Foreground="{DynamicResource MutedTextBrush}" />
-                    <TextBox x:Name="AutomaticArchiveExtractionFolderTextBox" Grid.Column="1" Margin="10,0,8,0"
-                             MinWidth="260" TextChanged="AutomaticArchiveExtractionSettings_Changed" />
-                    <Button Grid.Column="2" Content="Change" Click="BrowseAutomaticArchiveExtractionFolderButton_Click" />
-                    <StackPanel Grid.Column="3" Orientation="Horizontal" Margin="14,0,0,0"
-                                VerticalAlignment="Center">
-                        <TextBlock Text="Max" VerticalAlignment="Center"
-                                   Foreground="{DynamicResource MutedTextBrush}" />
-                        <TextBox x:Name="AutomaticArchiveExtractionMaxMbTextBox" Width="64" Margin="8,0,6,0"
-                                 TextChanged="AutomaticArchiveExtractionSettings_Changed" />
-                        <TextBlock Text="MB" VerticalAlignment="Center"
-                                   Foreground="{DynamicResource MutedTextBrush}" />
-                    </StackPanel>
-                    <CheckBox x:Name="DeleteSourceArchiveCheckBox" Grid.Column="4"
-                              Content="Delete source after completion" Margin="14,0,0,0"
-                              VerticalAlignment="Center"
-                              Checked="AutomaticArchiveExtractionSettings_Changed"
-                              Unchecked="AutomaticArchiveExtractionSettings_Changed" />
-                </Grid>
+                </DockPanel>
             </StackPanel>
         </Border>
 
@@ -146,10 +115,10 @@
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
-                    <TextBlock Text="Current Archive" Foreground="{DynamicResource MutedTextBrush}"
+                    <TextBlock Text="{DynamicResource Text.CurrentArchive}" Foreground="{DynamicResource MutedTextBrush}"
                                VerticalAlignment="Center" />
                     <TextBlock x:Name="ArchivePathText" Grid.Column="1" Margin="14,0,0,0"
-                               Text="Open an archive or drop one here."
+                               Text="{DynamicResource Text.OpenOrDrop}"
                                FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
                 </Grid>
                 <DataGrid x:Name="EntriesGrid" Grid.Row="1" AutoGenerateColumns="False"
@@ -157,10 +126,10 @@
                           SelectionChanged="EntriesGrid_SelectionChanged"
                           AlternationCount="2">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Name" Binding="{Binding FullName}" Width="*" />
-                        <DataGridTextColumn Header="Size" Binding="{Binding Length, StringFormat=N0}" Width="120" />
-                        <DataGridTextColumn Header="Compressed Size" Binding="{Binding CompressedLength, StringFormat=N0}" Width="120" />
-                        <DataGridTextColumn Header="Modified" Binding="{Binding LastWriteTime, StringFormat=yyyy-MM-dd HH:mm}" Width="150" />
+                        <DataGridTextColumn Header="{DynamicResource Text.Name}" Binding="{Binding FullName}" Width="*" />
+                        <DataGridTextColumn Header="{DynamicResource Text.Size}" Binding="{Binding Length, StringFormat=N0}" Width="120" />
+                        <DataGridTextColumn Header="{DynamicResource Text.CompressedSize}" Binding="{Binding CompressedLength, StringFormat=N0}" Width="120" />
+                        <DataGridTextColumn Header="{DynamicResource Text.Modified}" Binding="{Binding LastWriteTime, StringFormat=yyyy-MM-dd HH:mm}" Width="150" />
                     </DataGrid.Columns>
                 </DataGrid>
             </Grid>
@@ -181,8 +150,8 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <StackPanel>
-                        <TextBlock x:Name="StatusHeadingText" Text="Ready" FontSize="16" FontWeight="SemiBold" />
-                        <TextBlock x:Name="StatusText" Text="Select an archive to work with."
+                        <TextBlock x:Name="StatusHeadingText" Text="{DynamicResource Text.Ready}" TextWrapping="Wrap" Margin="0,0,12,0" FontSize="16" FontWeight="SemiBold" />
+                        <TextBlock x:Name="StatusText" Text="{DynamicResource Text.SelectArchive}"
                                    Margin="0,4,0,0" Foreground="{DynamicResource MutedTextBrush}"
                                    TextTrimming="CharacterEllipsis" />
                     </StackPanel>
@@ -197,9 +166,9 @@
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <TextBlock x:Name="ProgressDetailsText" Text="Waiting"
+                    <TextBlock x:Name="ProgressDetailsText" Text="{DynamicResource Text.Waiting}" TextWrapping="Wrap"
                                Foreground="{DynamicResource MutedTextBrush}" />
-                    <Button x:Name="CancelButton" Grid.Column="1" Content="Cancel" MinWidth="78"
+                    <Button x:Name="CancelButton" Grid.Column="1" Content="{DynamicResource Text.Cancel}" MinWidth="78"
                             Margin="12,-2,0,-2" Style="{StaticResource DangerButtonStyle}"
                             IsEnabled="False" Click="CancelButton_Click" />
                 </Grid>

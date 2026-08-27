@@ -1,3 +1,4 @@
+using L = sZIP.App.Localization;
 using System.Windows;
 
 namespace sZIP.App;
@@ -16,7 +17,7 @@ public partial class PasswordDialog : Window
     {
         if (string.IsNullOrEmpty(PasswordInput.Password))
         {
-            System.Windows.MessageBox.Show(this, "Enter a password.", "sZIP",
+            System.Windows.MessageBox.Show(this, L.T("EnterPassword"), "sZIP",
                 MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }

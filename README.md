@@ -1,50 +1,53 @@
-# sZIP 1.6.1
+# sZIP
 
 [한국어](README.ko.md)
 
-sZIP is a free archive utility for Windows. It is built on .NET Framework 4.8, so it can run on typical Windows 10/11 PCs without a C# development environment or .NET SDK. Archives smaller than the configured size limit can be extracted automatically.
+sZIP is a lightweight archive utility for Windows. It brings compression, extraction, automatic archive extraction, and Explorer integration together in one focused app.
 
-## Key Features
+It runs on Windows 10 and 11 and supports both Korean and English.
 
-- Create ZIP and 7Z archives.
-- Open and safely extract ZIP, 7Z, RAR, TAR, GZ, and TGZ/TAR.GZ archives.
-- `Extract`: place contents directly in the selected folder or next to the archive.
-- `Smart Extract`: keep a single top-level folder as-is, or organize mixed contents into a folder named after the archive.
-- `Extract Selected`: extract selected files or folders while preserving their paths.
-- Preserve nested folders and empty folders inside archives.
-- Watch the selected folder and subfolders, then automatically extract archives within the configured size limit.
-- Check download completion stability and recover missed files every 10 seconds.
-- Manual password input, cancellation, and conflict-free output naming.
-- Tray resident mode, Windows startup support, and single-instance command routing.
-- Fluent-style light/dark theme support with throughput, speed, and remaining-time progress.
-- Explorer multi-select actions: `Compress with sZIP`, `sZIP Extract`, and `sZIP Smart Extract`.
-- Native `IExplorerCommand` extension for the Windows 11 primary context menu.
-- `Open with` registration for ZIP/7Z/RAR/TAR/GZ/TGZ extensions.
-- GitHub Releases based automatic updates with SHA-256 verification before installation.
-- Manual update checks from the main window and tray menu.
+## What You Can Do
 
-The window close button hides sZIP to the tray instead of exiting. To quit completely, right-click the tray icon and choose `Exit`.
+- Create ZIP and 7Z archives from files or folders.
+- Open and extract ZIP, 7Z, RAR, TAR, GZ, and TGZ/TAR.GZ archives.
+- Extract selected files and folders while preserving their paths.
+- Enter passwords for encrypted archives and cancel work in progress.
+- Preserve nested and empty folders and avoid overwriting existing output.
+- Follow operation progress with speed, throughput, and remaining time.
 
-## Installation and Distributions
+## Extraction Modes
 
-The recommended installer is `sZIP_Setup_1.6.1.exe` from GitHub Releases. It installs to `%LOCALAPPDATA%\Programs\sZIP`, so administrator privileges are not required. `sZIP-1.6.1-net48.zip` is the portable distribution.
+- **Extract** places the archive contents directly in the selected destination.
+- **Smart Extract** keeps a single top-level folder as-is. When an archive contains mixed items, it organizes them inside a folder named after the archive.
+- **Extract Selected** extracts only the items selected in the archive list.
 
-The installer can register a desktop shortcut, Windows startup, Explorer menus, and archive file associations. On Windows 11, it registers a sparse identity package and x64 `IExplorerCommand` extension for the primary context menu. On unsupported environments and Windows 10, legacy context menu entries remain available as a fallback.
+## Automatic Archive Extraction
 
-## Update Policy
+sZIP can watch a folder and its subfolders for newly downloaded archives. Files within the configured size limit are extracted automatically after the download has finished.
 
-The installed app checks for updates 5 seconds after startup. After a successful check, it waits 24 hours before contacting GitHub again; while running, it re-evaluates every hour. Network failures are not recorded as successful checks, so the next hourly cycle can retry.
+Use the main ribbon to turn automatic archive extraction on or off. From Settings, you can choose the watch folder and size limit and decide whether the original archive should be deleted after successful extraction. The audit list shows completed and failed automatic operations.
 
-When an update is available, sZIP shows release notes in Korean when the Windows display language is Korean, and in English otherwise. The installer is downloaded to a temporary `.part` file and only runs after its size and SHA-256 digest match the GitHub release asset. Users can install later, skip a specific version, or run `Check for Updates` from the tray menu at any time.
+## Windows Integration
 
-## Development and Automated Verification
+Explorer menu integration adds quick actions for compression, extraction, and Smart Extract. Multiple files can be compressed together, and supported archive formats can be associated with sZIP.
 
-Local installer builds require Inno Setup 6, Visual C++ x64 Build Tools, and the Windows 10/11 SDK.
+Closing the main window keeps sZIP available in the system tray. Use the tray menu to reopen the app, check for updates, or exit completely.
 
-Pushing a `v*.*.*` tag runs GitHub Actions to test, build the portable ZIP, build the Inno Setup installer, generate SHA-256 files, run an installer smoke test, and publish the GitHub Release.
+## Installation
 
-## License
+Download the installer from [GitHub Releases](https://github.com/loselessss/sZIP/releases/latest). sZIP installs for the current user, so administrator privileges are normally not required. A portable ZIP is also provided.
 
-This project is licensed under the MIT License. Archive format support uses SharpCompress 0.50.1 under the MIT License; see `THIRD-PARTY-NOTICES.md` for details.
+The installer can add a desktop shortcut, launch sZIP with Windows, register Explorer menus, and associate supported archive formats.
 
-See [CHANGELOG.md](CHANGELOG.md) for version changes.
+## Language and Updates
+
+In Settings, choose **Use Windows language**, **Korean**, or **English**. The selected language is also used for update information.
+
+sZIP checks GitHub Releases for updates and verifies the downloaded installer size and SHA-256 digest before starting installation. Updates can be installed later or skipped by version.
+
+## Project Information
+
+- [Version history](CHANGELOG.md)
+- [Release notes](RELEASE_NOTES.md)
+- [Third-party notices](THIRD-PARTY-NOTICES.md)
+- [MIT License](LICENSE)

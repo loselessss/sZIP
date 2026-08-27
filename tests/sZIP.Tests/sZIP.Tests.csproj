@@ -22,6 +22,10 @@
 
   <ItemGroup>
     <Using Include="Xunit" />
+    <None Include="..\..\src\sZIP.App\Strings*.resx" Link="Localization\%(Filename)%(Extension)"
+          CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\src\sZIP.App\*.xaml" Link="Localization\%(Filename)%(Extension)"
+          CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

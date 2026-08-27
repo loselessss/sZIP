@@ -1,3 +1,4 @@
+using L = sZIP.App.Localization;
 using System.Diagnostics;
 using System.Windows;
 using sZIP.Application;
@@ -15,25 +16,25 @@ public partial class UpdateDialog : Window
         InitializeComponent();
         _service = service;
         _update = update;
-        TitleText.Text = $"sZIP {update.Version} is available.";
+        TitleText.Text = L.F("UpdateAvailable", update.Version);
         CurrentVersionText.Text = service.CurrentVersion.ToString();
         NewVersionText.Text = update.Version.ToString();
         InstallerText.Text = update.Asset is null
-            ? "Pending upload"
+            ? L.T("PendingUpload")
             : $"{update.Asset.Name} ({FormatSize(update.Asset.Size)})";
         NotesText.Text = string.IsNullOrWhiteSpace(update.ReleaseNotes)
-            ? "No release notes."
+            ? L.T("NoNotes")
             : update.ReleaseNotes;
 
         if (update.Asset is null)
         {
             InstallButton.IsEnabled = false;
-            StatusText.Text = "This release does not include a Windows installer yet.";
+            StatusText.Text = L.T("NoInstallerYet");
         }
         else if (string.IsNullOrEmpty(update.Asset.Sha256))
         {
             InstallButton.IsEnabled = false;
-            StatusText.Text = "Installer integrity information is missing, so automatic installation is unavailable.";
+            StatusText.Text = L.T("NoIntegrity");
         }
     }
 
@@ -67,17 +68,17 @@ public partial class UpdateDialog : Window
             _downloadCancellation = null;
             DownloadProgress.IsIndeterminate = false;
             DownloadProgress.Value = 100;
-            StatusText.Text = "SHA-256 verification completed. Starting installation.";
+            StatusText.Text = L.T("StartingInstall");
             DialogResult = true;
         }
         catch (UpdateCancelledException exception)
         {
-            StatusText.Text = exception.Message;
+            StatusText.Text = L.Error(exception.Message);
         }
         catch (Exception exception)
         {
-            StatusText.Text = exception.Message;
-            System.Windows.MessageBox.Show(this, exception.Message, "Update Download Failed",
+            StatusText.Text = L.Error(exception.Message);
+            System.Windows.MessageBox.Show(this, L.Error(exception.Message), L.T("DownloadFailed"),
                 MessageBoxButton.OK, MessageBoxImage.Warning);
         }
         finally
@@ -95,7 +96,7 @@ public partial class UpdateDialog : Window
             && !string.IsNullOrEmpty(_update.Asset.Sha256);
         ReleasePageButton.IsEnabled = !downloading;
         SkipButton.IsEnabled = !downloading;
-        LaterButton.Content = downloading ? "Cancel" : "Later";
+        LaterButton.Content = downloading ? L.T("Cancel") : L.T("Later");
     }
 
     private void ReleasePageButton_Click(object sender, RoutedEventArgs e) =>
@@ -104,8 +105,8 @@ public partial class UpdateDialog : Window
     private void SkipButton_Click(object sender, RoutedEventArgs e)
     {
         if (System.Windows.MessageBox.Show(this,
-                $"Skip v{_update.Version} and stop showing this update automatically?\nYou can still check for updates manually at any time.",
-                "Skip Update", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+                L.F("SkipUpdatePrompt", _update.Version),
+                L.T("SkipUpdate"), MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
         {
             return;
         }
@@ -117,7 +118,7 @@ public partial class UpdateDialog : Window
     {
         if (_downloadCancellation is not null)
         {
-            StatusText.Text = "Canceling download...";
+            StatusText.Text = L.T("CancelingDownload");
             _downloadCancellation.Cancel();
             return;
         }
@@ -134,5 +135,5 @@ public partial class UpdateDialog : Window
         base.OnClosing(e);
     }
 
-    private static string FormatSize(long size) => size <= 0 ? "Size unknown" : $"{size / 1048576d:F1} MB";
+    private static string FormatSize(long size) => size <= 0 ? L.T("UnknownSize") : $"{size / 1048576d:F1} MB";
 }

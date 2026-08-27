@@ -97,11 +97,11 @@ internal sealed class AutomaticArchiveExtractionAuditEntry
         string detail)
     {
         Time = time;
-        Status = status;
+        Status = Localization.Error(status);
         ArchivePath = archivePath;
         OutputPath = outputPath;
-        SourceArchive = sourceArchive;
-        Detail = detail;
+        SourceArchive = Localization.Error(sourceArchive);
+        Detail = Localization.Error(detail);
     }
 
     public string Time { get; }

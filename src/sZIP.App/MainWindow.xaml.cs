@@ -1,3 +1,4 @@
+using L = sZIP.App.Localization;
 using System.IO;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -23,11 +24,11 @@ public partial class MainWindow : Window
     private RecursiveArchiveWatcher? _automaticWatcher;
     private Stopwatch? _operationStopwatch;
     private bool _allowExit;
-    private bool _loadingSettings;
 
     public event EventHandler? AutomaticArchiveExtractionEnabledChanged;
     public event EventHandler? HiddenToTray;
     public event EventHandler? UpdateCheckRequested;
+    public event EventHandler? SettingsRequested;
 
     public bool IsAutomaticArchiveExtractionEnabled
     {
@@ -39,15 +40,16 @@ public partial class MainWindow : Window
     {
         _workspace = new ArchiveWorkspace(_manualExtractionService);
         InitializeComponent();
-        LoadAutomaticArchiveExtractionSettings();
+        UpdateAutomaticArchiveExtractionToggleLabel();
+        Localization.Changed += Localization_Changed;
     }
 
     private async void OpenArchiveButton_Click(object sender, RoutedEventArgs e)
     {
         var dialog = new Microsoft.Win32.OpenFileDialog
         {
-            Title = "Open Archive",
-            Filter = "Archive|*.zip;*.7z;*.rar;*.tar;*.gz;*.tgz;*.tar.gz|All Files (*.*)|*.*",
+            Title = L.T("OpenArchive"),
+            Filter = L.T("ArchiveFilter"),
             CheckFileExists = true,
             Multiselect = false
         };
@@ -64,8 +66,8 @@ public partial class MainWindow : Window
     {
         var dialog = new Microsoft.Win32.OpenFileDialog
         {
-            Title = "Select Files to Compress",
-            Filter = "All Files (*.*)|*.*",
+            Title = L.T("SelectFiles"),
+            Filter = L.T("AllFilesFilter"),
             CheckFileExists = true,
             Multiselect = true
         };
@@ -80,7 +82,7 @@ public partial class MainWindow : Window
     {
         using var dialog = new System.Windows.Forms.FolderBrowserDialog
         {
-            Description = "Select a folder to compress.",
+            Description = L.T("SelectCompressFolder"),
             ShowNewFolderButton = false
         };
 
@@ -94,7 +96,7 @@ public partial class MainWindow : Window
     {
         using var dialog = new System.Windows.Forms.FolderBrowserDialog
         {
-            Description = "Select a folder to extract to.",
+            Description = L.T("SelectExtractFolder"),
             ShowNewFolderButton = true
         };
 
@@ -104,16 +106,16 @@ public partial class MainWindow : Window
         }
 
         var progress = new Progress<ExtractionProgress>(value =>
-            UpdateExtractionProgress(value, "Extracting"));
+            UpdateExtractionProgress(value, L.T("Extracting")));
 
         await RunOperationAsync(async cancellationToken =>
         {
             var archivePath = _workspace.CurrentArchivePath
-                ?? throw new InvalidOperationException("Open an archive first.");
+                ?? throw new InvalidOperationException(L.T("OpenFirst"));
             var outputPath = await ExtractCurrentArchiveAsync(
                 archivePath, dialog.SelectedPath, smart: false, progress, cancellationToken);
-            SetOperationCompleted("Extraction completed", outputPath);
-            System.Windows.MessageBox.Show(this, "Extraction completed.", "sZIP",
+            SetOperationCompleted(L.T("ExtractionCompleted"), outputPath);
+            System.Windows.MessageBox.Show(this, L.T("ExtractionCompletedMessage"), "sZIP",
                 MessageBoxButton.OK, MessageBoxImage.Information);
         });
     }
@@ -127,14 +129,14 @@ public partial class MainWindow : Window
         }
 
         var progress = new Progress<ExtractionProgress>(value =>
-            UpdateExtractionProgress(value, "Smart extracting"));
+            UpdateExtractionProgress(value, L.T("SmartExtracting")));
         var completed = false;
         await RunOperationAsync(async cancellationToken =>
         {
             var outputPath = await ExtractCurrentArchiveAsync(
                 archivePath, Path.GetDirectoryName(archivePath)!, smart: true,
                 progress, cancellationToken);
-            SetOperationCompleted("Smart extraction completed", outputPath);
+            SetOperationCompleted(L.T("SmartExtractionCompleted"), outputPath);
             completed = true;
         });
         if (completed)
@@ -154,13 +156,13 @@ public partial class MainWindow : Window
         var selectedEntries = GetSelectedEntryNames();
         if (selectedEntries.Count == 0)
         {
-            ShowError("Select items to extract.", "Select at least one file or folder in the archive list.");
+            ShowError(L.T("SelectItems"), L.T("SelectItemsDetail"));
             return;
         }
 
         using var dialog = new System.Windows.Forms.FolderBrowserDialog
         {
-            Description = "Select a folder for the selected items.",
+            Description = L.T("SelectItemsFolder"),
             ShowNewFolderButton = true
         };
         if (dialog.ShowDialog() != System.Windows.Forms.DialogResult.OK)
@@ -169,13 +171,13 @@ public partial class MainWindow : Window
         }
 
         var progress = new Progress<ExtractionProgress>(value =>
-            UpdateExtractionProgress(value, "Extracting selected items"));
+            UpdateExtractionProgress(value, L.T("ExtractingSelected")));
         await RunOperationAsync(async cancellationToken =>
         {
             var outputPath = await ExtractCurrentArchiveAsync(
                 archivePath, dialog.SelectedPath, smart: false, progress, cancellationToken,
                 selectedEntries);
-            SetOperationCompleted($"Extracted {selectedEntries.Count:N0} selected items", outputPath);
+            SetOperationCompleted(L.F("SelectedCompleted", selectedEntries.Count), outputPath);
         });
     }
 
@@ -211,6 +213,9 @@ public partial class MainWindow : Window
 
     private void UpdateCheckButton_Click(object sender, RoutedEventArgs e) =>
         UpdateCheckRequested?.Invoke(this, EventArgs.Empty);
+
+    private void SettingsButton_Click(object sender, RoutedEventArgs e) =>
+        SettingsRequested?.Invoke(this, EventArgs.Empty);
 
     private void AuditButton_Click(object sender, RoutedEventArgs e)
     {
@@ -248,7 +253,7 @@ public partial class MainWindow : Window
     {
         await RunOperationAsync(async cancellationToken =>
         {
-            StatusText.Text = "Reading archive...";
+            StatusText.Text = L.T("ReadingArchive");
             IReadOnlyList<ArchiveEntryInfo> entries;
             try
             {
@@ -271,9 +276,9 @@ public partial class MainWindow : Window
             ArchivePathText.Text = archivePath;
             ExtractDirectButton.IsEnabled = true;
             ExtractSmartButton.IsEnabled = true;
-            StatusHeadingText.Text = "Archive opened";
-            StatusText.Text = $"{entries.Count:N0} items";
-            ProgressDetailsText.Text = "Choose Extract or Smart Extract.";
+            StatusHeadingText.Text = L.T("ArchiveOpened");
+            StatusText.Text = L.F("ItemCount", entries.Count);
+            ProgressDetailsText.Text = L.T("ChooseExtraction");
         });
     }
 
@@ -282,8 +287,8 @@ public partial class MainWindow : Window
         var initialDirectory = GetInitialDirectory(sourcePaths.First());
         var saveDialog = new Microsoft.Win32.SaveFileDialog
         {
-            Title = "Save Archive",
-            Filter = "ZIP Archive (*.zip)|*.zip|7Z Archive (*.7z)|*.7z",
+            Title = L.T("SaveArchive"),
+            Filter = L.T("SaveArchiveFilter"),
             DefaultExt = ".zip",
             AddExtension = true,
             OverwritePrompt = true,
@@ -319,7 +324,7 @@ public partial class MainWindow : Window
                     cancellationToken);
             }
             completed = true;
-            SetOperationCompleted("Archive created", saveDialog.FileName);
+            SetOperationCompleted(L.T("ArchiveCreated"), saveDialog.FileName);
         });
 
         if (completed)
@@ -396,7 +401,7 @@ public partial class MainWindow : Window
     private void UpdateCompressionProgress(CompressionProgress value)
     {
         UpdateOperationProgress(
-            "Creating archive",
+            L.T("CreatingArchive"),
             value.CurrentEntry,
             value.Percentage,
             value.ProcessedBytes,
@@ -424,9 +429,9 @@ public partial class MainWindow : Window
         var bytesPerSecond = processedBytes / elapsedSeconds;
         var sizeText = totalBytes > 0
             ? $"{FormatBytes(processedBytes)} / {FormatBytes(totalBytes)}"
-            : $"{completedEntries:N0} / {totalEntries:N0} items";
+            : L.F("ItemProgress", completedEntries, totalEntries);
         var remainingText = totalBytes > processedBytes && bytesPerSecond > 0
-            ? $" · about {FormatDuration(TimeSpan.FromSeconds((totalBytes - processedBytes) / bytesPerSecond))} remaining"
+            ? L.F("RemainingTime", FormatDuration(TimeSpan.FromSeconds((totalBytes - processedBytes) / bytesPerSecond)))
             : string.Empty;
         ProgressDetailsText.Text = $"{sizeText} · {FormatBytes((long)bytesPerSecond)}/s{remainingText}";
     }
@@ -438,8 +443,8 @@ public partial class MainWindow : Window
         StatusHeadingText.Text = heading;
         StatusText.Text = outputPath;
         ProgressDetailsText.Text = _operationStopwatch is null
-            ? "Done"
-            : $"{FormatDuration(_operationStopwatch.Elapsed)} elapsed";
+            ? L.T("Done")
+            : L.F("ElapsedTime", FormatDuration(_operationStopwatch.Elapsed));
     }
 
     private static string FormatBytes(long bytes)
@@ -452,9 +457,9 @@ public partial class MainWindow : Window
 
     private static string FormatDuration(TimeSpan duration)
     {
-        if (duration.TotalHours >= 1) return $"{(int)duration.TotalHours}h {duration.Minutes}m";
-        if (duration.TotalMinutes >= 1) return $"{(int)duration.TotalMinutes}m {duration.Seconds}s";
-        return $"{Math.Max(1, (int)Math.Ceiling(duration.TotalSeconds))}s";
+        if (duration.TotalHours >= 1) return L.F("HoursMinutes", (int)duration.TotalHours, duration.Minutes);
+        if (duration.TotalMinutes >= 1) return L.F("MinutesSeconds", (int)duration.TotalMinutes, duration.Seconds);
+        return L.F("Seconds", Math.Max(1, (int)Math.Ceiling(duration.TotalSeconds)));
     }
 
     private static void TryDeleteDirectory(string path)
@@ -483,7 +488,6 @@ public partial class MainWindow : Window
             return;
         }
 
-        SaveAutomaticArchiveExtractionSettings();
         var watchPath = GetAutomaticArchiveExtractionFolder();
         var maxArchiveBytes = GetAutomaticArchiveExtractionMaxArchiveBytes();
 
@@ -496,13 +500,13 @@ public partial class MainWindow : Window
                 requireZipSignature: false));
             _automaticWatcher.ArchiveReady += AutomaticWatcher_ArchiveReady;
             _automaticWatcher.Start();
-            StatusText.Text = $"Watching for automatic archive extraction: {watchPath}";
+            StatusText.Text = L.F("WatchingFolder", watchPath);
             AutomaticArchiveExtractionEnabledChanged?.Invoke(this, EventArgs.Empty);
         }
         catch (Exception exception)
         {
             AutomaticArchiveExtractionCheckBox.IsChecked = false;
-            ShowError("Could not start watching the download folder.", exception.Message);
+            ShowError(L.T("WatchFailed"), exception.Message);
         }
     }
 
@@ -518,42 +522,8 @@ public partial class MainWindow : Window
         _automaticWatcher.ArchiveReady -= AutomaticWatcher_ArchiveReady;
         _automaticWatcher.Dispose();
         _automaticWatcher = null;
-        StatusText.Text = "Automatic archive extraction stopped.";
+        StatusText.Text = L.T("AutomaticStopped");
         AutomaticArchiveExtractionEnabledChanged?.Invoke(this, EventArgs.Empty);
-    }
-
-    private void BrowseAutomaticArchiveExtractionFolderButton_Click(object sender, RoutedEventArgs e)
-    {
-        using var dialog = new System.Windows.Forms.FolderBrowserDialog
-        {
-            Description = "Select a folder to watch for automatic archive extraction.",
-            SelectedPath = Directory.Exists(GetAutomaticArchiveExtractionFolder())
-                ? GetAutomaticArchiveExtractionFolder()
-                : GetDefaultDownloadFolder(),
-            ShowNewFolderButton = true
-        };
-
-        if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-        {
-            AutomaticArchiveExtractionFolderTextBox.Text = dialog.SelectedPath;
-        }
-    }
-
-    private void AutomaticArchiveExtractionSettings_Changed(object sender, RoutedEventArgs e) =>
-        HandleAutomaticArchiveExtractionSettingsChanged();
-
-    private void AutomaticArchiveExtractionSettings_Changed(object sender, System.Windows.Controls.TextChangedEventArgs e) =>
-        HandleAutomaticArchiveExtractionSettingsChanged();
-
-    private void HandleAutomaticArchiveExtractionSettingsChanged()
-    {
-        if (_loadingSettings)
-        {
-            return;
-        }
-
-        SaveAutomaticArchiveExtractionSettings();
-        RestartAutomaticWatcherIfEnabled();
     }
 
     private void AutomaticWatcher_ArchiveReady(object? sender, string archivePath) =>
@@ -575,7 +545,7 @@ public partial class MainWindow : Window
 
             await Dispatcher.InvokeAsync(() =>
             {
-                StatusHeadingText.Text = "Automatically extracting archive";
+                StatusHeadingText.Text = L.T("AutomaticExtracting");
                 StatusText.Text = Path.GetFileName(archivePath);
             });
             await _automaticArchiveService.ExtractAsync(
@@ -590,7 +560,7 @@ public partial class MainWindow : Window
             temporaryPath = null;
             var sourceDeleted = TryDeleteSourceArchiveAfterAutomaticArchiveExtraction(archivePath);
             await Dispatcher.InvokeAsync(() =>
-                SetOperationCompleted("Automatic archive extraction completed", outputPath));
+                SetOperationCompleted(L.T("AutomaticCompleted"), outputPath));
             DiagnosticLog.Write("automatic-archive-extraction.completed");
             AutomaticArchiveExtractionAudit.Write(
                 AutomaticArchiveExtractionAuditStatus.Completed,
@@ -603,8 +573,8 @@ public partial class MainWindow : Window
         {
             await Dispatcher.InvokeAsync(() =>
             {
-                StatusHeadingText.Text = "Automatic archive extraction skipped";
-                StatusText.Text = $"Password required: {Path.GetFileName(archivePath)}";
+                StatusHeadingText.Text = L.T("AutomaticSkipped");
+                StatusText.Text = L.F("PasswordRequiredFile", Path.GetFileName(archivePath));
             });
             DiagnosticLog.Write("automatic-archive-extraction.password-required");
             AutomaticArchiveExtractionAudit.Write(
@@ -623,7 +593,7 @@ public partial class MainWindow : Window
         {
             await Dispatcher.InvokeAsync(() =>
             {
-                StatusHeadingText.Text = "Automatic archive extraction failed";
+                StatusHeadingText.Text = L.T("AutomaticFailed");
                 StatusText.Text = Path.GetFileName(archivePath);
             });
             DiagnosticLog.Write("automatic-archive-extraction.failed", exception);
@@ -668,21 +638,21 @@ public partial class MainWindow : Window
         }
         catch (OperationCanceledException)
         {
-            StatusHeadingText.Text = "Operation canceled";
-            StatusText.Text = "Operation canceled.";
-            ProgressDetailsText.Text = "Incomplete temporary results were cleaned up.";
+            StatusHeadingText.Text = L.T("OperationCanceled");
+            StatusText.Text = L.T("OperationCanceledMessage");
+            ProgressDetailsText.Text = L.T("TemporaryCleaned");
         }
         catch (ArchiveSecurityException exception)
         {
-            ShowError("The operation was stopped for safety.", exception.Message);
+            ShowError(L.T("StoppedForSafety"), exception.Message);
         }
         catch (InvalidDataException exception)
         {
-            ShowError("The archive is invalid or damaged.", exception.Message);
+            ShowError(L.T("DamagedArchive"), exception.Message);
         }
         catch (Exception exception)
         {
-            ShowError("Could not complete the operation.", exception.Message);
+            ShowError(L.T("OperationFailed"), exception.Message);
         }
         finally
         {
@@ -706,7 +676,7 @@ public partial class MainWindow : Window
         {
             OperationProgress.Value = 0;
             ProgressPercentText.Text = "0%";
-            ProgressDetailsText.Text = "Preparing operation.";
+            ProgressDetailsText.Text = L.T("PreparingOperation");
         }
     }
 
@@ -714,12 +684,13 @@ public partial class MainWindow : Window
     {
         StatusText.Text = summary;
         StatusHeadingText.Text = summary;
-        System.Windows.MessageBox.Show(this, $"{summary}\n\n{detail}", "sZIP",
+        System.Windows.MessageBox.Show(this, $"{summary}\n\n{L.Error(detail)}", "sZIP",
             MessageBoxButton.OK, MessageBoxImage.Error);
     }
 
     protected override void OnClosed(EventArgs e)
     {
+        Localization.Changed -= Localization_Changed;
         _shutdownCancellation.Cancel();
         _operationCancellation?.Cancel();
         if (_automaticWatcher is not null)
@@ -818,13 +789,13 @@ public partial class MainWindow : Window
                 try
                 {
                     StatusHeadingText.Text = smart
-                        ? "Smart extracting from Explorer"
-                        : "Extracting from Explorer";
+                        ? L.T("SmartFromExplorer")
+                        : L.T("ExtractFromExplorer");
                     StatusText.Text = $"{Path.GetFileName(archivePath)} ({index + 1}/{archives.Length})";
                     var progress = new Progress<ExtractionProgress>(value =>
                         UpdateExtractionProgress(
                             value,
-                            smart ? "Smart extracting" : "Extracting"));
+                            smart ? L.T("SmartExtracting") : L.T("Extracting")));
                     try
                     {
                         await _manualExtractionService.ExtractAsync(
@@ -859,7 +830,7 @@ public partial class MainWindow : Window
             }
 
             SetOperationCompleted(
-                archives.Length == 1 ? "Extracted 1 archive" : $"Extracted {archives.Length:N0} archives",
+                archives.Length == 1 ? L.T("OneArchiveExtracted") : L.F("ArchivesExtracted", archives.Length),
                 lastOutputPath ?? string.Empty);
             completed = true;
         });
@@ -888,7 +859,7 @@ public partial class MainWindow : Window
     {
         if (sourcePaths.Count != 1)
         {
-            return "New Archive.zip";
+            return L.T("NewArchive");
         }
 
         var path = sourcePaths.First().TrimEnd(
@@ -897,7 +868,7 @@ public partial class MainWindow : Window
         var name = Directory.Exists(path)
             ? Path.GetFileName(path)
             : Path.GetFileNameWithoutExtension(path);
-        return string.IsNullOrWhiteSpace(name) ? "New Archive.zip" : name + ".zip";
+        return string.IsNullOrWhiteSpace(name) ? L.T("NewArchive") : name + ".zip";
     }
 
     private static string GetArchiveBaseName(string archivePath)
@@ -927,32 +898,31 @@ public partial class MainWindow : Window
             }
         }
 
-        throw new IOException("Could not create an automatic archive extraction folder name.");
+        throw new IOException(L.T("OutputFolderError"));
     }
 
-    private void LoadAutomaticArchiveExtractionSettings()
+    public void ApplySettings(bool restartWatcher)
     {
-        _loadingSettings = true;
-        try
-        {
-            AutomaticArchiveExtractionFolderTextBox.Text = GetAutomaticArchiveExtractionFolder();
-            AutomaticArchiveExtractionMaxMbTextBox.Text = Math.Max(1, UserSettings.Default.AutomaticArchiveExtractionMaxArchiveMb)
-                .ToString(System.Globalization.CultureInfo.InvariantCulture);
-            DeleteSourceArchiveCheckBox.IsChecked = UserSettings.Default.AutomaticArchiveExtractionDeleteSourceArchive;
-            UpdateAutomaticArchiveExtractionToggleLabel();
-        }
-        finally
-        {
-            _loadingSettings = false;
-        }
+        UpdateAutomaticArchiveExtractionToggleLabel();
+        if (restartWatcher) RestartAutomaticWatcherIfEnabled();
     }
 
-    private void SaveAutomaticArchiveExtractionSettings()
+    private void Localization_Changed(object? sender, EventArgs e)
     {
-        UserSettings.Default.AutomaticArchiveExtractionFolder = GetAutomaticArchiveExtractionFolder();
-        UserSettings.Default.AutomaticArchiveExtractionMaxArchiveMb = GetAutomaticArchiveExtractionMaxArchiveMb();
-        UserSettings.Default.AutomaticArchiveExtractionDeleteSourceArchive = DeleteSourceArchiveCheckBox.IsChecked == true;
-        TrySaveSettings();
+        UpdateAutomaticArchiveExtractionToggleLabel();
+        if (!CancelButton.IsEnabled && _automaticArchiveExtractionLock.CurrentCount > 0)
+        {
+            OperationProgress.Value = 0;
+            ProgressPercentText.Text = "0%";
+            StatusHeadingText.SetResourceReference(System.Windows.Controls.TextBlock.TextProperty, "Text.Ready");
+            ProgressDetailsText.SetResourceReference(System.Windows.Controls.TextBlock.TextProperty, "Text.Waiting");
+            if (_automaticWatcher is not null)
+                StatusText.Text = L.F("WatchingFolder", GetAutomaticArchiveExtractionFolder());
+            else if (_workspace.CurrentArchivePath is not null)
+                StatusText.Text = _workspace.CurrentArchivePath;
+            else
+                StatusText.SetResourceReference(System.Windows.Controls.TextBlock.TextProperty, "Text.SelectArchive");
+        }
     }
 
     private void RestartAutomaticWatcherIfEnabled()
@@ -978,34 +948,18 @@ public partial class MainWindow : Window
         _automaticWatcher = null;
         if (updateStatus)
         {
-            StatusText.Text = "Automatic archive extraction stopped.";
+            StatusText.Text = L.T("AutomaticStopped");
         }
     }
 
     private string GetAutomaticArchiveExtractionFolder()
     {
-        var path = AutomaticArchiveExtractionFolderTextBox.Text;
-        if (string.IsNullOrWhiteSpace(path))
-        {
-            path = UserSettings.Default.AutomaticArchiveExtractionFolder;
-        }
-
+        var path = UserSettings.Default.AutomaticArchiveExtractionFolder;
         return string.IsNullOrWhiteSpace(path) ? GetDefaultDownloadFolder() : path.Trim();
     }
 
-    private int GetAutomaticArchiveExtractionMaxArchiveMb()
-    {
-        if (!int.TryParse(
-                AutomaticArchiveExtractionMaxMbTextBox.Text,
-                System.Globalization.NumberStyles.Integer,
-                System.Globalization.CultureInfo.InvariantCulture,
-                out var value))
-        {
-            value = UserSettings.Default.AutomaticArchiveExtractionMaxArchiveMb;
-        }
-
-        return Math.Max(1, Math.Min(10240, value));
-    }
+    private int GetAutomaticArchiveExtractionMaxArchiveMb() =>
+        Math.Max(1, Math.Min(10240, UserSettings.Default.AutomaticArchiveExtractionMaxArchiveMb));
 
     private long GetAutomaticArchiveExtractionMaxArchiveBytes() =>
         GetAutomaticArchiveExtractionMaxArchiveMb() * 1024L * 1024L;
@@ -1018,8 +972,8 @@ public partial class MainWindow : Window
         if (AutomaticArchiveExtractionCheckBox is not null)
         {
             AutomaticArchiveExtractionCheckBox.Content = AutomaticArchiveExtractionCheckBox.IsChecked == true
-                ? "Automatic Archive Extraction: On"
-                : "Automatic Archive Extraction: Off";
+                ? L.T("AutomaticArchiveExtractionOn")
+                : L.T("AutomaticArchiveExtractionOff");
         }
     }
 
@@ -1046,16 +1000,5 @@ public partial class MainWindow : Window
         }
     }
 
-    private static void TrySaveSettings()
-    {
-        try
-        {
-            UserSettings.Default.Save();
-        }
-        catch (Exception exception)
-        {
-            DiagnosticLog.Write("settings.save.failed", exception);
-        }
-    }
 
 }

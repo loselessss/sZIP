@@ -114,7 +114,7 @@ public sealed class GitHubUpdateServiceTests
             using var service = new GitHubUpdateService(new ReleaseVersion(1, 3, 0), client, root);
             var update = await service.CheckAsync();
             await Assert.ThrowsAsync<UpdateException>(() => service.DownloadAsync(update!));
-            Assert.Empty(Directory.EnumerateFiles(root));
+            Assert.False(Directory.Exists(root));
         }
         finally
         {
@@ -144,6 +144,28 @@ public sealed class GitHubUpdateServiceTests
         finally
         {
             Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
+    public void CleanupRemovesDownloadDirectoryAfterItsTemporaryFilesAreDeleted()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "sZIP-tests-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        try
+        {
+            File.WriteAllText(Path.Combine(root, "sZIP_Setup_1.3.0.exe"), "installed version");
+            File.WriteAllText(Path.Combine(root, "sZIP_Setup_1.4.0.exe.part"), "partial");
+            using var service = new GitHubUpdateService(new ReleaseVersion(1, 3, 0),
+                new HttpClient(new StubHandler(_ => throw new InvalidOperationException())), root);
+
+            service.CleanupDownloads();
+
+            Assert.False(Directory.Exists(root));
+        }
+        finally
+        {
+            if (Directory.Exists(root)) Directory.Delete(root, true);
         }
     }
 

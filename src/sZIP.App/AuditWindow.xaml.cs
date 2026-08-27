@@ -10,10 +10,14 @@ public partial class AuditWindow : Window
     {
         InitializeComponent();
         AuditPathText.Text = AutomaticArchiveExtractionAudit.AuditPath;
+        Localization.Changed += Localization_Changed;
+        Closed += (_, _) => Localization.Changed -= Localization_Changed;
         Refresh();
     }
 
     private void RefreshButton_Click(object sender, RoutedEventArgs e) => Refresh();
+
+    private void Localization_Changed(object? sender, EventArgs e) => Refresh();
 
     private void OpenFolderButton_Click(object sender, RoutedEventArgs e)
     {

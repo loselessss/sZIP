@@ -10,6 +10,14 @@ internal sealed class UserSettings : ApplicationSettingsBase
     public static UserSettings Default => Instance;
 
     [UserScopedSetting]
+    [DefaultSettingValue("system")]
+    public string Language
+    {
+        get => (string)this[nameof(Language)];
+        set => this[nameof(Language)] = value;
+    }
+
+    [UserScopedSetting]
     [DefaultSettingValue("True")]
     public bool AutomaticArchiveExtractionEnabled
     {

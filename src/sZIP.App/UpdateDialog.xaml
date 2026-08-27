@@ -1,7 +1,7 @@
 <Window x:Class="sZIP.App.UpdateDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="sZIP Update" Width="640" Height="500" MinWidth="560" MinHeight="420"
+        Title="{DynamicResource Text.Update}" Width="640" Height="500" MinWidth="560" MinHeight="420"
         WindowStartupLocation="CenterOwner" Icon="Assets/szip.ico" ShowInTaskbar="False">
     <Grid Margin="20">
         <Grid.RowDefinitions>
@@ -12,7 +12,7 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <TextBlock x:Name="TitleText" FontSize="20" FontWeight="SemiBold" />
+        <TextBlock x:Name="TitleText" FontSize="20" FontWeight="SemiBold" TextWrapping="Wrap" />
         <Grid Grid.Row="1" Margin="0,14,0,12">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="110" />
@@ -23,15 +23,15 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
-            <TextBlock Text="Current Version" />
+            <TextBlock Text="{DynamicResource Text.CurrentVersion}" />
             <TextBlock x:Name="CurrentVersionText" Grid.Column="1" />
-            <TextBlock Grid.Row="1" Text="New Version" />
+            <TextBlock Grid.Row="1" Text="{DynamicResource Text.NewVersion}" />
             <TextBlock x:Name="NewVersionText" Grid.Row="1" Grid.Column="1" />
-            <TextBlock Grid.Row="2" Text="Installer" />
-            <TextBlock x:Name="InstallerText" Grid.Row="2" Grid.Column="1" />
+            <TextBlock Grid.Row="2" Text="{DynamicResource Text.Installer}" />
+            <TextBlock x:Name="InstallerText" Grid.Row="2" Grid.Column="1" TextWrapping="Wrap" />
         </Grid>
 
-        <GroupBox Grid.Row="2" Header="Release Notes">
+        <GroupBox Grid.Row="2" Header="{DynamicResource Text.ReleaseNotes}">
             <TextBox x:Name="NotesText" IsReadOnly="True" TextWrapping="Wrap"
                      VerticalScrollBarVisibility="Auto" BorderThickness="0" Padding="8" />
         </GroupBox>
@@ -42,15 +42,15 @@
             <TextBlock x:Name="StatusText" Margin="0,6,0,0" TextWrapping="Wrap" />
         </StackPanel>
 
-        <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
-            <Button x:Name="ReleasePageButton" Content="Release Page" MinWidth="100" Margin="0,0,8,0"
+        <WrapPanel Grid.Row="4" HorizontalAlignment="Right" Margin="0,16,0,0">
+            <Button x:Name="ReleasePageButton" Content="{DynamicResource Text.ReleasePage}" MinWidth="100" Margin="0,0,8,0"
                     Click="ReleasePageButton_Click" />
-            <Button x:Name="SkipButton" Content="Skip This Version" MinWidth="120" Margin="0,0,8,0"
+            <Button x:Name="SkipButton" Content="{DynamicResource Text.SkipVersion}" MinWidth="120" Margin="0,0,8,0"
                     Click="SkipButton_Click" />
-            <Button x:Name="LaterButton" Content="Later" MinWidth="80" Margin="0,0,8,0"
+            <Button x:Name="LaterButton" Content="{DynamicResource Text.Later}" MinWidth="80" Margin="0,0,8,0"
                     Click="LaterButton_Click" />
-            <Button x:Name="InstallButton" Content="Download and Install" MinWidth="130"
+            <Button x:Name="InstallButton" Content="{DynamicResource Text.DownloadInstall}" MinWidth="130"
                     Click="InstallButton_Click" />
-        </StackPanel>
+        </WrapPanel>
     </Grid>
 </Window>

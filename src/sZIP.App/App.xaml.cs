@@ -1,6 +1,6 @@
+using L = sZIP.App.Localization;
 using System.Diagnostics;
 using System.Drawing;
-using System.Globalization;
 using System.IO;
 using System.Windows;
 using System.Windows.Threading;
@@ -16,8 +16,6 @@ public partial class App : System.Windows.Application
     private MainWindow? _mainWindow;
     private Forms.NotifyIcon? _trayIcon;
     private Forms.ToolStripMenuItem? _automaticArchiveExtractionMenuItem;
-    private Forms.ToolStripMenuItem? _startWithWindowsMenuItem;
-    private Forms.ToolStripMenuItem? _shellIntegrationMenuItem;
     private Icon? _applicationIcon;
     private bool _isExiting;
     private Mutex? _singleInstanceMutex;
@@ -36,6 +34,7 @@ public partial class App : System.Windows.Application
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
+        Localization.Apply(UserSettings.Default.Language);
         ApplySystemTheme();
         SystemEvents.UserPreferenceChanged += SystemEvents_UserPreferenceChanged;
         DiagnosticLog.Write("application.start");
@@ -81,6 +80,7 @@ public partial class App : System.Windows.Application
         _mainWindow.AutomaticArchiveExtractionEnabledChanged += MainWindow_AutomaticArchiveExtractionEnabledChanged;
         _mainWindow.HiddenToTray += MainWindow_HiddenToTray;
         _mainWindow.UpdateCheckRequested += (_, _) => _ = CheckForUpdatesAsync(manual: true);
+        _mainWindow.SettingsRequested += (_, _) => ShowSettings();
 
         _commandDebounceTimer = new DispatcherTimer
         {
@@ -189,11 +189,24 @@ public partial class App : System.Windows.Application
             ? (Icon)SystemIcons.Application.Clone()
             : Icon.ExtractAssociatedIcon(executablePath) ?? (Icon)SystemIcons.Application.Clone();
 
+        _trayIcon = new Forms.NotifyIcon
+        {
+            Icon = _applicationIcon,
+            Text = "sZIP",
+            Visible = true
+        };
+        _trayIcon.DoubleClick += (_, _) => ShowMainWindow();
+        RefreshTrayMenu();
+    }
+
+    private void RefreshTrayMenu()
+    {
+        if (_trayIcon is null) return;
         var menu = new Forms.ContextMenuStrip();
-        menu.Items.Add("Open sZIP", null, (_, _) => ShowMainWindow());
+        menu.Items.Add(L.T("OpenSzip"), null, (_, _) => ShowMainWindow());
         menu.Items.Add(new Forms.ToolStripSeparator());
 
-        _automaticArchiveExtractionMenuItem = new Forms.ToolStripMenuItem("Automatic Archive Extraction")
+        _automaticArchiveExtractionMenuItem = new Forms.ToolStripMenuItem(L.T("AutomaticArchiveExtraction"))
         {
             CheckOnClick = false
         };
@@ -205,34 +218,35 @@ public partial class App : System.Windows.Application
             }
         };
         menu.Items.Add(_automaticArchiveExtractionMenuItem);
-        _startWithWindowsMenuItem = new Forms.ToolStripMenuItem("Start with Windows")
-        {
-            CheckOnClick = false
-        };
-        _startWithWindowsMenuItem.Click += (_, _) => ToggleStartWithWindows();
-        menu.Items.Add(_startWithWindowsMenuItem);
-        _shellIntegrationMenuItem = new Forms.ToolStripMenuItem("Explorer menu integration")
-        {
-            CheckOnClick = false
-        };
-        _shellIntegrationMenuItem.Click += (_, _) => ToggleShellIntegration();
-        menu.Items.Add(_shellIntegrationMenuItem);
-        menu.Items.Add("Check for Updates", null, (_, _) =>
+        menu.Items.Add(L.T("CheckForUpdates"), null, (_, _) =>
             Dispatcher.BeginInvoke(new Action(() => _ = CheckForUpdatesAsync(manual: true))));
-        menu.Items.Add("Open Diagnostic Log Folder", null, (_, _) => OpenDiagnosticLogFolder());
+        menu.Items.Add(L.T("Settings"), null, (_, _) => ShowSettings());
+        menu.Items.Add(L.T("DiagnosticFolder"), null, (_, _) => OpenDiagnosticLogFolder());
         menu.Items.Add(new Forms.ToolStripSeparator());
-        menu.Items.Add("Exit", null, (_, _) => ExitApplication());
+        menu.Items.Add(L.T("Exit"), null, (_, _) => ExitApplication());
 
-        _trayIcon = new Forms.NotifyIcon
+        var previous = _trayIcon.ContextMenuStrip;
+        _trayIcon.ContextMenuStrip = menu;
+        previous?.Dispose();
+        UpdateTrayState();
+    }
+
+    private void ShowSettings()
+    {
+        if (_mainWindow is null || _isCheckingForUpdates) return;
+        var oldLanguage = UserSettings.Default.Language;
+        var oldFolder = UserSettings.Default.AutomaticArchiveExtractionFolder;
+        var oldMaxMb = UserSettings.Default.AutomaticArchiveExtractionMaxArchiveMb;
+        ShowMainWindow();
+        var dialog = new SettingsWindow { Owner = _mainWindow };
+        if (dialog.ShowDialog() != true) return;
+        if (oldLanguage != UserSettings.Default.Language)
         {
-            Icon = _applicationIcon,
-            Text = "sZIP",
-            ContextMenuStrip = menu,
-            Visible = true
-        };
-        _trayIcon.DoubleClick += (_, _) => ShowMainWindow();
-        UpdateStartupState();
-        UpdateShellIntegrationState();
+            Localization.Apply(UserSettings.Default.Language);
+        }
+        _mainWindow.ApplySettings(oldFolder != UserSettings.Default.AutomaticArchiveExtractionFolder
+            || oldMaxMb != UserSettings.Default.AutomaticArchiveExtractionMaxArchiveMb);
+        RefreshTrayMenu();
     }
 
     private void MainWindow_AutomaticArchiveExtractionEnabledChanged(object? sender, EventArgs e)
@@ -264,8 +278,8 @@ public partial class App : System.Windows.Application
 
         _trayIcon.ShowBalloonTip(
             2500,
-            "sZIP is running in the tray",
-            "Automatic archive extraction will keep running.",
+            L.T("TrayRunning"),
+            L.T("TrayContinuing"),
             Forms.ToolTipIcon.Info);
         UserSettings.Default.TrayHintShown = true;
         try
@@ -289,15 +303,15 @@ public partial class App : System.Windows.Application
         {
             _automaticArchiveExtractionMenuItem.Checked = enabled;
             _automaticArchiveExtractionMenuItem.Text = enabled
-                ? "Automatic Archive Extraction: On"
-                : "Automatic Archive Extraction: Off";
+                ? L.T("AutomaticArchiveExtractionOn")
+                : L.T("AutomaticArchiveExtractionOff");
         }
 
         if (_trayIcon is not null)
         {
             _trayIcon.Text = enabled
-                ? "sZIP - Automatic Archive Extraction On"
-                : "sZIP - Automatic Archive Extraction Off";
+                ? L.T("TrayOn")
+                : L.T("TrayOff");
         }
     }
 
@@ -318,31 +332,6 @@ public partial class App : System.Windows.Application
         _mainWindow.Topmost = true;
         _mainWindow.Topmost = false;
         _mainWindow.Focus();
-    }
-
-    private void ToggleStartWithWindows()
-    {
-        try
-        {
-            StartupRegistration.SetEnabled(!StartupRegistration.IsEnabled);
-            UpdateStartupState();
-        }
-        catch (Exception exception)
-        {
-            _trayIcon?.ShowBalloonTip(
-                3000,
-                "Startup Setting Failed",
-                exception.Message,
-                Forms.ToolTipIcon.Error);
-        }
-    }
-
-    private void UpdateStartupState()
-    {
-        if (_startWithWindowsMenuItem is not null)
-        {
-            _startWithWindowsMenuItem.Checked = StartupRegistration.IsEnabled;
-        }
     }
 
     private void ListenForShowWindow(CancellationToken cancellationToken)
@@ -385,29 +374,6 @@ public partial class App : System.Windows.Application
         }
 
         Shutdown();
-    }
-
-    private void ToggleShellIntegration()
-    {
-        try
-        {
-            var executablePath = Process.GetCurrentProcess().MainModule?.FileName
-                ?? throw new InvalidOperationException("Could not determine the executable path.");
-            ShellIntegration.SetEnabled(!ShellIntegration.IsEnabled, executablePath);
-            UpdateShellIntegrationState();
-        }
-        catch (Exception exception)
-        {
-            _trayIcon?.ShowBalloonTip(3000, "Explorer Menu Setup Failed", exception.Message, Forms.ToolTipIcon.Error);
-        }
-    }
-
-    private void UpdateShellIntegrationState()
-    {
-        if (_shellIntegrationMenuItem is not null)
-        {
-            _shellIntegrationMenuItem.Checked = ShellIntegration.IsEnabled;
-        }
     }
 
     private static void RefreshShellIntegrationRegistration()
@@ -457,7 +423,7 @@ public partial class App : System.Windows.Application
         }
 
         _updateService = new GitHubUpdateService(currentVersion,
-            releaseNotesLanguage: CultureInfo.CurrentUICulture.Name);
+            releaseNotesLanguage: Localization.Language);
         foreach (var removed in _updateService.CleanupDownloads())
         {
             DiagnosticLog.Write("update.download.removed " + Path.GetFileName(removed));
@@ -491,6 +457,7 @@ public partial class App : System.Windows.Application
         _isCheckingForUpdates = true;
         try
         {
+            _updateService.ReleaseNotesLanguage = Localization.Language;
             var update = await _updateService.CheckAsync();
             UserSettings.Default.LastUpdateCheckUtc =
                 UpdateCheckSchedule.MarkChecked(DateTimeOffset.UtcNow);
@@ -500,8 +467,8 @@ public partial class App : System.Windows.Application
             {
                 if (manual)
                 {
-                    System.Windows.MessageBox.Show(_mainWindow, "You are using the latest version.",
-                        "sZIP Update", MessageBoxButton.OK, MessageBoxImage.Information);
+                    System.Windows.MessageBox.Show(_mainWindow, L.T("UpToDate"),
+                        L.T("Update"), MessageBoxButton.OK, MessageBoxImage.Information);
                 }
                 return;
             }
@@ -530,8 +497,8 @@ public partial class App : System.Windows.Application
                 {
                     DiagnosticLog.Write("update.installer.launch.failed", exception);
                     System.Windows.MessageBox.Show(_mainWindow,
-                        "Could not run the installer.\n\n" + dialog.InstallerPath + "\n\n" + exception.Message,
-                        "Update Installation Failed",
+                        L.T("InstallerLaunchError") + dialog.InstallerPath + "\n\n" + exception.Message,
+                        L.T("UpdateInstallationFailed"),
                         MessageBoxButton.OK,
                         MessageBoxImage.Warning);
                 }
@@ -542,7 +509,7 @@ public partial class App : System.Windows.Application
             DiagnosticLog.Write("update.check.failed", exception);
             if (manual)
             {
-                System.Windows.MessageBox.Show(_mainWindow, exception.Message, "Update Check Failed",
+                System.Windows.MessageBox.Show(_mainWindow, L.Error(exception.Message), L.T("UpdateCheckFailed"),
                     MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }

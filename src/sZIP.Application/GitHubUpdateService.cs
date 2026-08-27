@@ -85,7 +85,7 @@ public sealed class GitHubUpdateService : IDisposable
     private readonly HttpClient _client;
     private readonly bool _ownsClient;
     private readonly string _downloadRoot;
-    private readonly string _releaseNotesLanguage;
+    public string ReleaseNotesLanguage { get; set; }
 
     public GitHubUpdateService(ReleaseVersion currentVersion, HttpClient? client = null,
         string? downloadRoot = null, string? releaseNotesLanguage = null)
@@ -95,7 +95,7 @@ public sealed class GitHubUpdateService : IDisposable
         _client = client ?? CreateClient(currentVersion);
         _ownsClient = client is null;
         _downloadRoot = downloadRoot ?? Path.Combine(Path.GetTempPath(), "sZIP", "updates");
-        _releaseNotesLanguage = releaseNotesLanguage ?? "en";
+        ReleaseNotesLanguage = releaseNotesLanguage ?? "en";
     }
 
     public ReleaseVersion CurrentVersion { get; }
@@ -158,7 +158,7 @@ public sealed class GitHubUpdateService : IDisposable
             : release.name!;
         return new AvailableUpdate(latestVersion, release.tag_name ?? string.Empty,
             releaseName,
-            ReleaseNotesLocalization.Select(release.body, _releaseNotesLanguage),
+            ReleaseNotesLocalization.Select(release.body, ReleaseNotesLanguage),
             releaseUrl!, release.published_at ?? string.Empty,
             SelectInstaller(release.assets, latestVersion));
     }
@@ -244,11 +244,13 @@ public sealed class GitHubUpdateService : IDisposable
         catch (OperationCanceledException)
         {
             TryDelete(partial);
+            TryDeleteEmptyDirectory(_downloadRoot);
             throw new UpdateCancelledException();
         }
         catch
         {
             TryDelete(partial);
+            TryDeleteEmptyDirectory(_downloadRoot);
             throw;
         }
 
@@ -283,6 +285,7 @@ public sealed class GitHubUpdateService : IDisposable
         {
             if (TryDelete(item.Path)) removed.Add(item.Path);
         }
+        TryDeleteEmptyDirectory(_downloadRoot);
         return removed;
     }
 
@@ -341,6 +344,19 @@ public sealed class GitHubUpdateService : IDisposable
         try { File.Delete(path); return true; }
         catch (IOException) { return false; }
         catch (UnauthorizedAccessException) { return false; }
+    }
+
+    private static void TryDeleteEmptyDirectory(string path)
+    {
+        try
+        {
+            if (Directory.Exists(path) && !Directory.EnumerateFileSystemEntries(path).Any())
+            {
+                Directory.Delete(path);
+            }
+        }
+        catch (IOException) { }
+        catch (UnauthorizedAccessException) { }
     }
 
     public void Dispose()
