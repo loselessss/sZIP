@@ -157,4 +157,14 @@
   <data name="DigestFailed" xml:space="preserve"><value>설치 파일의 SHA-256 값이 일치하지 않습니다.</value></data>
   <data name="StartupRegistryError" xml:space="preserve"><value>Windows 시작 프로그램 설정을 열지 못했습니다.</value></data>
   <data name="SzipExecutableError" xml:space="preserve"><value>sZIP 실행 파일 경로를 확인하지 못했습니다.</value></data>
+  <data name="RenameEntry" xml:space="preserve"><value>압축 파일 내부 이름 바꾸기</value></data>
+  <data name="Rename" xml:space="preserve"><value>이름 바꾸기</value></data>
+  <data name="NewName" xml:space="preserve"><value>새 이름</value></data>
+  <data name="RenamingEntry" xml:space="preserve"><value>압축 파일 내부 이름 변경 중</value></data>
+  <data name="RenameCompleted" xml:space="preserve"><value>압축 파일 내부 이름 변경 완료</value></data>
+  <data name="InvalidEntryName" xml:space="preserve"><value>올바른 파일 또는 폴더 이름을 입력하세요.</value></data>
+  <data name="ArchiveEditUnsupported" xml:space="preserve"><value>ZIP과 7Z 압축 파일에서만 내부 이름을 바꿀 수 있습니다.</value></data>
+  <data name="EncryptedRenameUnsupported" xml:space="preserve"><value>암호화를 유지할 수 없어 암호화된 압축 파일의 이름은 바꿀 수 없습니다.</value></data>
+  <data name="SelectedEntryNotFound" xml:space="preserve"><value>선택한 압축 파일 항목을 찾지 못했습니다.</value></data>
+  <data name="RenameConflict" xml:space="preserve"><value>같은 폴더에 동일한 이름의 항목이 이미 있습니다.</value></data>
 </root>

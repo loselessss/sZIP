@@ -40,6 +40,21 @@ public partial class App : System.Windows.Application
         DiagnosticLog.Write("application.start");
 
         if (e.Args.Any(argument => string.Equals(
+                argument, "--register-shell", StringComparison.OrdinalIgnoreCase)))
+        {
+            ShellIntegration.SetEnabled(true, Process.GetCurrentProcess().MainModule?.FileName
+                ?? throw new InvalidOperationException(L.T("SzipExecutableError")));
+            Shutdown();
+            return;
+        }
+        if (e.Args.Any(argument => string.Equals(
+                argument, "--unregister-shell", StringComparison.OrdinalIgnoreCase)))
+        {
+            ShellIntegration.SetEnabled(false, Process.GetCurrentProcess().MainModule?.FileName ?? string.Empty);
+            Shutdown();
+            return;
+        }
+        if (e.Args.Any(argument => string.Equals(
                 argument, "--register-modern-shell", StringComparison.OrdinalIgnoreCase)))
         {
             ShellIntegration.SetModernContextMenuEnabled(true);
@@ -243,6 +258,7 @@ public partial class App : System.Windows.Application
         if (oldLanguage != UserSettings.Default.Language)
         {
             Localization.Apply(UserSettings.Default.Language);
+            RefreshShellIntegrationRegistration();
         }
         _mainWindow.ApplySettings(oldFolder != UserSettings.Default.AutomaticArchiveExtractionFolder
             || oldMaxMb != UserSettings.Default.AutomaticArchiveExtractionMaxArchiveMb);
@@ -598,6 +614,18 @@ public partial class App : System.Windows.Application
             {
                 await _mainWindow.HandleCommandLineAsync(
                     new[] { "--compress" }.Concat(batch.CompressionPaths).ToArray());
+            }
+
+            if (batch.ZipCompressionPaths.Count > 0)
+            {
+                await _mainWindow.HandleCommandLineAsync(
+                    new[] { "--compress-zip" }.Concat(batch.ZipCompressionPaths).ToArray());
+            }
+
+            if (batch.SevenZipCompressionPaths.Count > 0)
+            {
+                await _mainWindow.HandleCommandLineAsync(
+                    new[] { "--compress-7z" }.Concat(batch.SevenZipCompressionPaths).ToArray());
             }
 
             if (batch.DirectExtractionPaths.Count > 0)

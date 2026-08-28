@@ -17,6 +17,7 @@ public partial class MainWindow : Window
     private readonly ArchiveWorkspace _workspace;
     private readonly ZipArchiveService _manualArchiveService = new();
     private readonly SevenZipArchiveService _sevenZipArchiveService = new();
+    private readonly ArchiveEntryRenamer _archiveEntryRenamer;
     private readonly MultiFormatArchiveService _automaticArchiveService = new();
     private readonly SemaphoreSlim _automaticArchiveExtractionLock = new(1, 1);
     private readonly CancellationTokenSource _shutdownCancellation = new();
@@ -39,6 +40,8 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         _workspace = new ArchiveWorkspace(_manualExtractionService);
+        _archiveEntryRenamer = new ArchiveEntryRenamer(
+            _manualExtractionService, _manualArchiveService, _sevenZipArchiveService);
         InitializeComponent();
         UpdateAutomaticArchiveExtractionToggleLabel();
         Localization.Changed += Localization_Changed;
@@ -181,6 +184,59 @@ public partial class MainWindow : Window
         });
     }
 
+    private async void RenameEntryButton_Click(object sender, RoutedEventArgs e) =>
+        await RenameSelectedEntryAsync();
+
+    private async void RenameEntryMenuItem_Click(object sender, RoutedEventArgs e) =>
+        await RenameSelectedEntryAsync();
+
+    private async void EntriesGrid_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+    {
+        if (e.Key != System.Windows.Input.Key.F2 || !CanRenameSelectedEntry())
+        {
+            return;
+        }
+        e.Handled = true;
+        await RenameSelectedEntryAsync();
+    }
+
+    private async Task RenameSelectedEntryAsync()
+    {
+        var archivePath = _workspace.CurrentArchivePath;
+        var entry = EntriesGrid.SelectedItem as ArchiveEntryInfo;
+        if (archivePath is null || entry is null || EntriesGrid.SelectedItems.Count != 1)
+        {
+            return;
+        }
+        if (!_archiveEntryRenamer.Supports(archivePath))
+        {
+            ShowError(L.T("RenameEntry"), L.T("ArchiveEditUnsupported"));
+            return;
+        }
+
+        var currentName = Path.GetFileName(entry.FullName.Replace('\\', '/').TrimEnd('/'));
+        var dialog = new RenameEntryDialog(currentName) { Owner = this };
+        if (dialog.ShowDialog() != true || string.Equals(dialog.NewName, currentName, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        using var archiveExclusion = _automaticWatcher?.ExcludePath(archivePath);
+        var progress = new Progress<CompressionProgress>(value => UpdateOperationProgress(
+            L.T("RenamingEntry"), value.CurrentEntry, value.Percentage,
+            value.ProcessedBytes, value.TotalBytes, value.CompletedEntries, value.TotalEntries));
+        await RunOperationAsync(async cancellationToken =>
+        {
+            await _archiveEntryRenamer.RenameAsync(
+                archivePath, entry.FullName, dialog.NewName, _workspace.CurrentPassword,
+                progress, cancellationToken);
+            var entries = await _workspace.OpenAsync(
+                archivePath, _workspace.CurrentPassword, cancellationToken);
+            EntriesGrid.ItemsSource = entries;
+            SetOperationCompleted(L.T("RenameCompleted"), archivePath);
+        });
+    }
+
     private IReadOnlyCollection<string> GetSelectedEntryNames()
     {
         var allEntries = EntriesGrid.ItemsSource as IEnumerable<ArchiveEntryInfo>
@@ -203,10 +259,18 @@ public partial class MainWindow : Window
         return names.ToArray();
     }
 
-    private void EntriesGrid_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e) =>
+    private void EntriesGrid_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+    {
         ExtractSelectedButton.IsEnabled = !CancelButton.IsEnabled
             && _workspace.CurrentArchivePath is not null
             && EntriesGrid.SelectedItems.Count > 0;
+        RenameEntryButton.IsEnabled = CanRenameSelectedEntry();
+    }
+
+    private bool CanRenameSelectedEntry() => !CancelButton.IsEnabled
+        && _workspace.CurrentArchivePath is string archivePath
+        && _archiveEntryRenamer.Supports(archivePath)
+        && EntriesGrid.SelectedItems.Count == 1;
 
     private void CancelButton_Click(object sender, RoutedEventArgs e) =>
         _operationCancellation?.Cancel();
@@ -282,23 +346,34 @@ public partial class MainWindow : Window
         });
     }
 
-    private async Task CreateArchiveAsync(IReadOnlyCollection<string> sourcePaths)
+    private async Task CreateArchiveAsync(
+        IReadOnlyCollection<string> sourcePaths,
+        string? quickExtension = null)
     {
         var initialDirectory = GetInitialDirectory(sourcePaths.First());
-        var saveDialog = new Microsoft.Win32.SaveFileDialog
+        string outputPath;
+        if (quickExtension is null)
         {
-            Title = L.T("SaveArchive"),
-            Filter = L.T("SaveArchiveFilter"),
-            DefaultExt = ".zip",
-            AddExtension = true,
-            OverwritePrompt = true,
-            InitialDirectory = initialDirectory,
-            FileName = GetDefaultArchiveName(sourcePaths)
-        };
-
-        if (saveDialog.ShowDialog(this) != true)
+            var saveDialog = new Microsoft.Win32.SaveFileDialog
+            {
+                Title = L.T("SaveArchive"),
+                Filter = L.T("SaveArchiveFilter"),
+                DefaultExt = ".zip",
+                AddExtension = true,
+                OverwritePrompt = true,
+                InitialDirectory = initialDirectory,
+                FileName = GetDefaultArchiveName(sourcePaths)
+            };
+            if (saveDialog.ShowDialog(this) != true)
+            {
+                return;
+            }
+            outputPath = saveDialog.FileName;
+        }
+        else
         {
-            return;
+            var defaultName = Path.ChangeExtension(GetDefaultArchiveName(sourcePaths), quickExtension);
+            outputPath = GetUniqueFilePath(Path.Combine(initialDirectory, defaultName));
         }
 
         var progress = new Progress<CompressionProgress>(value =>
@@ -307,10 +382,10 @@ public partial class MainWindow : Window
         var completed = false;
         await RunOperationAsync(async cancellationToken =>
         {
-            if (string.Equals(Path.GetExtension(saveDialog.FileName), ".7z", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(Path.GetExtension(outputPath), ".7z", StringComparison.OrdinalIgnoreCase))
             {
                 await _sevenZipArchiveService.CreateAsync(
-                    saveDialog.FileName,
+                    outputPath,
                     sourcePaths,
                     progress,
                     cancellationToken);
@@ -318,18 +393,25 @@ public partial class MainWindow : Window
             else
             {
                 await _manualArchiveService.CreateAsync(
-                    saveDialog.FileName,
+                    outputPath,
                     sourcePaths,
                     progress,
                     cancellationToken);
             }
             completed = true;
-            SetOperationCompleted(L.T("ArchiveCreated"), saveDialog.FileName);
+            SetOperationCompleted(L.T("ArchiveCreated"), outputPath);
         });
 
         if (completed)
         {
-            await OpenArchiveAsync(saveDialog.FileName);
+            if (quickExtension is null)
+            {
+                await OpenArchiveAsync(outputPath);
+            }
+            else
+            {
+                HideToTray();
+            }
         }
     }
 
@@ -553,11 +635,10 @@ public partial class MainWindow : Window
                 temporaryPath,
                 cancellationToken: _shutdownCancellation.Token);
 
-            var outputPath = GetUniqueDirectoryPath(
-                Path.Combine(archiveDirectory, GetArchiveBaseName(archivePath)));
-            using var outputExclusion = _automaticWatcher?.ExcludePath(outputPath);
-            Directory.Move(temporaryPath, outputPath);
+            var outputPath = CompleteTemporaryExtraction(
+                temporaryPath, archivePath, archiveDirectory, smart: true);
             temporaryPath = null;
+            using var outputExclusion = _automaticWatcher?.ExcludePath(outputPath);
             var sourceDeleted = TryDeleteSourceArchiveAfterAutomaticArchiveExtraction(archivePath);
             await Dispatcher.InvokeAsync(() =>
                 SetOperationCompleted(L.T("AutomaticCompleted"), outputPath));
@@ -663,6 +744,7 @@ public partial class MainWindow : Window
 
     private void SetBusy(bool isBusy)
     {
+        CancelButton.IsEnabled = isBusy;
         OpenArchiveButton.IsEnabled = !isBusy;
         CreateFilesButton.IsEnabled = !isBusy;
         CreateFolderButton.IsEnabled = !isBusy;
@@ -671,7 +753,7 @@ public partial class MainWindow : Window
         ExtractSelectedButton.IsEnabled = !isBusy
             && _workspace.CurrentArchivePath is not null
             && EntriesGrid.SelectedItems.Count > 0;
-        CancelButton.IsEnabled = isBusy;
+        RenameEntryButton.IsEnabled = !isBusy && CanRenameSelectedEntry();
         if (isBusy)
         {
             OperationProgress.Value = 0;
@@ -737,6 +819,18 @@ public partial class MainWindow : Window
         if (string.Equals(option, "--compress", StringComparison.OrdinalIgnoreCase))
         {
             await CreateArchiveAsync(paths);
+            return;
+        }
+
+        if (string.Equals(option, "--compress-zip", StringComparison.OrdinalIgnoreCase))
+        {
+            await CreateArchiveAsync(paths, ".zip");
+            return;
+        }
+
+        if (string.Equals(option, "--compress-7z", StringComparison.OrdinalIgnoreCase))
+        {
+            await CreateArchiveAsync(paths, ".7z");
             return;
         }
 
@@ -882,17 +976,20 @@ public partial class MainWindow : Window
         return Path.GetFileNameWithoutExtension(fileName);
     }
 
-    private static string GetUniqueDirectoryPath(string desiredPath)
+    private static string GetUniqueFilePath(string desiredPath)
     {
-        if (!Directory.Exists(desiredPath) && !File.Exists(desiredPath))
+        if (!File.Exists(desiredPath) && !Directory.Exists(desiredPath))
         {
             return desiredPath;
         }
 
+        var directory = Path.GetDirectoryName(desiredPath) ?? Environment.CurrentDirectory;
+        var name = Path.GetFileNameWithoutExtension(desiredPath);
+        var extension = Path.GetExtension(desiredPath);
         for (var index = 1; index < int.MaxValue; index++)
         {
-            var candidate = $"{desiredPath} ({index})";
-            if (!Directory.Exists(candidate) && !File.Exists(candidate))
+            var candidate = Path.Combine(directory, $"{name} ({index}){extension}");
+            if (!File.Exists(candidate) && !Directory.Exists(candidate))
             {
                 return candidate;
             }

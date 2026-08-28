@@ -157,4 +157,14 @@ You can still check for updates manually at any time.</value></data>
   <data name="DigestFailed" xml:space="preserve"><value>Installer SHA-256 verification failed.</value></data>
   <data name="StartupRegistryError" xml:space="preserve"><value>Could not open Windows startup settings.</value></data>
   <data name="SzipExecutableError" xml:space="preserve"><value>Could not determine the sZIP executable path.</value></data>
+  <data name="RenameEntry" xml:space="preserve"><value>Rename Archive Entry</value></data>
+  <data name="Rename" xml:space="preserve"><value>Rename</value></data>
+  <data name="NewName" xml:space="preserve"><value>New name</value></data>
+  <data name="RenamingEntry" xml:space="preserve"><value>Renaming archive entry</value></data>
+  <data name="RenameCompleted" xml:space="preserve"><value>Archive entry renamed</value></data>
+  <data name="InvalidEntryName" xml:space="preserve"><value>Enter a valid file or folder name.</value></data>
+  <data name="ArchiveEditUnsupported" xml:space="preserve"><value>Only ZIP and 7Z archives can be edited.</value></data>
+  <data name="EncryptedRenameUnsupported" xml:space="preserve"><value>Encrypted archives cannot be renamed without removing encryption.</value></data>
+  <data name="SelectedEntryNotFound" xml:space="preserve"><value>The selected archive entry was not found.</value></data>
+  <data name="RenameConflict" xml:space="preserve"><value>An archive entry with that name already exists in the same folder.</value></data>
 </root>

@@ -1,13 +1,18 @@
-# sZIP 1.6.1 Release Notes
+# sZIP 1.7.0 Release Notes
 
-Release date: 2026-08-24
+Release date: 2026-08-28
 
-## Automatic Archive Extraction
+## Archive Work
 
-- Standardized the feature name as `Automatic Archive Extraction` throughout the app.
-- Automatic archive extraction settings reset to their defaults once after updating.
+- Rename files and folders inside ZIP and 7Z archives from the ribbon, context menu, or F2.
+- Automatic Archive Extraction now applies Smart Extract to completed downloads.
 
-## Documentation and Updates
+## Explorer Integration
 
-- Added separate Korean README and changelog files.
-- Update release notes now use Korean when the Windows display language is Korean, and English otherwise.
+- Use the new sZIP submenu to Smart Extract, Extract Here, open archives, quickly create ZIP or 7Z files, or open compression settings.
+- Existing Explorer integration settings are moved to the new menu automatically.
+
+## Installation and Language
+
+- The installer starts in Korean on Korean Windows, with English available as an option.
+- Explorer menu labels follow the language selected in sZIP.

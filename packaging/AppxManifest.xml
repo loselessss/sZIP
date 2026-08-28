@@ -10,7 +10,7 @@
   IgnorableNamespaces="uap uap10 desktop4 desktop5 com rescap">
   <Identity Name="sZIP.ContextMenu"
             Publisher="CN=sZIP"
-            Version="1.6.1.0" ProcessorArchitecture="neutral" />
+            Version="1.7.0.0" ProcessorArchitecture="neutral" />
   <Properties>
     <DisplayName>sZIP</DisplayName>
     <PublisherDisplayName>sZIP contributors</PublisherDisplayName>
@@ -19,6 +19,7 @@
   </Properties>
   <Resources>
     <Resource Language="ko-kr" />
+    <Resource Language="en-us" />
   </Resources>
   <Dependencies>
     <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.19041.0" MaxVersionTested="10.0.26100.0" />
@@ -35,42 +36,16 @@
           <com:ComServer>
             <com:SurrogateServer DisplayName="sZIP Explorer menu">
               <com:Class Id="5FD30DB9-B45B-48DD-A359-30BEEA4CA4E1" Path="sZIP.ShellExtension.dll" ThreadingModel="STA" />
-              <com:Class Id="F4DA9D54-7593-4D8A-A858-A8F27022FED2" Path="sZIP.ShellExtension.dll" ThreadingModel="STA" />
-              <com:Class Id="C98AC2E7-A656-472E-BF79-3FDDA6A0621E" Path="sZIP.ShellExtension.dll" ThreadingModel="STA" />
             </com:SurrogateServer>
           </com:ComServer>
         </com:Extension>
         <desktop4:Extension Category="windows.fileExplorerContextMenus">
           <desktop4:FileExplorerContextMenus>
             <desktop5:ItemType Type="*">
-              <desktop5:Verb Id="Compress" Clsid="5FD30DB9-B45B-48DD-A359-30BEEA4CA4E1" />
+              <desktop5:Verb Id="sZIPMenu" Clsid="5FD30DB9-B45B-48DD-A359-30BEEA4CA4E1" />
             </desktop5:ItemType>
             <desktop5:ItemType Type="Directory">
-              <desktop5:Verb Id="CompressFolder" Clsid="5FD30DB9-B45B-48DD-A359-30BEEA4CA4E1" />
-            </desktop5:ItemType>
-            <desktop5:ItemType Type=".zip">
-              <desktop5:Verb Id="ExtractDirectZip" Clsid="F4DA9D54-7593-4D8A-A858-A8F27022FED2" />
-              <desktop5:Verb Id="ExtractSmartZip" Clsid="C98AC2E7-A656-472E-BF79-3FDDA6A0621E" />
-            </desktop5:ItemType>
-            <desktop5:ItemType Type=".7z">
-              <desktop5:Verb Id="ExtractDirect7z" Clsid="F4DA9D54-7593-4D8A-A858-A8F27022FED2" />
-              <desktop5:Verb Id="ExtractSmart7z" Clsid="C98AC2E7-A656-472E-BF79-3FDDA6A0621E" />
-            </desktop5:ItemType>
-            <desktop5:ItemType Type=".rar">
-              <desktop5:Verb Id="ExtractDirectRar" Clsid="F4DA9D54-7593-4D8A-A858-A8F27022FED2" />
-              <desktop5:Verb Id="ExtractSmartRar" Clsid="C98AC2E7-A656-472E-BF79-3FDDA6A0621E" />
-            </desktop5:ItemType>
-            <desktop5:ItemType Type=".tar">
-              <desktop5:Verb Id="ExtractDirectTar" Clsid="F4DA9D54-7593-4D8A-A858-A8F27022FED2" />
-              <desktop5:Verb Id="ExtractSmartTar" Clsid="C98AC2E7-A656-472E-BF79-3FDDA6A0621E" />
-            </desktop5:ItemType>
-            <desktop5:ItemType Type=".gz">
-              <desktop5:Verb Id="ExtractDirectGz" Clsid="F4DA9D54-7593-4D8A-A858-A8F27022FED2" />
-              <desktop5:Verb Id="ExtractSmartGz" Clsid="C98AC2E7-A656-472E-BF79-3FDDA6A0621E" />
-            </desktop5:ItemType>
-            <desktop5:ItemType Type=".tgz">
-              <desktop5:Verb Id="ExtractDirectTgz" Clsid="F4DA9D54-7593-4D8A-A858-A8F27022FED2" />
-              <desktop5:Verb Id="ExtractSmartTgz" Clsid="C98AC2E7-A656-472E-BF79-3FDDA6A0621E" />
+              <desktop5:Verb Id="sZIPFolderMenu" Clsid="5FD30DB9-B45B-48DD-A359-30BEEA4CA4E1" />
             </desktop5:ItemType>
           </desktop4:FileExplorerContextMenus>
         </desktop4:Extension>

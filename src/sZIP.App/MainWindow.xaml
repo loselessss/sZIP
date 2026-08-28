@@ -78,6 +78,13 @@
                             <TextBlock Text="{DynamicResource Text.ExtractSelected}" Margin="7,0,0,0" />
                         </StackPanel>
                     </Button>
+                    <Button x:Name="RenameEntryButton" MinWidth="94" ToolTip="{DynamicResource Text.RenameEntry}"
+                            IsEnabled="False" Click="RenameEntryButton_Click" Margin="0,0,6,6" Padding="10,8">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE8AC;" FontSize="16" />
+                            <TextBlock Text="{DynamicResource Text.Rename}" Margin="7,0,0,0" />
+                        </StackPanel>
+                    </Button>
                 </WrapPanel>
                 <DockPanel Margin="0,4,0,0" LastChildFill="False">
                     <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
@@ -124,7 +131,13 @@
                 <DataGrid x:Name="EntriesGrid" Grid.Row="1" AutoGenerateColumns="False"
                           IsReadOnly="True" CanUserAddRows="False" SelectionMode="Extended"
                           SelectionChanged="EntriesGrid_SelectionChanged"
+                          PreviewKeyDown="EntriesGrid_PreviewKeyDown"
                           AlternationCount="2">
+                    <DataGrid.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="{DynamicResource Text.RenameEntry}" Click="RenameEntryMenuItem_Click" />
+                        </ContextMenu>
+                    </DataGrid.ContextMenu>
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="{DynamicResource Text.Name}" Binding="{Binding FullName}" Width="*" />
                         <DataGridTextColumn Header="{DynamicResource Text.Size}" Binding="{Binding Length, StringFormat=N0}" Width="120" />

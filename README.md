@@ -11,6 +11,7 @@ It runs on Windows 10 and 11 and supports both Korean and English.
 - Create ZIP and 7Z archives from files or folders.
 - Open and extract ZIP, 7Z, RAR, TAR, GZ, and TGZ/TAR.GZ archives.
 - Extract selected files and folders while preserving their paths.
+- Rename files and folders inside ZIP and 7Z archives.
 - Enter passwords for encrypted archives and cancel work in progress.
 - Preserve nested and empty folders and avoid overwriting existing output.
 - Follow operation progress with speed, throughput, and remaining time.
@@ -29,7 +30,7 @@ Use the main ribbon to turn automatic archive extraction on or off. From Setting
 
 ## Windows Integration
 
-Explorer menu integration adds quick actions for compression, extraction, and Smart Extract. Multiple files can be compressed together, and supported archive formats can be associated with sZIP.
+Explorer integration adds an sZIP submenu for Smart Extract, Extract Here, opening archives, quick ZIP and 7Z compression, and compression settings. Multiple files can be compressed together, and supported archive formats can be associated with sZIP.
 
 Closing the main window keeps sZIP available in the system tray. Use the tray menu to reopen the app, check for updates, or exit completely.
 

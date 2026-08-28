@@ -137,7 +137,7 @@ function Render-Window($window, [string]$name, [double]$scale) {
 
 foreach ($language in @('en', 'ko')) {
     Set-Language $language
-    foreach ($type in @('MainWindow', 'SettingsWindow', 'AuditWindow', 'PasswordDialog')) {
+    foreach ($type in @('MainWindow', 'SettingsWindow', 'AuditWindow', 'PasswordDialog', 'RenameEntryDialog')) {
         foreach ($scale in @(1, 2)) {
             $window = New-TestWindow $type
             try {

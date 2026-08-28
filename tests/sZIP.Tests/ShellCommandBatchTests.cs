@@ -18,6 +18,8 @@ public sealed class ShellCommandBatchTests
         Assert.Equal(@"C:\Cafe\first.txt", batch.CompressionPaths[0]);
         Assert.Equal(@"C:\Cafe\second.txt", batch.CompressionPaths[1]);
         Assert.Empty(batch.OtherCommands);
+        Assert.Empty(batch.ZipCompressionPaths);
+        Assert.Empty(batch.SevenZipCompressionPaths);
         Assert.Empty(batch.DirectExtractionPaths);
         Assert.Empty(batch.SmartExtractionPaths);
     }
@@ -30,6 +32,8 @@ public sealed class ShellCommandBatchTests
         var batch = ShellCommandBatch.Create(new IReadOnlyList<string>[] { open });
 
         Assert.Empty(batch.CompressionPaths);
+        Assert.Empty(batch.ZipCompressionPaths);
+        Assert.Empty(batch.SevenZipCompressionPaths);
         Assert.Empty(batch.DirectExtractionPaths);
         Assert.Empty(batch.SmartExtractionPaths);
         Assert.Equal(open, Assert.Single(batch.OtherCommands));
@@ -51,6 +55,26 @@ public sealed class ShellCommandBatchTests
             new[] { @"C:\Cafe\second.7z", @"C:\Cafe\legacy.rar" },
             batch.SmartExtractionPaths);
         Assert.Empty(batch.CompressionPaths);
+        Assert.Empty(batch.ZipCompressionPaths);
+        Assert.Empty(batch.SevenZipCompressionPaths);
+        Assert.Empty(batch.OtherCommands);
+    }
+
+    [Fact]
+    public void Create_MergesQuickZipAndSevenZipCommandsSeparately()
+    {
+        var batch = ShellCommandBatch.Create(new IReadOnlyList<string>[]
+        {
+            new[] { "--compress-zip", @"C:\Cafe\first.txt" },
+            new[] { "--compress-zip", @"c:\Cafe\first.txt" },
+            new[] { "--compress-7z", @"C:\Cafe\second.txt" }
+        });
+
+        Assert.Equal(new[] { @"C:\Cafe\first.txt" }, batch.ZipCompressionPaths);
+        Assert.Equal(new[] { @"C:\Cafe\second.txt" }, batch.SevenZipCompressionPaths);
+        Assert.Empty(batch.CompressionPaths);
+        Assert.Empty(batch.DirectExtractionPaths);
+        Assert.Empty(batch.SmartExtractionPaths);
         Assert.Empty(batch.OtherCommands);
     }
 }

@@ -6,8 +6,12 @@ namespace sZIP.App;
 
 internal static class ShellIntegration
 {
-    private const string CompressFileKey = @"Software\Classes\*\shell\sZIP.compress";
-    private const string CompressDirectoryKey = @"Software\Classes\Directory\shell\sZIP.compress";
+    private const string FileMenuKey = @"Software\Classes\*\shell\sZIP";
+    private const string LegacyFileMenuKey = @"Software\Classes\*\shell\sZIP.compress";
+    private const string DirectoryMenuKey = @"Software\Classes\Directory\shell\sZIP";
+    private const string ArchiveProgIdKey = @"Software\Classes\sZIP.Archive";
+    private const string PreferencesKey = @"Software\sZIP";
+    private const string ArchiveProgId = "sZIP.Archive";
     private static readonly string[] ArchiveExtensions =
         { ".zip", ".7z", ".rar", ".tar", ".gz", ".tgz" };
 
@@ -15,75 +19,140 @@ internal static class ShellIntegration
     {
         get
         {
-            using var key = Registry.CurrentUser.OpenSubKey(CompressFileKey);
-            return key is not null;
+            using var key = Registry.CurrentUser.OpenSubKey(FileMenuKey);
+            if (key is not null)
+            {
+                return true;
+            }
+
+            using var legacyKey = Registry.CurrentUser.OpenSubKey(LegacyFileMenuKey);
+            return legacyKey is not null;
         }
     }
 
     public static void SetEnabled(bool enabled, string executablePath)
     {
+        RemoveLegacyRegistration();
         if (!enabled)
         {
-            Registry.CurrentUser.DeleteSubKeyTree(CompressFileKey, throwOnMissingSubKey: false);
-            Registry.CurrentUser.DeleteSubKeyTree(CompressDirectoryKey, throwOnMissingSubKey: false);
-            foreach (var extension in ArchiveExtensions)
-            {
-                Registry.CurrentUser.DeleteSubKeyTree(GetOpenKey(extension), throwOnMissingSubKey: false);
-                Registry.CurrentUser.DeleteSubKeyTree(GetDirectExtractKey(extension), throwOnMissingSubKey: false);
-                Registry.CurrentUser.DeleteSubKeyTree(GetSmartExtractKey(extension), throwOnMissingSubKey: false);
-            }
-
             SetModernContextMenuEnabled(false);
-
             return;
         }
 
-        CreateVerb(
-            CompressFileKey,
-            "Compress with sZIP",
-            BuildCommand(executablePath, "--compress"),
-            "Player");
-        CreateVerb(
-            CompressDirectoryKey,
-            "Compress with sZIP",
-            BuildCommand(executablePath, "--compress"),
-            "Player");
+        var icon = $"{executablePath},0";
+        using (var preferences = Registry.CurrentUser.CreateSubKey(PreferencesKey))
+        {
+            preferences?.SetValue("Language", Localization.Language);
+        }
+        CreateParentMenu(FileMenuKey, icon, includeExtraction: false, executablePath);
+        CreateParentMenu(DirectoryMenuKey, icon, includeExtraction: false, executablePath);
         foreach (var extension in ArchiveExtensions)
         {
-            Registry.CurrentUser.DeleteSubKeyTree(GetLegacyExtractKey(extension), throwOnMissingSubKey: false);
-            CreateVerb(
-                GetOpenKey(extension),
-                "Open with sZIP",
-                BuildCommand(executablePath, "--open"),
-                "Single");
-            CreateVerb(
-                GetDirectExtractKey(extension),
-                "sZIP Extract",
-                BuildCommand(executablePath, "--extract-direct"),
-                "Player");
-            CreateVerb(
-                GetSmartExtractKey(extension),
-                "sZIP Smart Extract",
-                BuildCommand(executablePath, "--extract-smart"),
-                "Player");
+            CreateParentMenu(GetArchiveMenuKey(extension), icon, includeExtraction: true, executablePath);
+            using var openWith = Registry.CurrentUser.CreateSubKey(
+                $@"Software\Classes\{extension}\OpenWithProgids");
+            openWith?.SetValue(ArchiveProgId, Array.Empty<byte>(), RegistryValueKind.None);
         }
+
+        using (var progId = Registry.CurrentUser.CreateSubKey(ArchiveProgIdKey))
+        {
+            progId?.SetValue(null, Localization.Language == "ko" ? "sZIP 압축 파일" : "sZIP archive file");
+        }
+        using (var defaultIcon = Registry.CurrentUser.CreateSubKey(ArchiveProgIdKey + @"\DefaultIcon"))
+        {
+            defaultIcon?.SetValue(null, icon);
+        }
+        using (var openCommand = Registry.CurrentUser.CreateSubKey(ArchiveProgIdKey + @"\shell\open\command"))
+        {
+            openCommand?.SetValue(null, BuildCommand(executablePath, "--open"));
+        }
+
         SetModernContextMenuEnabled(true);
     }
 
     internal static string BuildCommand(string executablePath, string option) =>
         $"\"{executablePath}\" {option} \"%1\"";
 
-    private static string GetOpenKey(string extension) =>
-        $@"Software\Classes\SystemFileAssociations\{extension}\shell\sZIP.open";
+    private static void CreateParentMenu(
+        string keyPath,
+        string icon,
+        bool includeExtraction,
+        string executablePath)
+    {
+        using (var parent = Registry.CurrentUser.CreateSubKey(keyPath))
+        {
+            parent?.SetValue("MUIVerb", "sZIP");
+            parent?.SetValue("Icon", icon);
+            parent?.SetValue("MultiSelectModel", "Player");
+            parent?.SetValue("SubCommands", string.Empty);
+        }
 
-    private static string GetDirectExtractKey(string extension) =>
-        $@"Software\Classes\SystemFileAssociations\{extension}\shell\sZIP.extract-direct";
+        if (includeExtraction)
+        {
+            CreateChildVerb(keyPath, "01.smart-extract",
+                Localization.Language == "ko" ? "알아서 압축 풀기" : "Smart Extract",
+                BuildCommand(executablePath, "--extract-smart"));
+            CreateChildVerb(keyPath, "02.extract-here",
+                Localization.Language == "ko" ? "여기에 압축 풀기" : "Extract Here",
+                BuildCommand(executablePath, "--extract-direct"));
+            CreateChildVerb(keyPath, "03.open",
+                Localization.Language == "ko" ? "sZIP으로 열기" : "Open with sZIP",
+                BuildCommand(executablePath, "--open"));
+        }
 
-    private static string GetSmartExtractKey(string extension) =>
-        $@"Software\Classes\SystemFileAssociations\{extension}\shell\sZIP.extract-smart";
+        CreateChildVerb(keyPath, "10.compress-zip",
+            Localization.Language == "ko" ? "ZIP으로 바로 압축" : "Compress to ZIP",
+            BuildCommand(executablePath, "--compress-zip"));
+        CreateChildVerb(keyPath, "11.compress-7z",
+            Localization.Language == "ko" ? "7Z로 바로 압축" : "Compress to 7Z",
+            BuildCommand(executablePath, "--compress-7z"));
+        CreateChildVerb(keyPath, "12.compress",
+            Localization.Language == "ko" ? "압축 설정..." : "Compress with sZIP...",
+            BuildCommand(executablePath, "--compress"));
+    }
 
-    private static string GetLegacyExtractKey(string extension) =>
-        $@"Software\Classes\SystemFileAssociations\{extension}\shell\sZIP.extract";
+    private static void CreateChildVerb(string parentKey, string name, string caption, string command)
+    {
+        var childKey = parentKey + @"\shell\" + name;
+        using (var key = Registry.CurrentUser.CreateSubKey(childKey))
+        {
+            key?.SetValue("MUIVerb", caption);
+            key?.SetValue("MultiSelectModel", "Player");
+        }
+        using var commandKey = Registry.CurrentUser.CreateSubKey(childKey + @"\command");
+        commandKey?.SetValue(null, command);
+    }
+
+    private static string GetArchiveMenuKey(string extension) =>
+        $@"Software\Classes\SystemFileAssociations\{extension}\shell\sZIP";
+
+    private static void RemoveLegacyRegistration()
+    {
+        var keys = new[]
+        {
+            FileMenuKey,
+            DirectoryMenuKey,
+            LegacyFileMenuKey,
+            @"Software\Classes\Directory\shell\sZIP.compress"
+        };
+        foreach (var key in keys)
+        {
+            Registry.CurrentUser.DeleteSubKeyTree(key, throwOnMissingSubKey: false);
+        }
+
+        foreach (var extension in ArchiveExtensions)
+        {
+            var shellRoot = $@"Software\Classes\SystemFileAssociations\{extension}\shell";
+            foreach (var verb in new[] { "sZIP", "sZIP.open", "sZIP.extract", "sZIP.extract-direct", "sZIP.extract-smart" })
+            {
+                Registry.CurrentUser.DeleteSubKeyTree(shellRoot + "\\" + verb, throwOnMissingSubKey: false);
+            }
+            using var openWith = Registry.CurrentUser.OpenSubKey(
+                $@"Software\Classes\{extension}\OpenWithProgids", writable: true);
+            openWith?.DeleteValue(ArchiveProgId, throwOnMissingValue: false);
+        }
+        Registry.CurrentUser.DeleteSubKeyTree(ArchiveProgIdKey, throwOnMissingSubKey: false);
+    }
 
     internal static void SetModernContextMenuEnabled(bool enabled)
     {
@@ -137,21 +206,4 @@ internal static class ShellIntegration
     }
 
     private static string EscapePowerShellLiteral(string value) => value.Replace("'", "''");
-
-    private static void CreateVerb(
-        string keyPath,
-        string caption,
-        string command,
-        string multiSelectModel)
-    {
-        using (var key = Registry.CurrentUser.CreateSubKey(keyPath))
-        {
-            key?.SetValue(null, caption);
-            key?.SetValue("Icon", System.Diagnostics.Process.GetCurrentProcess().MainModule?.FileName ?? string.Empty);
-            key?.SetValue("MultiSelectModel", multiSelectModel);
-        }
-
-        using var commandKey = Registry.CurrentUser.CreateSubKey(keyPath + @"\command");
-        commandKey?.SetValue(null, command);
-    }
 }
