@@ -254,7 +254,9 @@ public partial class App : System.Windows.Application
         var oldMaxMb = UserSettings.Default.AutomaticArchiveExtractionMaxArchiveMb;
         ShowMainWindow();
         var dialog = new SettingsWindow { Owner = _mainWindow };
-        if (dialog.ShowDialog() != true) return;
+        dialog.ShowDialog();
+        // A shell-only failure keeps Settings open for repair; saved preferences still apply on close.
+        if (!dialog.HasSavedSettings) return;
         if (oldLanguage != UserSettings.Default.Language)
         {
             Localization.Apply(UserSettings.Default.Language);

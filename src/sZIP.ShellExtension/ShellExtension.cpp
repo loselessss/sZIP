@@ -272,7 +272,9 @@ namespace
 
         IFACEMETHODIMP GetTitle(IShellItemArray* selection, PWSTR* title) override
         {
-            if (_kind == CommandKind::Root) return CopyResult(L"sZIP", title);
+            if (_kind == CommandKind::Root)
+                return CopyResult(CanExtract(selection) ? L"sZIP"
+                    : (IsKorean() ? L"sZIP\uc73c\ub85c \uc555\ucd95\ud558\uae30" : L"Compress with sZIP"), title);
             if (_kind == CommandKind::SmartExtract)
                 return CopyResult(IsKorean() ? L"\uc54c\uc544\uc11c \uc555\ucd95 \ud480\uae30" : L"Smart Extract", title);
             if (_kind == CommandKind::ExtractHere)

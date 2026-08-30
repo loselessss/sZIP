@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <assembly manifestVersion="1.0" xmlns="urn:schemas-microsoft-com:asm.v1">
-  <assemblyIdentity version="1.7.0.0" name="sZIP.App" />
+  <assemblyIdentity version="1.8.0.0" name="sZIP.App" />
   <trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
     <security>
       <requestedPrivileges>
@@ -14,7 +14,7 @@
     </application>
   </compatibility>
   <msix xmlns="urn:schemas-microsoft-com:msix.v1"
-        publisher="CN=sZIP"
+        publisher="CN=sZIP, OID.2.25.311729368913984317654407730594956997722=1"
         packageName="sZIP.ContextMenu"
         applicationId="sZIP" />
 </assembly>

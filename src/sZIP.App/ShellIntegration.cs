@@ -30,13 +30,12 @@ internal static class ShellIntegration
         }
     }
 
-    public static void SetEnabled(bool enabled, string executablePath)
+    public static ShellIntegrationResult SetEnabled(bool enabled, string executablePath, bool forceModernRepair = false)
     {
         RemoveLegacyRegistration();
         if (!enabled)
         {
-            SetModernContextMenuEnabled(false);
-            return;
+            return SetModernContextMenuEnabled(false);
         }
 
         var icon = $"{executablePath},0";
@@ -67,7 +66,7 @@ internal static class ShellIntegration
             openCommand?.SetValue(null, BuildCommand(executablePath, "--open"));
         }
 
-        SetModernContextMenuEnabled(true);
+        return SetModernContextMenuEnabled(true, forceModernRepair);
     }
 
     internal static string BuildCommand(string executablePath, string option) =>
@@ -154,31 +153,69 @@ internal static class ShellIntegration
         Registry.CurrentUser.DeleteSubKeyTree(ArchiveProgIdKey, throwOnMissingSubKey: false);
     }
 
-    internal static void SetModernContextMenuEnabled(bool enabled)
+    private static bool SupportsModernMenu => Environment.OSVersion.Version >= new Version(10, 0, 22000);
+    private static string PackageVersion => typeof(ShellIntegration).Assembly.GetName().Version?.ToString() ?? "1.0.0.0";
+    private static string PackagePath => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "sZIP.ContextMenu.msix");
+    private static bool HasModernPayload => File.Exists(PackagePath)
+        && File.Exists(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "sZIP.ShellExtension.dll"));
+
+    public static ShellIntegrationResult GetStatus(string executablePath)
     {
+        try
+        {
+            var classicRegistered = new[] { FileMenuKey, DirectoryMenuKey }.All(path =>
+            {
+                using var key = Registry.CurrentUser.OpenSubKey(path + @"\shell\10.compress-zip\command");
+                return string.Equals(key?.GetValue(null) as string, BuildCommand(executablePath, "--compress-zip"),
+                    StringComparison.OrdinalIgnoreCase);
+            });
+            using var directoryMenu = Registry.CurrentUser.OpenSubKey(DirectoryMenuKey);
+            var partialClassicRegistration = IsEnabled || directoryMenu is not null;
+            if (!SupportsModernMenu)
+                return new ShellIntegrationResult(classicRegistered ? "ShellStatusClassicOnly"
+                    : partialClassicRegistration ? "ShellStatusRepairNeeded" : "ShellStatusDisabled",
+                    classicRegistered || !partialClassicRegistration);
+            var probe = RunPowerShell(ShellMenuRegistration.ProbeCommand(PackageVersion));
+            if (!probe.Success)
+            {
+                DiagnosticLog.Write("shell-integration.status.failed " + probe.MessageKey + " " + probe.Details);
+                return probe;
+            }
+            return ShellMenuRegistration.InterpretStatus(classicRegistered, HasModernPayload, probe.Details,
+                partialClassicRegistration);
+        }
+        catch (Exception exception)
+        {
+            DiagnosticLog.Write("shell-integration.status.failed", exception);
+            return new ShellIntegrationResult("ShellStatusCheckFailed", false, exception.Message);
+        }
+    }
+
+    internal static ShellIntegrationResult SetModernContextMenuEnabled(bool enabled, bool force = false)
+    {
+        if (!SupportsModernMenu && enabled)
+            return new ShellIntegrationResult("ShellStatusClassicOnly", true);
         if (Environment.OSVersion.Version < new Version(10, 0, 19041))
         {
-            return;
+            return new ShellIntegrationResult("ShellStatusDisabled", true);
         }
 
-        var packagePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "sZIP.ContextMenu.msix");
-        if (enabled && !File.Exists(packagePath))
+        if (enabled && !HasModernPayload)
         {
-            return;
+            DiagnosticLog.Write("shell-integration.modern.package-missing");
+            return new ShellIntegrationResult("ShellStatusPackageMissing", false);
         }
 
-        var packageVersion = typeof(ShellIntegration).Assembly.GetName().Version?.ToString()
-            ?? "1.0.0.0";
-        var escapedPackage = EscapePowerShellLiteral(packagePath);
-        var escapedLocation = EscapePowerShellLiteral(AppDomain.CurrentDomain.BaseDirectory.TrimEnd(
-            Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
-        var command = enabled
-            ? "$p=Get-AppxPackage -Name 'sZIP.ContextMenu'; "
-              + $"if(-not $p -or $p.Version.ToString() -ne '{packageVersion}'){{ "
-              + "if($p){$p | Remove-AppxPackage}; "
-              + $"Add-AppxPackage -Path '{escapedPackage}' -ExternalLocation '{escapedLocation}' -AllowUnsigned }}"
-            : "$p=Get-AppxPackage -Name 'sZIP.ContextMenu'; if($p){$p | Remove-AppxPackage}";
+        var command = ShellMenuRegistration.RegistrationCommand(enabled, force, PackageVersion, PackagePath,
+            AppDomain.CurrentDomain.BaseDirectory.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
+        var result = RunPowerShell(command);
+        DiagnosticLog.Write(result.Success ? "shell-integration.modern.completed"
+            : "shell-integration.modern.failed " + result.MessageKey + " " + result.Details);
+        return result.Success ? new ShellIntegrationResult(enabled ? "ShellStatusReady" : "ShellStatusDisabled", true) : result;
+    }
 
+    private static ShellIntegrationResult RunPowerShell(string command)
+    {
         try
         {
             var powershell = Path.Combine(
@@ -186,24 +223,35 @@ internal static class ShellIntegration
                 "System32", "WindowsPowerShell", "v1.0", "powershell.exe");
             using var process = Process.Start(new ProcessStartInfo(
                 powershell,
-                "-NoLogo -NoProfile -NonInteractive -WindowStyle Hidden -ExecutionPolicy Bypass -Command \""
-                + command.Replace("\"", "\\\"") + "\"")
+                "-NoLogo -NoProfile -NonInteractive -WindowStyle Hidden -ExecutionPolicy Bypass -OutputFormat Text -EncodedCommand "
+                + Convert.ToBase64String(System.Text.Encoding.Unicode.GetBytes("$ErrorActionPreference='Stop'; " + command)))
             {
                 UseShellExecute = false,
                 CreateNoWindow = true,
+                RedirectStandardError = true,
+                RedirectStandardOutput = true,
                 WindowStyle = ProcessWindowStyle.Hidden
             });
-            process?.WaitForExit(30000);
-            if (process is not null && process.ExitCode != 0)
+            if (process is null) throw new InvalidOperationException("PowerShell could not be started.");
+            var error = process.StandardError.ReadToEndAsync();
+            var output = process.StandardOutput.ReadToEndAsync();
+            if (!process.WaitForExit(30000))
             {
-                DiagnosticLog.Write($"shell-integration.modern.failed exit={process.ExitCode}");
+                process.Kill();
+                return new ShellIntegrationResult("ShellStatusTimedOut", false);
             }
+            if (process.ExitCode != 0)
+            {
+                var detail = error.GetAwaiter().GetResult().Trim();
+                return new ShellIntegrationResult("ShellStatusFailed", false,
+                    $"Exit code: {process.ExitCode}\n" + detail.Substring(0, Math.Min(detail.Length, 4000)));
+            }
+            return new ShellIntegrationResult("ShellStatusReady", true, output.GetAwaiter().GetResult());
         }
         catch (Exception exception)
         {
-            DiagnosticLog.Write("shell-integration.modern.failed", exception);
+            DiagnosticLog.Write("shell-integration.process.failed", exception);
+            return new ShellIntegrationResult("ShellStatusFailed", false, exception.Message);
         }
     }
-
-    private static string EscapePowerShellLiteral(string value) => value.Replace("'", "''");
 }

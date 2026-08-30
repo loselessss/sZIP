@@ -109,6 +109,14 @@ function Assert-TextFits($root, $node) {
 function Render-Window($window, [string]$name, [double]$scale) {
     $window.Show()
     $window.Dispatcher.Invoke([Action]{}, [System.Windows.Threading.DispatcherPriority]::ApplicationIdle)
+    if ($window.GetType().Name -eq 'SettingsWindow') {
+        $deadline = [DateTime]::UtcNow.AddSeconds(40)
+        while (-not $window.FindName('SaveButton').IsEnabled) {
+            if ([DateTime]::UtcNow -gt $deadline) { throw 'Shell status check did not finish.' }
+            $window.Dispatcher.Invoke([Action]{}, [System.Windows.Threading.DispatcherPriority]::ApplicationIdle)
+            Start-Sleep -Milliseconds 25
+        }
+    }
     $window.UpdateLayout()
     $content = $window.Content
     $content.Background = $window.Background
@@ -144,6 +152,22 @@ foreach ($language in @('en', 'ko')) {
                 if ($type -eq 'MainWindow') { $window.Width = 900 }
                 if ($type -eq 'SettingsWindow') { $window.Width = 500; $window.Height = 480 }
                 Render-Window $window "$type-$language-$scale" $scale
+                if ($type -eq 'SettingsWindow') {
+                    $window.FindName('ShellIntegrationCheckBox').IsChecked = $false
+                    if ($window.FindName('RepairShellButton').IsEnabled) { throw 'Repair enabled while integration unchecked.' }
+                    $window.FindName('ShellIntegrationCheckBox').IsChecked = $true
+                    if (-not $window.FindName('RepairShellButton').IsEnabled) { throw 'Repair unavailable while idle.' }
+                    if (-not $window.FindName('RefreshShellButton').IsEnabled) { throw 'Refresh unavailable while idle.' }
+                    $resultType = $assembly.GetType('sZIP.App.ShellIntegrationResult')
+                    $showResult = $window.GetType().GetMethod('ShowShellResult', [Reflection.BindingFlags]'NonPublic,Instance')
+                    foreach ($statusKey in @('ShellStatusReady','ShellStatusRepairNeeded','ShellStatusPackageMissing','ShellStatusFailed')) {
+                        $details = if ($statusKey -eq 'ShellStatusFailed') { 'Example registration failure: 0x80073D2C. ' * 12 } else { '' }
+                        $result = [Activator]::CreateInstance($resultType, @($statusKey, ($statusKey -eq 'ShellStatusReady'), $details))
+                        $showResult.Invoke($window, @($result)) | Out-Null
+                        $window.FindName('ShellDetailsExpander').IsExpanded = $true
+                        Render-Window $window "$type-$language-$scale-$statusKey" $scale
+                    }
+                }
             } finally { Close-TestWindow $window }
         }
     }
@@ -164,6 +188,7 @@ $window = New-TestWindow 'SettingsWindow'
 $window.FindName('WatchFolderTextBox').Text = 'Z:\not-saved'
 $window.FindName('MaxArchiveMbTextBox').Text = '999'
 Close-TestWindow $window
+if ($window.HasSavedSettings) { throw 'Cancel reported saved settings.' }
 if ($provider.SaveCount -ne 0 -or $settings.AutomaticArchiveExtractionMaxArchiveMb -ne 200) { throw 'Cancel changed settings.' }
 
 $window = New-TestWindow 'SettingsWindow'
@@ -171,17 +196,26 @@ $window.FindName('WatchFolderTextBox').Text = $repo
 $window.FindName('MaxArchiveMbTextBox').Text = '512'
 $window.FindName('LanguageComboBox').SelectedIndex = 1
 $window.FindName('DeleteSourceCheckBox').IsChecked = $true
-$window.add_Loaded({
-    param($sender, $eventArgs)
-    try {
-        $sender.FindName('SaveButton').RaiseEvent([System.Windows.RoutedEventArgs]::new([System.Windows.Controls.Button]::ClickEvent))
-    } catch {
-        Write-Output $_.Exception.ToString()
-        $sender.Close()
+$saveTimer = New-Object System.Windows.Threading.DispatcherTimer
+$saveTimer.Interval = [TimeSpan]::FromMilliseconds(50)
+$saveDeadline = [DateTime]::UtcNow.AddSeconds(45)
+$saveTimer.add_Tick({
+    if ([DateTime]::UtcNow -gt $saveDeadline) {
+        $saveTimer.Stop()
+        $window.Close()
+        return
+    }
+    if ($window.FindName('SaveButton').IsEnabled) {
+        $saveTimer.Stop()
+        $window.FindName('SaveButton').RaiseEvent([System.Windows.RoutedEventArgs]::new([System.Windows.Controls.Button]::ClickEvent))
     }
 })
-if ($window.ShowDialog() -ne $true) { throw 'Save did not complete.' }
+$saveTimer.Start()
+try {
+    if ($window.ShowDialog() -ne $true) { throw 'Save did not complete.' }
+} finally { $saveTimer.Stop() }
 if ($provider.SaveCount -ne 1) { throw 'Settings were not saved once.' }
+if (-not $window.HasSavedSettings) { throw 'Saved settings were not reported to the app.' }
 $settings.Reload()
 if ($settings.Language -ne 'ko' -or $settings.AutomaticArchiveExtractionMaxArchiveMb -ne 512 -or
     -not $settings.AutomaticArchiveExtractionDeleteSourceArchive) { throw 'Saved settings did not persist.' }
@@ -194,4 +228,4 @@ try {
     if ($main.FindName('AutomaticArchiveExtractionCheckBox').Content -notlike '*Automatic Archive Extraction*') { throw 'English live switch failed.' }
 } finally { Close-TestWindow $main }
 $application.Shutdown()
-Write-Output 'PASS: language switching, settings save/cancel, persistence, and 100%/200% layouts including updates.'
+Write-Output 'PASS: language switching, settings save/cancel, persistence, shell status/button states, and 100%/200% layouts including updates.'

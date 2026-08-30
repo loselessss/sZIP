@@ -53,6 +53,19 @@ The reference mockup for the modern extraction progress screen is [`szip-modern-
 2. Manually review scaling, keyboard access, and theme switching.
 3. Consider safe operation pause/resume as a follow-up candidate.
 
+## Windows 11 Explorer Integration
+
+### Windows 11 context menu repair (1.8.0, implementation pending release)
+
+- Restore the unsigned-package publisher marker in both package and application identities; missing metadata caused registration error 0x80073D2C.
+- Label the primary submenu "Compress with sZIP" for ordinary files and folders; keep archive extraction commands under "sZIP".
+- Show read-only registration status and an explicit repair action in Settings, with Korean/English error details and reinstall guidance.
+- Run checks and repair off the UI thread; guard duplicate actions and keep the window open while registration changes are running. Repair applies immediately, independently of Save/Cancel.
+- Force re-registration during explicit repair even if the package version matches. Preserve the classic-menu fallback when modern registration fails.
+- Capture registration errors and timeouts in diagnostics, and test matching identities and file/folder registrations. Test generated PowerShell commands with fake Appx functions only; never mutate installed shell registration from automated tests.
+- Before release, build the native extension and sparse package and verify installation, upgrade, multi-selection, and removal on Windows 11. Local source tests do not replace this check.
+- Production package signing remains a follow-up: Microsoft documents unsigned packages as a testing mechanism. A signed distribution needs a trusted signing identity and matching application manifest; do not install trust certificates or change machine policy automatically.
+
 ## Verification Policy
 
 - Run the full automated test suite and WPF Release build before committing.

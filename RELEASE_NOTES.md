@@ -1,18 +1,12 @@
-# sZIP 1.7.0 Release Notes
+# sZIP 1.8.0 Release Notes
 
-Release date: 2026-08-28
+Release date: 2026-08-30
 
-## Archive Work
+## Explorer Menu Status and Repair
 
-- Rename files and folders inside ZIP and 7Z archives from the ribbon, context menu, or F2.
-- Automatic Archive Extraction now applies Smart Extract to completed downloads.
+- Added Explorer menu status, a check-again button, and a repair button in Settings.
+- Added failure details and guidance when menu registration is incomplete or integration files are missing.
+- Fixed a registration error that prevented sZIP from appearing in the Windows 11 primary context menu.
+- Files and folders now show a clearer "Compress with sZIP" submenu label, with quick ZIP and 7Z compression and compression settings.
 
-## Explorer Integration
-
-- Use the new sZIP submenu to Smart Extract, Extract Here, open archives, quickly create ZIP or 7Z files, or open compression settings.
-- Existing Explorer integration settings are moved to the new menu automatically.
-
-## Installation and Language
-
-- The installer starts in Korean on Korean Windows, with English available as an option.
-- Explorer menu labels follow the language selected in sZIP.
+Repair applies immediately, independently of the other settings. If integration files are missing, reinstall sZIP with the latest installer.
