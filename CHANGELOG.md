@@ -1,8 +1,10 @@
-# sZIP
+# sZIP 1.8.1
 
 [한국어](CHANGELOG.ko.md)
 
-## Unreleased
+Release date: 2026-08-31
+
+## Changes
 
 - Fixed a startup error after installation that also prevented access to the updater.
 - Removed the Explorer menu status panel and its check and repair buttons from Settings. The integration toggle remains available.

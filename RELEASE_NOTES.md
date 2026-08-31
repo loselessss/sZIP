@@ -1,12 +1,15 @@
-# sZIP 1.8.0 Release Notes
+# sZIP 1.8.1 Release Notes
 
-Release date: 2026-08-30
+Release date: 2026-08-31
 
-## Explorer Menu Status and Repair
+## Changes
 
-- Added Explorer menu status, a check-again button, and a repair button in Settings.
-- Added failure details and guidance when menu registration is incomplete or integration files are missing.
-- Fixed a registration error that prevented sZIP from appearing in the Windows 11 primary context menu.
-- Files and folders now show a clearer "Compress with sZIP" submenu label, with quick ZIP and 7Z compression and compression settings.
+- Fixed a startup error after installation that also prevented access to the updater.
+- Removed the Explorer menu status panel and its check and repair buttons from Settings. The integration toggle remains available.
+- Removed diagnostic log folder shortcuts from the tray menu and the automatic extraction history window.
 
-Repair applies immediately, independently of the other settings. If integration files are missing, reinstall sZIP with the latest installer.
+If your installed app cannot open, download the 1.8.1 installer from GitHub Releases and install it over the existing version.
+
+## Known Issues
+
+- sZIP does not appear in the Windows 11 primary context menu with the current integration package. Use **Show more options** to access the sZIP menu.

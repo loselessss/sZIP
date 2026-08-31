@@ -10,7 +10,7 @@
   IgnorableNamespaces="uap uap10 desktop4 desktop5 com rescap">
   <Identity Name="sZIP.ContextMenu"
             Publisher="CN=sZIP, OID.2.25.311729368913984317654407730594956997722=1"
-            Version="1.8.0.0" ProcessorArchitecture="neutral" />
+            Version="1.8.1.0" ProcessorArchitecture="neutral" />
   <Properties>
     <DisplayName>sZIP</DisplayName>
     <PublisherDisplayName>sZIP contributors</PublisherDisplayName>
