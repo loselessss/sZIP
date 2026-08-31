@@ -165,4 +165,8 @@
   <data name="EncryptedRenameUnsupported" xml:space="preserve"><value>암호화를 유지할 수 없어 암호화된 압축 파일의 이름은 바꿀 수 없습니다.</value></data>
   <data name="SelectedEntryNotFound" xml:space="preserve"><value>선택한 압축 파일 항목을 찾지 못했습니다.</value></data>
   <data name="RenameConflict" xml:space="preserve"><value>같은 폴더에 동일한 이름의 항목이 이미 있습니다.</value></data>
+  <data name="MsixShellManaged" xml:space="preserve"><value>MSIX 설치가 탐색기 메뉴와 파일 연결을 관리합니다. 기본 앱은 Windows 설정에서 선택해 주세요.</value></data>
+  <data name="MsixStartupManaged" xml:space="preserve"><value>자동 시작은 Windows 시작 앱에서 관리합니다. 활성화하면 트레이로 시작합니다.</value></data>
+  <data name="MsixOpenStartupSettings" xml:space="preserve"><value>Windows 시작 앱 설정 열기</value></data>
+  <data name="MsixUpdateUnconfigured" xml:space="preserve"><value>MSIX 업데이트 경로가 설정되지 않았습니다. 처음 설치한 Store 또는 서명된 패키지 배포처에서 다시 설치해 주세요.</value></data>
 </root>

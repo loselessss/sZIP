@@ -28,8 +28,8 @@ public partial class App : System.Windows.Application
     private bool _isProcessingCommands;
     private bool _isCheckingForUpdates;
 
-    private const string MutexName = @"Local\sZIP.Singleton.v1";
-    private const string ShowWindowEventName = @"Local\sZIP.ShowWindow.v1";
+    private static string MutexName => @"Local\sZIP.Singleton.v1" + PackageDeployment.InstanceSuffix;
+    private static string ShowWindowEventName => @"Local\sZIP.ShowWindow.v1" + PackageDeployment.InstanceSuffix;
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -402,6 +402,13 @@ public partial class App : System.Windows.Application
 
     private static void RefreshShellIntegrationRegistration()
     {
+        if (PackageDeployment.IsPackaged)
+        {
+            // Only the language preference is written; Windows owns package registrations.
+            try { ShellIntegration.SyncLanguagePreference(); }
+            catch (Exception exception) { DiagnosticLog.Write("shell-integration.language.failed", exception); }
+            return;
+        }
         if (!ShellIntegration.IsEnabled)
         {
             return;
@@ -423,6 +430,7 @@ public partial class App : System.Windows.Application
 
     private void InitializeUpdates()
     {
+        if (PackageDeployment.IsPackaged) return; // Store/App Installer owns package replacement.
         var versionText = typeof(App).Assembly.GetName().Version?.ToString(3) ?? string.Empty;
         if (!ReleaseVersion.TryParseTag(versionText, out var currentVersion))
         {
@@ -452,6 +460,24 @@ public partial class App : System.Windows.Application
 
     private async Task CheckForUpdatesAsync(bool manual)
     {
+        if (PackageDeployment.IsPackaged)
+        {
+            if (manual)
+            {
+                try
+                {
+                    var uri = PackageDeployment.Distribution.UpdateUri;
+                    if (uri is null) throw new InvalidOperationException(L.T("MsixUpdateUnconfigured"));
+                    Process.Start(new ProcessStartInfo(uri.AbsoluteUri) { UseShellExecute = true });
+                }
+                catch (Exception exception)
+                {
+                    System.Windows.MessageBox.Show(_mainWindow, exception.Message, L.T("Update"),
+                        MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+            }
+            return;
+        }
         if (_updateService is null || _isCheckingForUpdates)
         {
             return;
@@ -539,10 +565,7 @@ public partial class App : System.Windows.Application
         }
     }
 
-    private static string CommandQueuePath => Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "sZIP",
-        "commands");
+    private static string CommandQueuePath => Path.Combine(PackageDeployment.DataDirectory, "commands");
 
     private static void QueueCommand(IReadOnlyList<string> arguments)
     {

@@ -12,6 +12,7 @@ internal static class StartupRegistration
     {
         get
         {
+            if (PackageDeployment.IsPackaged) return false; // Controlled through Windows Startup Apps, not HKCU Run.
             using var key = Registry.CurrentUser.OpenSubKey(RunKeyPath, writable: false);
             return key?.GetValue(ValueName) is string value && !string.IsNullOrWhiteSpace(value);
         }
@@ -19,6 +20,7 @@ internal static class StartupRegistration
 
     public static void SetEnabled(bool enabled)
     {
+        if (PackageDeployment.IsPackaged) throw new InvalidOperationException(Localization.T("MsixStartupManaged"));
         using var key = Registry.CurrentUser.CreateSubKey(RunKeyPath)
             ?? throw new InvalidOperationException("Could not open Windows startup settings.");
 

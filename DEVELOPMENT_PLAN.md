@@ -71,3 +71,16 @@ The reference mockup for the modern extraction progress screen is [`szip-modern-
 - Run the full automated test suite and WPF Release build before committing.
 - The tag workflow checks that project, installer, and tag versions match.
 - Manual QA is performed when requested for production release milestones.
+
+
+## MSIX dual distribution — 1.9.0 development preview
+
+- Keep the EXE installer/updater and its identity-independent startup.
+- Build full x64 Store/Direct packages with explicit publisher/identity inputs and separate COM IDs.
+- Store/App Installer owns updates; invalid packaged configuration never selects the EXE updater.
+- Keep package-family-specific settings, command queues and singleton names. Do not remove or silently migrate EXE installations.
+- Declare Explorer verbs, archive associations and opt-in startup in the package manifest.
+- Validate layouts with MakeAppx. Local fixtures are not installable products or native COM tests.
+- Before distribution: compile the native DLL, supply Store identity, configure trusted direct signing and an HTTPS App Installer feed. Test installed startup, multi-select menus, upgrade/data persistence, startup toggle and uninstall.
+- No automatic certificate generation/import/trust, Store submission or release upload.
+- See [MSIX distribution guide](packaging/msix/README.md) for build commands and release gates.

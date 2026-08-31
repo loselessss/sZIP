@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+         xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+         xmlns:uap2="http://schemas.microsoft.com/appx/manifest/uap/windows10/2"
+         xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3"
+         xmlns:uap10="http://schemas.microsoft.com/appx/manifest/uap/windows10/10"
+         xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
+         xmlns:desktop4="http://schemas.microsoft.com/appx/manifest/desktop/windows10/4"
+         xmlns:desktop5="http://schemas.microsoft.com/appx/manifest/desktop/windows10/5"
+         xmlns:com="http://schemas.microsoft.com/appx/manifest/com/windows10"
+         xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+         IgnorableNamespaces="uap uap2 uap3 uap10 desktop desktop4 desktop5 com rescap">
+  <!-- Build inputs supply the real Store or direct-distribution identity. This is not a signed identity. -->
+  <Identity Name="sZIP.Desktop.Template" Publisher="CN=sZIP" Version="1.9.0.0" ProcessorArchitecture="x64" />
+  <Properties>
+    <DisplayName>sZIP</DisplayName>
+    <PublisherDisplayName>sZIP</PublisherDisplayName>
+    <Logo>Assets\StoreLogo.png</Logo>
+  </Properties>
+  <Resources><Resource Language="ko-kr" /><Resource Language="en-us" /></Resources>
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.19041.0" MaxVersionTested="10.0.26100.0" />
+  </Dependencies>
+  <Applications>
+    <Application Id="sZIP" Executable="sZIP.App.exe" uap10:RuntimeBehavior="packagedClassicApp" uap10:TrustLevel="mediumIL">
+      <uap:VisualElements DisplayName="sZIP" Description="sZIP archive utility" BackgroundColor="transparent"
+                          Square150x150Logo="Assets\Square150x150Logo.png" Square44x44Logo="Assets\Square44x44Logo.png" />
+      <Extensions>
+        <com:Extension Category="windows.comServer">
+          <com:ComServer>
+            <com:SurrogateServer DisplayName="sZIP Explorer menu">
+              <com:Class Id="85E1044C-A4EB-4EAC-A3EF-FC7B124D8F01" Path="sZIP.ShellExtension.dll" ThreadingModel="STA" />
+            </com:SurrogateServer>
+          </com:ComServer>
+        </com:Extension>
+        <desktop4:Extension Category="windows.fileExplorerContextMenus">
+          <desktop4:FileExplorerContextMenus>
+            <desktop5:ItemType Type="*"><desktop5:Verb Id="sZIPMenu" Clsid="85E1044C-A4EB-4EAC-A3EF-FC7B124D8F01" /></desktop5:ItemType>
+            <desktop5:ItemType Type="Directory"><desktop5:Verb Id="sZIPFolderMenu" Clsid="85E1044C-A4EB-4EAC-A3EF-FC7B124D8F01" /></desktop5:ItemType>
+          </desktop4:FileExplorerContextMenus>
+        </desktop4:Extension>
+        <uap:Extension Category="windows.fileTypeAssociation">
+          <uap:FileTypeAssociation Name="sziparchive">
+            <uap:DisplayName>sZIP archive</uap:DisplayName>
+            <uap:SupportedFileTypes>
+              <uap:FileType>.zip</uap:FileType><uap:FileType>.7z</uap:FileType><uap:FileType>.rar</uap:FileType>
+              <uap:FileType>.tar</uap:FileType><uap:FileType>.gz</uap:FileType><uap:FileType>.tgz</uap:FileType>
+            </uap:SupportedFileTypes>
+            <uap2:SupportedVerbs><uap3:Verb Id="open" Parameters="--open &quot;%1&quot;">Open</uap3:Verb></uap2:SupportedVerbs>
+          </uap:FileTypeAssociation>
+        </uap:Extension>
+        <desktop:Extension Category="windows.startupTask" Executable="sZIP.App.exe"
+                           EntryPoint="Windows.FullTrustApplication" uap10:Parameters="--tray">
+          <desktop:StartupTask TaskId="sZIP.Startup" Enabled="false" DisplayName="sZIP" />
+        </desktop:Extension>
+      </Extensions>
+    </Application>
+  </Applications>
+  <Capabilities><rescap:Capability Name="runFullTrust" /></Capabilities>
+</Package>

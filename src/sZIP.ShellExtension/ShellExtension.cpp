@@ -19,6 +19,11 @@ namespace
 {
     const CLSID CLSID_sZIPMenu =
         {0x5fd30db9, 0xb45b, 0x48dd, {0xa3, 0x59, 0x30, 0xbe, 0xea, 0x4c, 0xa4, 0xe1}};
+    // Distinct packaged channels cannot redirect each other's COM activation.
+    const CLSID CLSID_sZIPStoreMenu =
+        {0x85e1044c, 0xa4eb, 0x4eac, {0xa3, 0xef, 0xfc, 0x7b, 0x12, 0x4d, 0x8f, 0x01}};
+    const CLSID CLSID_sZIPDirectMenu =
+        {0x85e1044c, 0xa4eb, 0x4eac, {0xa3, 0xef, 0xfc, 0x7b, 0x12, 0x4d, 0x8f, 0x02}};
     const CLSID CLSID_LegacyExtractDirect =
         {0xf4da9d54, 0x7593, 0x4d8a, {0xa8, 0x58, 0xa8, 0xf2, 0x70, 0x22, 0xfe, 0xd2}};
     const CLSID CLSID_LegacyExtractSmart =
@@ -429,7 +434,8 @@ extern "C" HRESULT __stdcall DllGetClassObject(
     REFCLSID classId, REFIID iid, void** object)
 {
     CommandKind kind;
-    if (classId == CLSID_sZIPMenu) kind = CommandKind::Root;
+    if (classId == CLSID_sZIPMenu || classId == CLSID_sZIPStoreMenu || classId == CLSID_sZIPDirectMenu)
+        kind = CommandKind::Root;
     else if (classId == CLSID_LegacyExtractDirect) kind = CommandKind::ExtractHere;
     else if (classId == CLSID_LegacyExtractSmart) kind = CommandKind::SmartExtract;
     else return CLASS_E_CLASSNOTAVAILABLE;

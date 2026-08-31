@@ -19,6 +19,7 @@ internal static class ShellIntegration
     {
         get
         {
+            if (PackageDeployment.IsPackaged) return true;
             using var key = Registry.CurrentUser.OpenSubKey(FileMenuKey);
             if (key is not null)
             {
@@ -32,6 +33,7 @@ internal static class ShellIntegration
 
     public static ShellIntegrationResult SetEnabled(bool enabled, string executablePath, bool forceModernRepair = false)
     {
+        if (PackageDeployment.IsPackaged) return new ShellIntegrationResult("MsixShellManaged", true);
         RemoveLegacyRegistration();
         if (!enabled)
         {
@@ -39,10 +41,7 @@ internal static class ShellIntegration
         }
 
         var icon = $"{executablePath},0";
-        using (var preferences = Registry.CurrentUser.CreateSubKey(PreferencesKey))
-        {
-            preferences?.SetValue("Language", Localization.Language);
-        }
+        SyncLanguagePreference();
         CreateParentMenu(FileMenuKey, icon, includeExtraction: false, executablePath);
         CreateParentMenu(DirectoryMenuKey, icon, includeExtraction: false, executablePath);
         foreach (var extension in ArchiveExtensions)
@@ -71,6 +70,12 @@ internal static class ShellIntegration
 
     internal static string BuildCommand(string executablePath, string option) =>
         $"\"{executablePath}\" {option} \"%1\"";
+
+    internal static void SyncLanguagePreference()
+    {
+        using var preferences = Registry.CurrentUser.CreateSubKey(PreferencesKey);
+        preferences?.SetValue("Language", Localization.Language);
+    }
 
     private static void CreateParentMenu(
         string keyPath,
@@ -161,6 +166,7 @@ internal static class ShellIntegration
 
     public static ShellIntegrationResult GetStatus(string executablePath)
     {
+        if (PackageDeployment.IsPackaged) return new ShellIntegrationResult("MsixShellManaged", true);
         try
         {
             var classicRegistered = new[] { FileMenuKey, DirectoryMenuKey }.All(path =>
@@ -193,6 +199,7 @@ internal static class ShellIntegration
 
     internal static ShellIntegrationResult SetModernContextMenuEnabled(bool enabled, bool force = false)
     {
+        if (PackageDeployment.IsPackaged) return new ShellIntegrationResult("MsixShellManaged", true);
         if (!SupportsModernMenu && enabled)
             return new ShellIntegrationResult("ShellStatusClassicOnly", true);
         if (Environment.OSVersion.Version < new Version(10, 0, 19041))

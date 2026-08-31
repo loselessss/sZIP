@@ -9,10 +9,7 @@ internal static class DiagnosticLog
     private const int RetainedFiles = 3;
     private static readonly object Sync = new();
 
-    public static string LogDirectory { get; } = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "sZIP",
-        "logs");
+    public static string LogDirectory { get; } = Path.Combine(PackageDeployment.DataDirectory, "logs");
 
     public static void Write(string eventName, Exception? exception = null)
     {

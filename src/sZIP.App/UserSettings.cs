@@ -4,6 +4,15 @@ namespace sZIP.App;
 
 internal sealed class UserSettings : ApplicationSettingsBase
 {
+    public UserSettings()
+    {
+        if (!PackageDeployment.IsPackaged) return;
+        var provider = new MsixSettingsProvider(System.IO.Path.Combine(PackageDeployment.DataDirectory, "settings.xml"));
+        Providers.Clear();
+        Providers.Add(provider);
+        foreach (SettingsProperty property in Properties) property.Provider = provider;
+    }
+
     private static readonly UserSettings Instance =
         (UserSettings)Synchronized(new UserSettings());
 

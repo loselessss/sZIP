@@ -52,3 +52,8 @@ sZIP은 GitHub Releases에서 새 버전을 확인하며 설치 파일의 크기
 - [최신 릴리스 안내](RELEASE_NOTES.ko.md)
 - [외부 라이브러리 고지](THIRD-PARTY-NOTICES.md)
 - [MIT 라이선스](LICENSE)
+
+
+## MSIX 배포 미리보기
+
+개발 버전에 Microsoft Store와 서명된 직접 다운로드를 위한 전체 MSIX 패키징을 추가했습니다. 아직 기존 EXE 설치본을 대체하지 않습니다. 서명 준비와 남은 설치 검증은 [MSIX 배포 가이드](packaging/msix/README.md)를 확인해 주세요. 미리보기·테스트 MSIX 파일은 사용자 설치용이 아닙니다.

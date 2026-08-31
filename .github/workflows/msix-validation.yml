@@ -1,0 +1,46 @@
+name: MSIX validation (unsigned)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+      - uses: microsoft/setup-msbuild@v2
+      - name: Restore and test
+        shell: pwsh
+        run: |
+          dotnet restore sZIP.sln
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          dotnet test tests/sZIP.Tests/sZIP.Tests.csproj -c Release --no-restore
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          dotnet publish src/sZIP.App/sZIP.App.csproj -c Release -o artifacts/publish --no-restore
+      - name: Build native extension
+        run: msbuild src/sZIP.ShellExtension/sZIP.ShellExtension.vcxproj /p:Configuration=Release /p:Platform=x64
+      - name: Check unpackaged startup
+        shell: pwsh
+        run: .\tests\Verify-AppStartup.ps1 -ExecutablePath artifacts\publish\sZIP.App.exe
+      - name: Validate both package channels
+        shell: pwsh
+        run: |
+          $sdk = Get-ChildItem 'C:\Program Files (x86)\Windows Kits\10\bin' -Filter MakeAppx.exe -Recurse |
+            Where-Object FullName -match '\\x64\\MakeAppx.exe$' | Sort-Object FullName -Descending | Select-Object -First 1
+          if (-not $sdk) { throw 'Windows SDK not found.' }
+          .\tests\Verify-MsixPackaging.ps1 -PublishDirectory artifacts\publish -SdkBinDirectory $sdk.DirectoryName
+          .\build_msix.ps1 -Channel Store -IdentityName sZIP.Validation.Store -Publisher 'CN=sZIP Validation' -PublisherDisplayName 'sZIP Validation' -OutputDirectory artifacts\msix-validation\Store -SdkBinDirectory $sdk.DirectoryName -Unsigned
+          .\build_msix.ps1 -Channel Direct -IdentityName sZIP.Validation.Direct -Publisher 'CN=sZIP Validation' -PublisherDisplayName 'sZIP Validation' -OutputDirectory artifacts\msix-validation\Direct -SdkBinDirectory $sdk.DirectoryName -AppInstallerUri https://example.invalid/sZIP.appinstaller -PackageUri https://example.invalid/sZIP.msix -Unsigned
+      - name: Preserve validation artifacts only
+        uses: actions/upload-artifact@v6
+        with:
+          name: msix-UNSIGNED-validation-only
+          path: artifacts/msix-validation/
+          if-no-files-found: error
+          retention-days: 7

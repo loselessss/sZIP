@@ -52,3 +52,8 @@ sZIP checks GitHub Releases for updates and verifies the downloaded installer si
 - [Release notes](RELEASE_NOTES.md)
 - [Third-party notices](THIRD-PARTY-NOTICES.md)
 - [MIT License](LICENSE)
+
+
+## MSIX distribution preview
+
+The development branch includes full-MSIX packaging for Microsoft Store and signed direct downloads. It does not replace the EXE installer yet. See the [MSIX distribution guide](packaging/msix/README.md) for signing requirements and remaining installation checks. Preview/test MSIX artifacts are not ready for end-user installation.

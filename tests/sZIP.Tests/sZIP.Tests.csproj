@@ -18,10 +18,14 @@
     <Reference Include="System.IO.Compression" />
     <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="System.Net.Http" />
+    <Reference Include="System.Configuration" />
   </ItemGroup>
 
   <ItemGroup>
     <Using Include="Xunit" />
+    <Compile Include="..\..\src\sZIP.App\PackageDistribution.cs" Link="Packaging\PackageDistribution.cs" />
+    <Compile Include="..\..\src\sZIP.App\MsixSettingsProvider.cs" Link="Packaging\MsixSettingsProvider.cs" />
+    <None Include="..\..\packaging\msix\AppxManifest.xml" Link="Packaging\AppxManifest.xml" CopyToOutputDirectory="PreserveNewest" />
     <Compile Include="..\..\src\sZIP.App\ShellMenuRegistration.cs" Link="Shell\ShellMenuRegistration.cs" />
     <None Include="..\..\packaging\AppxManifest.xml" Link="Shell\AppxManifest.xml" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\..\src\sZIP.App\app.manifest" Link="Shell\app.manifest" CopyToOutputDirectory="PreserveNewest" />

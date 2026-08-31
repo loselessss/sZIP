@@ -158,6 +158,12 @@ foreach ($language in @('en', 'ko')) {
                     }
                     if ($null -eq $window.FindName('ShellIntegrationCheckBox')) { throw 'Explorer integration toggle missing.' }
                     if (-not $window.FindName('SaveButton').IsEnabled) { throw 'Save unavailable while idle.' }
+                    $configure = $window.GetType().GetMethod('ConfigureDeploymentUi', [Reflection.BindingFlags]'Instance,NonPublic')
+                    $configure.Invoke($window, @($true)) | Out-Null
+                    if ($window.FindName('StartupCheckBox').Visibility -ne 'Collapsed' -or
+                        $window.FindName('ShellIntegrationCheckBox').Visibility -ne 'Collapsed' -or
+                        $window.FindName('MsixSettingsPanel').Visibility -ne 'Visible') { throw 'Packaged settings UI is incorrect.' }
+                    Render-Window $window "$type-msix-$language-$scale" $scale
                 }
             } finally { Close-TestWindow $window }
         }

@@ -165,4 +165,8 @@ You can still check for updates manually at any time.</value></data>
   <data name="EncryptedRenameUnsupported" xml:space="preserve"><value>Encrypted archives cannot be renamed without removing encryption.</value></data>
   <data name="SelectedEntryNotFound" xml:space="preserve"><value>The selected archive entry was not found.</value></data>
   <data name="RenameConflict" xml:space="preserve"><value>An archive entry with that name already exists in the same folder.</value></data>
+  <data name="MsixShellManaged" xml:space="preserve"><value>MSIX installation manages Explorer menus and file associations. Select default apps in Windows Settings.</value></data>
+  <data name="MsixStartupManaged" xml:space="preserve"><value>Manage automatic startup in Windows Startup Apps. This package starts in the tray when enabled.</value></data>
+  <data name="MsixOpenStartupSettings" xml:space="preserve"><value>Open Windows Startup Apps</value></data>
+  <data name="MsixUpdateUnconfigured" xml:space="preserve"><value>The MSIX update channel is not configured. Reinstall from your original Store or signed package source.</value></data>
 </root>

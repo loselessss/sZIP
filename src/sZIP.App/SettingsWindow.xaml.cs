@@ -26,6 +26,7 @@ public partial class SettingsWindow : Window
         DeleteSourceCheckBox.IsChecked = settings.AutomaticArchiveExtractionDeleteSourceArchive;
         StartupCheckBox.IsChecked = StartupRegistration.IsEnabled;
         ShellIntegrationCheckBox.IsChecked = ShellIntegration.IsEnabled;
+        ConfigureDeploymentUi(PackageDeployment.IsPackaged);
         Closing += (_, e) => { if (_changingShell) e.Cancel = true; };
         Closed += (_, _) => _closed = true;
         UpdateShellControls();
@@ -36,6 +37,23 @@ public partial class SettingsWindow : Window
         SettingsFields.IsEnabled = !_changingShell;
         SaveButton.IsEnabled = !_changingShell;
         CancelButton.IsEnabled = !_changingShell;
+    }
+
+    internal void ConfigureDeploymentUi(bool packaged)
+    {
+        StartupCheckBox.Visibility = packaged ? Visibility.Collapsed : Visibility.Visible;
+        ShellIntegrationCheckBox.Visibility = packaged ? Visibility.Collapsed : Visibility.Visible;
+        MsixSettingsPanel.Visibility = packaged ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    private void OpenStartupSettings_Click(object sender, RoutedEventArgs e)
+    {
+        try { Process.Start(new ProcessStartInfo("ms-settings:startupapps") { UseShellExecute = true }); }
+        catch (Exception exception)
+        {
+            System.Windows.MessageBox.Show(this, exception.Message, Localization.T("Settings"),
+                MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
     }
 
     private void BrowseFolder_Click(object sender, RoutedEventArgs e)
@@ -85,12 +103,12 @@ public partial class SettingsWindow : Window
         UpdateShellControls();
         try
         {
-            if ((StartupCheckBox.IsChecked == true) != oldStartup)
+            if (!PackageDeployment.IsPackaged && (StartupCheckBox.IsChecked == true) != oldStartup)
             {
                 startupChanged = true;
                 StartupRegistration.SetEnabled(StartupCheckBox.IsChecked == true);
             }
-            if ((ShellIntegrationCheckBox.IsChecked == true) != oldShell)
+            if (!PackageDeployment.IsPackaged && (ShellIntegrationCheckBox.IsChecked == true) != oldShell)
             {
                 shellChanged = true;
                 var enabled = ShellIntegrationCheckBox.IsChecked == true;
