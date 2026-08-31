@@ -1,6 +1,11 @@
-# sZIP 1.9.0 Release Notes — Draft (2026-08-31)
+# sZIP 1.9.0 Release Notes (2026-08-31)
 
-## MSIX Preview
+## Available Downloads
+
+- This release provides the EXE installer and portable ZIP. Existing EXE installations keep their current update method.
+- Microsoft Store and full-app MSIX downloads are not available yet. This release does not resolve the known Windows 11 primary context menu limitation for EXE installations.
+
+## Upcoming MSIX Support
 
 - Added an MSIX packaging preview for Microsoft Store and signed direct distribution, alongside the existing EXE installer.
 - MSIX builds use their own update channel instead of launching the EXE updater.

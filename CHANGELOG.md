@@ -1,6 +1,8 @@
-# sZIP 1.9.0 — Unreleased (2026-08-31)
+# sZIP 1.9.0 (2026-08-31)
 
 [한국어](CHANGELOG.ko.md)
+
+Available as an EXE installer and portable ZIP. Full-app MSIX distribution is not included, and the known Windows 11 primary context menu limitation for EXE installations remains.
 
 ## MSIX Preview
 
