@@ -1,12 +1,13 @@
-# sZIP 1.8.0
+# sZIP
 
 [한국어](CHANGELOG.ko.md)
 
-Release date: 2026-08-30
+## Unreleased
 
-## Explorer Integration
+- Fixed a startup error after installation that also prevented access to the updater.
+- Stopped repeated registration attempts for unsupported Explorer menu packages and added guidance that does not suggest ineffective repairs or reinstalls.
+- Replaced raw XML in Explorer registration errors with readable error details.
 
-- Added Explorer menu status, a check-again button, and a repair button in Settings.
-- Added failure details and guidance when menu registration is incomplete or integration files are missing.
-- Fixed a registration error that prevented sZIP from appearing in the Windows 11 primary context menu.
-- Files and folders now show a clearer "Compress with sZIP" submenu label, with quick ZIP and 7Z compression and compression settings.
+## Known Issues
+
+- sZIP does not appear in the Windows 11 primary context menu with the current integration package. Use **Show more options** to access the sZIP menu.
