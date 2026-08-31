@@ -39,10 +39,8 @@ jobs:
               $version -ne $identityVersion -or $version -ne $appVersion) {
             throw "Version mismatch: tag=$version project=$projectVersion installer=$installerVersion identity=$identityVersion app=$appVersion"
           }
-          if ([string]$appMsix.packageName -ne [string]$identityManifest.Package.Identity.Name -or
-              [string]$appMsix.publisher -ne [string]$identityManifest.Package.Identity.Publisher -or
-              [string]$appMsix.applicationId -ne [string]$identityManifest.Package.Applications.Application.Id) {
-            throw "Sparse identity mismatch between src\sZIP.App\app.manifest and packaging\AppxManifest.xml"
+          if ($appMsix) {
+            throw "The app must launch independently of the optional Explorer identity package."
           }
 
       - name: Restore dependencies
@@ -57,6 +55,10 @@ jobs:
       - name: Build Windows 11 context menu extension
         shell: pwsh
         run: msbuild src\sZIP.ShellExtension\sZIP.ShellExtension.vcxproj /p:Configuration=Release /p:Platform=x64
+
+      - name: Test portable application startup
+        shell: pwsh
+        run: .\tests\Verify-AppStartup.ps1 -ExecutablePath artifacts\publish\sZIP.App.exe
 
       - name: Build sparse identity package
         shell: pwsh
@@ -75,19 +77,19 @@ jobs:
           $version = $env:GITHUB_REF_NAME.TrimStart("v")
           $installer = Resolve-Path -LiteralPath "artifacts\sZIP_Setup_$version.exe"
           $testInstaller = Join-Path $env:RUNNER_TEMP "sZIP_Setup_$version.exe"
-          $installRoot = Join-Path $env:LOCALAPPDATA "Programs\sZIP"
+          $installRoot = Join-Path $env:LOCALAPPDATA "Programs\sZIP Startup Test"
           $installLog = Join-Path $env:RUNNER_TEMP "szip-install.log"
           $uninstallLog = Join-Path $env:RUNNER_TEMP "szip-uninstall.log"
           Copy-Item -LiteralPath $installer -Destination $testInstaller -Force
 
-          $install = Start-Process -FilePath $testInstaller -Wait -PassThru -ArgumentList @(
+          $install = Start-Process -FilePath $testInstaller -Wait -PassThru -WindowStyle Hidden -ArgumentList @(
             "/VERYSILENT",
             "/SUPPRESSMSGBOXES",
             "/NORESTART",
             "/MERGETASKS=!desktopicon,!startup,!shellintegration",
-            "/DIR=$installRoot",
-            "/DELETEINSTALLER=$testInstaller",
-            "/LOG=$installLog"
+            "/DIR=`"$installRoot`"",
+            "/DELETEINSTALLER=`"$testInstaller`"",
+            "/LOG=`"$installLog`""
           )
           if ($install.ExitCode -ne 0) {
             if (Test-Path -LiteralPath $installLog) { Get-Content -LiteralPath $installLog }
@@ -105,16 +107,31 @@ jobs:
             throw "Installed app version mismatch: expected $version, got $fileVersion"
           }
 
+          .\tests\Verify-AppStartup.ps1 -ExecutablePath $app
+
+          .\tests\Verify-AppStartup.ps1 -ExecutablePath $app -NormalStartup
+
+          # Also exercise startup after optional Explorer registration was attempted.
+          $registration = Start-Process -FilePath $app -ArgumentList '--register-shell' -WindowStyle Hidden -PassThru
+          if (-not $registration.WaitForExit(60000)) {
+            $registration.Kill()
+            throw 'Explorer registration timed out.'
+          }
+          if ($registration.ExitCode -ne 0) { throw "Explorer registration process failed: $($registration.ExitCode)" }
+          .\tests\Verify-AppStartup.ps1 -ExecutablePath $app
+
+          .\tests\Verify-AppStartup.ps1 -ExecutablePath $app -NormalStartup
+
           $uninstaller = Join-Path $installRoot "unins000.exe"
           if (-not (Test-Path -LiteralPath $uninstaller)) {
             throw "Uninstaller was not found: $uninstaller"
           }
 
-          $uninstall = Start-Process -FilePath $uninstaller -Wait -PassThru -ArgumentList @(
+          $uninstall = Start-Process -FilePath $uninstaller -Wait -PassThru -WindowStyle Hidden -ArgumentList @(
             "/VERYSILENT",
             "/SUPPRESSMSGBOXES",
             "/NORESTART",
-            "/LOG=$uninstallLog"
+            "/LOG=`"$uninstallLog`""
           )
           if ($uninstall.ExitCode -ne 0) {
             if (Test-Path -LiteralPath $uninstallLog) { Get-Content -LiteralPath $uninstallLog }

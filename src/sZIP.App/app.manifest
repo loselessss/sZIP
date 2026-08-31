@@ -13,8 +13,5 @@
       <supportedOS Id="{8e0f7a12-bfb3-4fe8-b9a5-48fd50a15a9a}" />
     </application>
   </compatibility>
-  <msix xmlns="urn:schemas-microsoft-com:msix.v1"
-        publisher="CN=sZIP, OID.2.25.311729368913984317654407730594956997722=1"
-        packageName="sZIP.ContextMenu"
-        applicationId="sZIP" />
+  <!-- Explorer registration is optional; the app and updater must launch without package identity. -->
 </assembly>

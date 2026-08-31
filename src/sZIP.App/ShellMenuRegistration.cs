@@ -1,3 +1,5 @@
+using System.IO.Compression;
+
 namespace sZIP.App;
 
 internal sealed class ShellIntegrationResult
@@ -19,6 +21,18 @@ internal static class ShellMenuRegistration
 {
     private const string FindPackage = "$p=@(Get-AppxPackage -Name 'sZIP.ContextMenu'); ";
 
+    // This is only a preflight check. Windows validates the actual signature and trust.
+    public static bool HasPackageSignature(string path)
+    {
+        using var package = ZipFile.OpenRead(path);
+        return package.GetEntry("AppxSignature.p7x") is not null;
+    }
+
+    public static string WrapCommand(string command) =>
+        "$ErrorActionPreference='Stop'; $ProgressPreference='SilentlyContinue'; "
+        + "try { & { " + command + " } } catch { "
+        + "[Console]::Error.WriteLine(($_ | Out-String).Trim()); exit 1 }";
+
     public static string ProbeCommand(string version) => FindPackage
         + "if($p.Count -eq 0){'MISSING'} elseif($p.Count -eq 1 -and "
         + $"$p[0].Version.ToString() -eq '{Literal(version)}' -and $p[0].Status.ToString() -eq 'Ok')"
@@ -30,11 +44,11 @@ internal static class ShellMenuRegistration
         var condition = force ? "$true" : $"$p.Count -ne 1 -or $p[0].Version.ToString() -ne '{Literal(version)}' -or $p[0].Status.ToString() -ne 'Ok'";
         return FindPackage + $"if({condition}){{ "
             + "if($p.Count -gt 0){$p | Remove-AppxPackage}; "
-            + $"Add-AppxPackage -Path '{Literal(package)}' -ExternalLocation '{Literal(location)}' -AllowUnsigned }}";
+            + $"Add-AppxPackage -Path '{Literal(package)}' -ExternalLocation '{Literal(location)}' }}";
     }
 
     public static ShellIntegrationResult InterpretStatus(bool classicRegistered, bool payloadAvailable, string output,
-        bool partialClassicRegistration = false)
+        bool partialClassicRegistration = false, bool packageSigned = true)
     {
         var marker = output.Trim();
         if (marker != "READY" && marker != "MISSING" && marker != "REPAIR")
@@ -42,6 +56,8 @@ internal static class ShellMenuRegistration
         if (marker == "MISSING" && !classicRegistered && !partialClassicRegistration)
             return new ShellIntegrationResult("ShellStatusDisabled", true);
         if (!payloadAvailable) return new ShellIntegrationResult("ShellStatusPackageMissing", false);
+        if (marker != "READY" && classicRegistered && !packageSigned)
+            return new ShellIntegrationResult("ShellStatusSigningRequired", false);
         if (marker != "READY" || !classicRegistered)
             return new ShellIntegrationResult("ShellStatusRepairNeeded", false);
         return new ShellIntegrationResult("ShellStatusReady", true);

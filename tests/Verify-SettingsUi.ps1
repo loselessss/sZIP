@@ -160,7 +160,7 @@ foreach ($language in @('en', 'ko')) {
                     if (-not $window.FindName('RefreshShellButton').IsEnabled) { throw 'Refresh unavailable while idle.' }
                     $resultType = $assembly.GetType('sZIP.App.ShellIntegrationResult')
                     $showResult = $window.GetType().GetMethod('ShowShellResult', [Reflection.BindingFlags]'NonPublic,Instance')
-                    foreach ($statusKey in @('ShellStatusReady','ShellStatusRepairNeeded','ShellStatusPackageMissing','ShellStatusFailed')) {
+                    foreach ($statusKey in @('ShellStatusReady','ShellStatusRepairNeeded','ShellStatusPackageMissing','ShellStatusSigningRequired','ShellStatusFailed')) {
                         $details = if ($statusKey -eq 'ShellStatusFailed') { 'Example registration failure: 0x80073D2C. ' * 12 } else { '' }
                         $result = [Activator]::CreateInstance($resultType, @($statusKey, ($statusKey -eq 'ShellStatusReady'), $details))
                         $showResult.Invoke($window, @($result)) | Out-Null

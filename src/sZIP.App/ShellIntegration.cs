@@ -182,7 +182,7 @@ internal static class ShellIntegration
                 return probe;
             }
             return ShellMenuRegistration.InterpretStatus(classicRegistered, HasModernPayload, probe.Details,
-                partialClassicRegistration);
+                partialClassicRegistration, HasModernPayload && ShellMenuRegistration.HasPackageSignature(PackagePath));
         }
         catch (Exception exception)
         {
@@ -206,6 +206,15 @@ internal static class ShellIntegration
             return new ShellIntegrationResult("ShellStatusPackageMissing", false);
         }
 
+        if (enabled && !ShellMenuRegistration.HasPackageSignature(PackagePath))
+        {
+            // Keep a working external registration instead of removing it for an unsigned replacement.
+            var probe = RunPowerShell(ShellMenuRegistration.ProbeCommand(PackageVersion));
+            if (!probe.Success) return probe;
+            var ready = probe.Details.Trim() == "READY";
+            return new ShellIntegrationResult(ready ? "ShellStatusReady" : "ShellStatusSigningRequired", ready);
+        }
+
         var command = ShellMenuRegistration.RegistrationCommand(enabled, force, PackageVersion, PackagePath,
             AppDomain.CurrentDomain.BaseDirectory.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
         var result = RunPowerShell(command);
@@ -224,7 +233,7 @@ internal static class ShellIntegration
             using var process = Process.Start(new ProcessStartInfo(
                 powershell,
                 "-NoLogo -NoProfile -NonInteractive -WindowStyle Hidden -ExecutionPolicy Bypass -OutputFormat Text -EncodedCommand "
-                + Convert.ToBase64String(System.Text.Encoding.Unicode.GetBytes("$ErrorActionPreference='Stop'; " + command)))
+                + Convert.ToBase64String(System.Text.Encoding.Unicode.GetBytes(ShellMenuRegistration.WrapCommand(command))))
             {
                 UseShellExecute = false,
                 CreateNoWindow = true,

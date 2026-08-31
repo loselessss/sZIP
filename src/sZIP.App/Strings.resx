@@ -184,4 +184,5 @@ You can still check for updates manually at any time.</value></data>
   <data name="ShellStatusFailed" xml:space="preserve"><value>Windows could not complete the operation. Check the error details; if it persists, reinstall sZIP. Existing classic menu entries may still be available.</value></data>
   <data name="ShellStatusTimedOut" xml:space="preserve"><value>Windows did not respond within 30 seconds. Wait briefly, then check the status again before repairing.</value></data>
   <data name="ShellSettingsSavedWithWarning" xml:space="preserve"><value>Other settings were saved, but Explorer integration could not be fully applied. Review the status and error details in this window.</value></data>
+  <data name="ShellStatusSigningRequired" xml:space="preserve"><value>The classic Explorer menu is available under 'Show more options'. The Windows 11 primary menu needs a signed integration package. Reinstalling or repairing this build will not resolve that requirement.</value></data>
 </root>

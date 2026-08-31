@@ -39,6 +39,13 @@ public partial class App : System.Windows.Application
         SystemEvents.UserPreferenceChanged += SystemEvents_UserPreferenceChanged;
         DiagnosticLog.Write("application.start");
 
+        // Exercise the installed executable without changing settings or watching user files.
+        if (e.Args.Length == 2 && e.Args[0] == "--startup-smoke-test")
+        {
+            StartupSmokeTest.Run(this, e.Args[1]);
+            return;
+        }
+
         if (e.Args.Any(argument => string.Equals(
                 argument, "--register-shell", StringComparison.OrdinalIgnoreCase)))
         {

@@ -52,7 +52,7 @@ function Remove-AppxPackage {
 function Add-AppxPackage {
     param($Path, $ExternalLocation, [switch]$AllowUnsigned)
     if($Path -ne 'C:\sZIP''s folder\한글\sZIP.ContextMenu.msix' -or
-       $ExternalLocation -ne 'C:\sZIP''s folder\한글' -or -not $AllowUnsigned) { throw 'Arguments changed' }
+       $ExternalLocation -ne 'C:\sZIP''s folder\한글' -or $AllowUnsigned) { throw 'Arguments changed' }
     'added'
 }
 ";
@@ -75,9 +75,37 @@ function Add-AppxPackage {
     [Fact]
     public void RegistrationFailureIsNotSilentlySuccessful()
     {
-        var script = FakePackage("", "") + "function Add-AppxPackage { Write-Error 'Test registration denied' }; "
+        var script = FakePackage("", "") + "function Add-AppxPackage { Write-Progress -Activity 'Test progress' -Status 'Working'; Write-Error 'Test registration denied' }; "
             + ShellMenuRegistration.RegistrationCommand(true, true, "1.8.0.0", "test.msix", "test");
         RunFakeScript(script, expectFailure: true);
+    }
+
+    [Fact]
+    public void UnsignedPayloadExplainsTheClassicFallbackWithoutClaimingModernSuccess()
+    {
+        var result = ShellMenuRegistration.InterpretStatus(true, true, "MISSING", packageSigned: false);
+        Assert.Equal("ShellStatusSigningRequired", result.MessageKey);
+        Assert.False(result.Success);
+        Assert.Equal("ShellStatusReady", ShellMenuRegistration.InterpretStatus(
+            true, true, "READY", packageSigned: false).MessageKey);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void SignaturePreflightReadsThePackageRatherThanAssumingItIsSigned(bool signed)
+    {
+        var path = Path.Combine(Path.GetTempPath(), "szip-signature-test-" + Guid.NewGuid().ToString("N") + ".msix");
+        try
+        {
+            using (var zip = System.IO.Compression.ZipFile.Open(path, System.IO.Compression.ZipArchiveMode.Create))
+            {
+                zip.CreateEntry("AppxManifest.xml");
+                if (signed) zip.CreateEntry("AppxSignature.p7x");
+            }
+            Assert.Equal(signed, ShellMenuRegistration.HasPackageSignature(path));
+        }
+        finally { File.Delete(path); }
     }
 
     private static string FakePackage(string version, string status) => string.IsNullOrEmpty(version)
@@ -90,7 +118,7 @@ function Add-AppxPackage {
             "System32", "WindowsPowerShell", "v1.0", "powershell.exe");
         using var process = Process.Start(new ProcessStartInfo(powershell,
             "-NoLogo -NoProfile -NonInteractive -OutputFormat Text -EncodedCommand "
-            + Convert.ToBase64String(Encoding.Unicode.GetBytes("$ErrorActionPreference='Stop'; " + script)))
+            + Convert.ToBase64String(Encoding.Unicode.GetBytes(ShellMenuRegistration.WrapCommand(script))))
         {
             UseShellExecute = false, CreateNoWindow = true, RedirectStandardOutput = true, RedirectStandardError = true
         })!;
@@ -102,6 +130,8 @@ function Add-AppxPackage {
         {
             Assert.NotEqual(0, process.ExitCode);
             Assert.Contains("Test registration denied", detail);
+            Assert.DoesNotContain("CLIXML", detail);
+            Assert.DoesNotContain("<Objs", detail);
         }
         else Assert.True(process.ExitCode == 0, detail);
         return output.GetAwaiter().GetResult().Replace("\r\n", "\n").Trim();
