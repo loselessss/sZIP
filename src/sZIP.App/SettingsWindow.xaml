@@ -24,28 +24,6 @@
                           Foreground="{DynamicResource TextBrush}" Margin="0,16,0,0" />
                 <CheckBox x:Name="ShellIntegrationCheckBox" Content="{DynamicResource Text.ExplorerIntegration}"
                           Foreground="{DynamicResource TextBrush}" Margin="0,12,0,0" />
-                <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource DividerBrush}"
-                        BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,10,0,0">
-                    <StackPanel>
-                        <TextBlock Text="{DynamicResource Text.ShellStatusHeading}" FontWeight="SemiBold" />
-                        <TextBlock x:Name="ShellStatusText" Text="{DynamicResource Text.ShellChecking}"
-                                   TextWrapping="Wrap" Margin="0,6,0,0" AutomationProperties.LiveSetting="Polite" />
-                        <ProgressBar x:Name="ShellBusyProgress" IsIndeterminate="True" Height="3"
-                                     Margin="0,10,0,0" Visibility="Collapsed" />
-                        <WrapPanel Margin="0,10,0,0">
-                            <Button x:Name="RefreshShellButton" Content="{DynamicResource Text.ShellRefresh}"
-                                    Click="RefreshShell_Click" Margin="0,0,8,6" />
-                            <Button x:Name="RepairShellButton" Content="{DynamicResource Text.ShellRepair}"
-                                    Click="RepairShell_Click" Margin="0,0,0,6" />
-                        </WrapPanel>
-                        <TextBlock Text="{DynamicResource Text.ShellRepairHint}" TextWrapping="Wrap" FontSize="12" />
-                        <Expander x:Name="ShellDetailsExpander" Header="{DynamicResource Text.ShellErrorDetails}"
-                                  Visibility="Collapsed" Margin="0,8,0,0">
-                            <TextBox x:Name="ShellDetailsText" IsReadOnly="True" TextWrapping="Wrap" MaxHeight="130"
-                                     VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" />
-                        </Expander>
-                    </StackPanel>
-                </Border>
                 <Border Height="1" Background="{DynamicResource DividerBrush}" Margin="0,24,0,20" />
                 <TextBlock Text="{DynamicResource Text.AutomaticArchiveExtraction}" FontWeight="SemiBold" FontSize="16"
                            TextWrapping="Wrap" />

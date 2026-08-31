@@ -153,20 +153,11 @@ foreach ($language in @('en', 'ko')) {
                 if ($type -eq 'SettingsWindow') { $window.Width = 500; $window.Height = 480 }
                 Render-Window $window "$type-$language-$scale" $scale
                 if ($type -eq 'SettingsWindow') {
-                    $window.FindName('ShellIntegrationCheckBox').IsChecked = $false
-                    if ($window.FindName('RepairShellButton').IsEnabled) { throw 'Repair enabled while integration unchecked.' }
-                    $window.FindName('ShellIntegrationCheckBox').IsChecked = $true
-                    if (-not $window.FindName('RepairShellButton').IsEnabled) { throw 'Repair unavailable while idle.' }
-                    if (-not $window.FindName('RefreshShellButton').IsEnabled) { throw 'Refresh unavailable while idle.' }
-                    $resultType = $assembly.GetType('sZIP.App.ShellIntegrationResult')
-                    $showResult = $window.GetType().GetMethod('ShowShellResult', [Reflection.BindingFlags]'NonPublic,Instance')
-                    foreach ($statusKey in @('ShellStatusReady','ShellStatusRepairNeeded','ShellStatusPackageMissing','ShellStatusSigningRequired','ShellStatusFailed')) {
-                        $details = if ($statusKey -eq 'ShellStatusFailed') { 'Example registration failure: 0x80073D2C. ' * 12 } else { '' }
-                        $result = [Activator]::CreateInstance($resultType, @($statusKey, ($statusKey -eq 'ShellStatusReady'), $details))
-                        $showResult.Invoke($window, @($result)) | Out-Null
-                        $window.FindName('ShellDetailsExpander').IsExpanded = $true
-                        Render-Window $window "$type-$language-$scale-$statusKey" $scale
+                    foreach ($removedControl in @('ShellStatusText','RefreshShellButton','RepairShellButton','ShellDetailsExpander')) {
+                        if ($null -ne $window.FindName($removedControl)) { throw "Removed control still present: $removedControl" }
                     }
+                    if ($null -eq $window.FindName('ShellIntegrationCheckBox')) { throw 'Explorer integration toggle missing.' }
+                    if (-not $window.FindName('SaveButton').IsEnabled) { throw 'Save unavailable while idle.' }
                 }
             } finally { Close-TestWindow $window }
         }
@@ -228,4 +219,4 @@ try {
     if ($main.FindName('AutomaticArchiveExtractionCheckBox').Content -notlike '*Automatic Archive Extraction*') { throw 'English live switch failed.' }
 } finally { Close-TestWindow $main }
 $application.Shutdown()
-Write-Output 'PASS: language switching, settings save/cancel, persistence, shell status/button states, and 100%/200% layouts including updates.'
+Write-Output 'PASS: language switching, settings save/cancel, persistence, simplified Explorer settings, and 100%/200% layouts including updates.'

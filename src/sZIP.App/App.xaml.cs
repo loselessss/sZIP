@@ -243,7 +243,6 @@ public partial class App : System.Windows.Application
         menu.Items.Add(L.T("CheckForUpdates"), null, (_, _) =>
             Dispatcher.BeginInvoke(new Action(() => _ = CheckForUpdatesAsync(manual: true))));
         menu.Items.Add(L.T("Settings"), null, (_, _) => ShowSettings());
-        menu.Items.Add(L.T("DiagnosticFolder"), null, (_, _) => OpenDiagnosticLogFolder());
         menu.Items.Add(new Forms.ToolStripSeparator());
         menu.Items.Add(L.T("Exit"), null, (_, _) => ExitApplication());
 
@@ -419,22 +418,6 @@ public partial class App : System.Windows.Application
         catch (Exception exception)
         {
             DiagnosticLog.Write("shell-integration.refresh.failed", exception);
-        }
-    }
-
-    private void OpenDiagnosticLogFolder()
-    {
-        try
-        {
-            Directory.CreateDirectory(DiagnosticLog.LogDirectory);
-            Process.Start(new ProcessStartInfo("explorer.exe", DiagnosticLog.LogDirectory)
-            {
-                UseShellExecute = true
-            });
-        }
-        catch (Exception exception)
-        {
-            DiagnosticLog.Write("diagnostic-folder.open.failed", exception);
         }
     }
 

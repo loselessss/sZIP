@@ -23,7 +23,6 @@
             </StackPanel>
             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                 <Button Content="{DynamicResource Text.Refresh}" Click="RefreshButton_Click" />
-                <Button Content="{DynamicResource Text.LogFolder}" Margin="8,0,0,0" Click="OpenFolderButton_Click" />
             </StackPanel>
         </Grid>
 

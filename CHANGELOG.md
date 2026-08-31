@@ -5,8 +5,8 @@
 ## Unreleased
 
 - Fixed a startup error after installation that also prevented access to the updater.
-- Stopped repeated registration attempts for unsupported Explorer menu packages and added guidance that does not suggest ineffective repairs or reinstalls.
-- Replaced raw XML in Explorer registration errors with readable error details.
+- Removed the Explorer menu status panel and its check and repair buttons from Settings. The integration toggle remains available.
+- Removed diagnostic log folder shortcuts from the tray menu and the automatic extraction history window.
 
 ## Known Issues
 
