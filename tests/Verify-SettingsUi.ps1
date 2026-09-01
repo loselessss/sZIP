@@ -1,4 +1,7 @@
-param([string]$Configuration = 'Release')
+param(
+    [string]$Configuration = 'Release',
+    [switch]$UpdateOnly
+)
 $ErrorActionPreference = 'Stop'
 $repo = Split-Path -Parent $PSScriptRoot
 $output = Join-Path $repo 'artifacts\ui-checks'
@@ -38,6 +41,7 @@ $settings.Providers.Clear()
 $settings.Providers.Add($provider)
 foreach ($property in $settings.Properties) { $property.Provider = $provider }
 $settings.Reload()
+$settings.AutomaticArchiveExtractionFolder = 'C:\Downloads'
 
 # Load only application resources; never start the watcher, tray, or updater.
 $application = New-Object System.Windows.Application
@@ -145,7 +149,8 @@ function Render-Window($window, [string]$name, [double]$scale) {
 
 foreach ($language in @('en', 'ko')) {
     Set-Language $language
-    foreach ($type in @('MainWindow', 'SettingsWindow', 'AuditWindow', 'PasswordDialog', 'RenameEntryDialog')) {
+    $windowTypes = if ($UpdateOnly) { @() } else { @('MainWindow', 'SettingsWindow', 'AuditWindow', 'PasswordDialog', 'RenameEntryDialog') }
+    foreach ($type in $windowTypes) {
         foreach ($scale in @(1, 2)) {
             $window = New-TestWindow $type
             try {
@@ -171,12 +176,30 @@ foreach ($language in @('en', 'ko')) {
     foreach ($scale in @(1, 2)) {
         $updateWindow = New-UpdateWindow $language
         try {
+            $english = @{
+                ReleasePageButton = 'Release Page'
+                SkipButton = 'Skip This Version'
+                LaterButton = 'Later'
+                InstallButton = 'Download and Install'
+            }
+            foreach ($button in $english.Keys) {
+                $actual = [string]$updateWindow.Window.FindName($button).Content
+                if (($language -eq 'ko' -and $actual -eq $english[$button]) -or
+                    ($language -eq 'en' -and $actual -ne $english[$button])) {
+                    throw "Update button language mismatch: $button is '$actual' in $language mode."
+                }
+            }
             Render-Window $updateWindow.Window "UpdateDialog-$language-$scale" $scale
         } finally {
             Close-TestWindow $updateWindow.Window
             $updateWindow.Service.Dispose()
         }
     }
+}
+
+if ($UpdateOnly) {
+    Write-Output 'Verified localized update buttons and layouts.'
+    exit 0
 }
 
 # Cancel leaves the draft unapplied; saving uses an in-memory provider, never user.config.

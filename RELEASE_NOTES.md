@@ -1,15 +1,11 @@
 # sZIP 1.9.0 Release Notes (2026-08-31)
 
-## Available Downloads
+## Changes
 
-- This release provides the EXE installer and portable ZIP. Existing EXE installations keep their current update method.
-- Microsoft Store and full-app MSIX downloads are not available yet. This release does not resolve the known Windows 11 primary context menu limitation for EXE installations.
+- The currently distributed EXE and portable editions have the same features and usage as 1.8.1.
+- This version prepares for future Microsoft Store distribution; a Store edition is not available yet.
+- Users on 1.8.1 do not need to update for user-facing features.
 
-## Upcoming MSIX Support
+## Known Issues
 
-- Added an MSIX packaging preview for Microsoft Store and signed direct distribution, alongside the existing EXE installer.
-- MSIX builds use their own update channel instead of launching the EXE updater.
-- MSIX installation manages Explorer menus and file associations; automatic startup is controlled in Windows Settings.
-- MSIX settings are stored independently of the installed package version.
-
-This is not a published MSIX release. Signing, Store identity configuration and installed-package validation remain pending. Existing EXE installations are not automatically migrated or removed.
+- sZIP does not appear in the Windows 11 primary context menu. Use **Show more options** to access the sZIP menu.

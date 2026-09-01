@@ -2,13 +2,11 @@
 
 [한국어](CHANGELOG.ko.md)
 
-Available as an EXE installer and portable ZIP. Full-app MSIX distribution is not included, and the known Windows 11 primary context menu limitation for EXE installations remains.
+## Changes
 
-## MSIX Preview
+- The currently distributed EXE and portable editions have the same user-facing features as 1.8.1.
+- Prepared for future Microsoft Store distribution. A Store edition is not available yet.
 
-- Added an MSIX packaging preview for Microsoft Store and signed direct distribution, alongside the existing EXE installer.
-- MSIX builds use their own update channel instead of launching the EXE updater.
-- MSIX installation manages Explorer menus and file associations; automatic startup is controlled in Windows Settings.
-- MSIX settings are stored independently of the installed package version.
+## Known Issues
 
-MSIX production distribution is pending signing/Store setup and installed-package validation.
+- sZIP does not appear in the Windows 11 primary context menu. Use **Show more options** to access the sZIP menu.

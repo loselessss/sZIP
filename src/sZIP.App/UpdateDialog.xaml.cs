@@ -13,6 +13,8 @@ public partial class UpdateDialog : Window
 
     public UpdateDialog(GitHubUpdateService service, AvailableUpdate update)
     {
+        // Keep every label and button in the same language as the selected release notes.
+        L.Apply(service.ReleaseNotesLanguage);
         InitializeComponent();
         _service = service;
         _update = update;

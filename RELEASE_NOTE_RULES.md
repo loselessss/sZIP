@@ -22,6 +22,7 @@ Release notes are user-facing text shown in the app update window and on GitHub 
 - Example: if `1.5.1` follows `1.5.0`, include `1.5.0 Highlights` and `1.5.1 Fixes`.
 - Do not mention internal verification, CI, build environment changes, or workflow hardening.
 - Do not include installer filenames, hashes, or test pass/fail details unless they directly help the user decide whether to update.
+- If a release has no user-visible changes, say that directly instead of describing internal preparation as a feature.
 
 ## Style
 
