@@ -61,7 +61,17 @@ public sealed class SevenZipArchiveService
                     {
                         using var source = new FileStream(
                             item.SourcePath, FileMode.Open, FileAccess.Read, FileShare.Read, BufferSize);
-                        writer.Write(item.EntryName, source, File.GetLastWriteTime(item.SourcePath));
+                        var completedBeforeEntry = processedBytes;
+                        using var progressSource = new ProgressReadStream(
+                            source,
+                            copied => progress?.Report(new CompressionProgress(
+                                item.EntryName,
+                                completedEntries,
+                                items.Count,
+                                completedBeforeEntry + copied,
+                                totalBytes)),
+                            cancellationToken);
+                        writer.Write(item.EntryName, progressSource, File.GetLastWriteTime(item.SourcePath));
                         processedBytes += item.Length;
                     }
 
@@ -239,5 +249,39 @@ public sealed class SevenZipArchiveService
         public string EntryName { get; }
         public bool IsDirectory { get; }
         public long Length { get; }
+    }
+
+    private sealed class ProgressReadStream : Stream
+    {
+        private readonly Stream _source;
+        private readonly Action<long> _progress;
+        private readonly CancellationToken _cancellationToken;
+        private long _bytesRead;
+
+        public ProgressReadStream(Stream source, Action<long> progress, CancellationToken cancellationToken)
+        {
+            _source = source;
+            _progress = progress;
+            _cancellationToken = cancellationToken;
+        }
+
+        public override int Read(byte[] buffer, int offset, int count)
+        {
+            _cancellationToken.ThrowIfCancellationRequested();
+            var read = _source.Read(buffer, offset, count);
+            _bytesRead += read;
+            if (read > 0) _progress(_bytesRead);
+            return read;
+        }
+
+        public override bool CanRead => _source.CanRead;
+        public override bool CanSeek => _source.CanSeek;
+        public override bool CanWrite => false;
+        public override long Length => _source.Length;
+        public override long Position { get => _source.Position; set => _source.Position = value; }
+        public override void Flush() => _source.Flush();
+        public override long Seek(long offset, SeekOrigin origin) => _source.Seek(offset, origin);
+        public override void SetLength(long value) => throw new NotSupportedException();
+        public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
     }
 }

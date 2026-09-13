@@ -170,4 +170,9 @@
   <data name="MsixOpenStartupSettings" xml:space="preserve"><value>Windows 시작 앱 설정 열기</value></data>
   <data name="MsixUpdateUnconfigured" xml:space="preserve"><value>MSIX 업데이트 경로가 설정되지 않았습니다. 처음 설치한 Store 또는 서명된 패키지 배포처에서 다시 설치해 주세요.</value></data>
   <data name="ExtractionSafetyDetail" xml:space="preserve"><value>압축파일에 안전하지 않은 경로·링크가 있거나 용량 정보가 잘못되어 작업을 중단했습니다. 압축파일의 내용을 확인하거나 원본을 다시 받아 주세요. 상세 원인:</value></data>
+  <data name="ProgressItems" xml:space="preserve"><value>항목</value></data>
+  <data name="ProgressSize" xml:space="preserve"><value>처리 용량</value></data>
+  <data name="ProgressSpeed" xml:space="preserve"><value>속도</value></data>
+  <data name="ProgressElapsed" xml:space="preserve"><value>경과 시간</value></data>
+  <data name="ProgressRemaining" xml:space="preserve"><value>남은 시간</value></data>
 </root>

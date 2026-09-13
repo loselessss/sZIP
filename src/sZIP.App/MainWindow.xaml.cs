@@ -519,7 +519,14 @@ public partial class MainWindow : Window
         var remainingText = totalBytes > processedBytes && bytesPerSecond > 0
             ? L.F("RemainingTime", FormatDuration(TimeSpan.FromSeconds((totalBytes - processedBytes) / bytesPerSecond)))
             : string.Empty;
-        ProgressDetailsText.Text = $"{sizeText} · {FormatBytes((long)bytesPerSecond)}/s{remainingText}";
+        ProgressDetailsText.Text = currentEntry;
+        ProgressItemsValueText.Text = L.F("ItemProgress", completedEntries, totalEntries);
+        ProgressSizeValueText.Text = sizeText;
+        ProgressSpeedValueText.Text = $"{FormatBytes((long)bytesPerSecond)}/s";
+        ProgressElapsedValueText.Text = FormatDuration(TimeSpan.FromSeconds(elapsedSeconds));
+        ProgressRemainingValueText.Text = string.IsNullOrEmpty(remainingText)
+            ? "—"
+            : remainingText.Trim(' ', '·');
     }
 
     private void SetOperationCompleted(string heading, string outputPath)
@@ -763,6 +770,11 @@ public partial class MainWindow : Window
             OperationProgress.Value = 0;
             ProgressPercentText.Text = "0%";
             ProgressDetailsText.Text = L.T("PreparingOperation");
+            ProgressItemsValueText.Text = "—";
+            ProgressSizeValueText.Text = "—";
+            ProgressSpeedValueText.Text = "—";
+            ProgressElapsedValueText.Text = "—";
+            ProgressRemainingValueText.Text = "—";
         }
     }
 

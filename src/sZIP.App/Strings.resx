@@ -170,4 +170,9 @@ You can still check for updates manually at any time.</value></data>
   <data name="MsixOpenStartupSettings" xml:space="preserve"><value>Open Windows Startup Apps</value></data>
   <data name="MsixUpdateUnconfigured" xml:space="preserve"><value>The MSIX update channel is not configured. Reinstall from your original Store or signed package source.</value></data>
   <data name="ExtractionSafetyDetail" xml:space="preserve"><value>The archive contains an unsafe path, a link, or invalid size information. Check the archive in another folder or obtain a new copy from its source. Technical details:</value></data>
+  <data name="ProgressItems" xml:space="preserve"><value>Items</value></data>
+  <data name="ProgressSize" xml:space="preserve"><value>Processed</value></data>
+  <data name="ProgressSpeed" xml:space="preserve"><value>Speed</value></data>
+  <data name="ProgressElapsed" xml:space="preserve"><value>Elapsed</value></data>
+  <data name="ProgressRemaining" xml:space="preserve"><value>Remaining</value></data>
 </root>
