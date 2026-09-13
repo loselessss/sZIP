@@ -1,11 +1,12 @@
-# sZIP 1.9.0 (2026-08-31)
+# sZIP 1.9.1 (2026-09-13)
 
 [한국어](CHANGELOG.ko.md)
 
 ## Changes
 
-- The currently distributed EXE and portable editions have the same user-facing features as 1.8.1.
-- Prepared for future Microsoft Store distribution. A Store edition is not available yet.
+- Removed manual extraction limits on entry count and expansion ratio. Safety errors now include an explanation before technical details.
+
+- Fixed manual extraction being blocked when the total extracted size exceeded 2 GiB or a single file exceeded 1 GiB. Automatic extraction retains its existing safety limits.
 
 ## Known Issues
 

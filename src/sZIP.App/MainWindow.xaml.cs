@@ -18,7 +18,11 @@ public partial class MainWindow : Window
     private readonly ZipArchiveService _manualArchiveService = new();
     private readonly SevenZipArchiveService _sevenZipArchiveService = new();
     private readonly ArchiveEntryRenamer _archiveEntryRenamer;
-    private readonly MultiFormatArchiveService _automaticArchiveService = new();
+    private readonly MultiFormatArchiveService _automaticArchiveService = new(new ExtractionPolicy(
+        maxEntryCount: 10_000,
+        maxTotalBytes: 2L * 1024 * 1024 * 1024,
+        maxSingleFileBytes: 1L * 1024 * 1024 * 1024,
+        maxExpansionRatio: 20d));
     private readonly SemaphoreSlim _automaticArchiveExtractionLock = new(1, 1);
     private readonly CancellationTokenSource _shutdownCancellation = new();
     private CancellationTokenSource? _operationCancellation;
@@ -725,7 +729,7 @@ public partial class MainWindow : Window
         }
         catch (ArchiveSecurityException exception)
         {
-            ShowError(L.T("StoppedForSafety"), exception.Message);
+            ShowError(L.T("StoppedForSafety"), L.T("ExtractionSafetyDetail") + Environment.NewLine + exception.Message);
         }
         catch (InvalidDataException exception)
         {

@@ -366,7 +366,8 @@ public sealed class MultiFormatArchiveService : IMultiFormatArchiveService
                     }
 
                     total = checked(total + read);
-                    if (total > _policy.MaxTotalBytes + 64L * 1024 * 1024)
+                    if (total > 64L * 1024 * 1024
+                        && total - 64L * 1024 * 1024 > _policy.MaxTotalBytes)
                     {
                         throw new ArchiveSecurityException("The TAR extraction staging size exceeds the safety limit.");
                     }

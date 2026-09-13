@@ -5,10 +5,10 @@ namespace sZIP.Archive
     public sealed class ExtractionPolicy
     {
         public ExtractionPolicy(
-            int maxEntryCount = 10_000,
-            long maxTotalBytes = 2L * 1024 * 1024 * 1024,
-            long maxSingleFileBytes = 1L * 1024 * 1024 * 1024,
-            double maxExpansionRatio = 20d)
+            int maxEntryCount = int.MaxValue,
+            long maxTotalBytes = long.MaxValue,
+            long maxSingleFileBytes = long.MaxValue,
+            double maxExpansionRatio = double.PositiveInfinity)
         {
             MaxEntryCount = maxEntryCount;
             MaxTotalBytes = maxTotalBytes;
