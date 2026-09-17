@@ -2,6 +2,8 @@
 
 ## Changes
 
+The installer and the matching source archive are available together in this release's Assets.
+
 - Added item count, processed size, speed, elapsed time, and estimated remaining time to the compression progress card.
 - Large 7Z files now report progress continuously while each file is being compressed.
 

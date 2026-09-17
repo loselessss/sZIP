@@ -36,7 +36,7 @@ sZIP은 지정한 폴더와 그 하위 폴더에서 새로 내려받은 압축 �
 
 ## 설치
 
-[GitHub Releases](https://github.com/loselessss/sZIP/releases/latest)에서 설치 파일을 내려받으세요. 현재 사용자 영역에 설치되므로 일반적으로 관리자 권한이 필요하지 않습니다. 설치하지 않고 사용하는 포터블 ZIP도 함께 제공합니다.
+[GitHub Releases](https://github.com/loselessss/sZIP/releases/latest)에서 설치 파일을 내려받으세요. 현재 사용자 영역에 설치되므로 일반적으로 관리자 권한이 필요하지 않습니다. 설치하지 않고 사용하는 포터블 ZIP도 함께 제공합니다. 각 버전 릴리스의 같은 Assets에서 대응 소스 ZIP, 소스 ZIP의 SHA-256 체크섬, 의존성·빌드 정보 문서도 함께 제공합니다.
 
 설치 과정에서 바탕 화면 바로가기, Windows 로그인 시 실행, 탐색기 메뉴, 지원 압축 파일 연결을 선택할 수 있습니다.
 

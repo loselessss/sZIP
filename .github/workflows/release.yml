@@ -43,6 +43,56 @@ jobs:
             throw "The app must launch independently of the optional Explorer identity package."
           }
 
+      - name: Prepare matching source assets
+        shell: pwsh
+        run: |
+          $tag = $env:GITHUB_REF_NAME
+          $version = $tag.TrimStart("v")
+          New-Item -ItemType Directory -Force -Path artifacts | Out-Null
+          $source = "artifacts\sZIP-$version-source.zip"
+          & git archive --format=zip "--prefix=sZIP-$version-source/" "--output=$source" HEAD
+          if ($LASTEXITCODE -ne 0 -or -not (Test-Path -LiteralPath $source)) {
+            throw "Could not create the source archive for $tag."
+          }
+          $sourceHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $source).Hash.ToLowerInvariant()
+          "$sourceHash  $([IO.Path]::GetFileName($source))" |
+            Set-Content -Encoding ascii -LiteralPath "$source.sha256"
+          $commit = (git rev-parse HEAD).Trim()
+          if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($commit)) {
+            throw "Could not determine the source commit."
+          }
+          $dotnetVersion = (& dotnet --version).Trim()
+          $buildInfo = @"
+          # sZIP $version source and build information
+
+          ## Source
+
+          - Release tag: $tag
+          - Source commit: $commit
+          - Matching source archive: sZIP-$version-source.zip
+
+          ## Dependencies
+
+          - SharpCompress 0.50.1: https://github.com/adamhathcock/sharpcompress
+          - Microsoft.Bcl.AsyncInterfaces 8.0.0: https://www.nuget.org/packages/Microsoft.Bcl.AsyncInterfaces/8.0.0
+          - System.Buffers 4.6.1: https://www.nuget.org/packages/System.Buffers/4.6.1
+          - System.Memory 4.6.3: https://www.nuget.org/packages/System.Memory/4.6.3
+          - System.Runtime.CompilerServices.Unsafe 6.1.2: https://www.nuget.org/packages/System.Runtime.CompilerServices.Unsafe/6.1.2
+          - System.Text.Encoding.CodePages 8.0.0: https://www.nuget.org/packages/System.Text.Encoding.CodePages/8.0.0
+          - System.Threading.Tasks.Extensions 4.5.4: https://www.nuget.org/packages/System.Threading.Tasks.Extensions/4.5.4
+          - Dependency license details: THIRD-PARTY-NOTICES.md in the source archive
+
+          ## Build
+
+          - Platform: Windows x64
+          - .NET SDK: $dotnetVersion
+          - Framework: .NET Framework 4.8
+          - Native build: MSBuild with the Visual C++ x64 toolchain
+          - Installer: Inno Setup 6
+          - Main build commands: dotnet test sZIP.sln --configuration Release, dotnet publish src\sZIP.App\sZIP.App.csproj --configuration Release, and the native shell extension MSBuild command
+          "@
+          $buildInfo.Trim() | Set-Content -Encoding utf8 -LiteralPath "artifacts\sZIP-$version-build-info.md"
+
       - name: Restore dependencies
         run: dotnet restore sZIP.sln
 
@@ -165,6 +215,10 @@ jobs:
           $latestHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $latestInstaller).Hash.ToLowerInvariant()
           "$latestHash  sZIP_Setup_latest.exe" | Set-Content -Encoding ascii -LiteralPath "$latestInstaller.sha256"
 
+      - name: Verify release assets
+        shell: pwsh
+        run: .\tests\Verify-ReleaseAssets.ps1 -ArtifactsDirectory artifacts -Version $env:GITHUB_REF_NAME.TrimStart("v")
+
       - name: Preserve release assets
         uses: actions/upload-artifact@v6
         with:
@@ -174,6 +228,9 @@ jobs:
             artifacts/sZIP_Setup_*.exe.sha256
             artifacts/sZIP-*.zip
             artifacts/sZIP-*.zip.sha256
+            artifacts/sZIP-*-source.zip
+            artifacts/sZIP-*-source.zip.sha256
+            artifacts/sZIP-*-build-info.md
           compression-level: 0
 
       - name: Publish GitHub release
@@ -198,6 +255,50 @@ jobs:
             "artifacts\sZIP_Setup_latest.exe.sha256" `
             "artifacts\sZIP-$version-net48.zip" `
             "artifacts\sZIP-$version-net48.zip.sha256" `
+            "artifacts\sZIP-$version-source.zip" `
+            "artifacts\sZIP-$version-source.zip.sha256" `
+            "artifacts\sZIP-$version-build-info.md" `
             --verify-tag `
             --title "sZIP $version" `
+            --draft `
             --notes-file artifacts\RELEASE_NOTES.md
+
+      - name: Verify uploaded release assets
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = $env:GITHUB_REF_NAME
+          $version = $tag.TrimStart("v")
+          $release = gh release view $tag --json isDraft,isPrerelease,assets | ConvertFrom-Json
+          if (-not $release.isDraft -or $release.isPrerelease) {
+            throw "The release must remain a non-prerelease draft until all assets are verified."
+          }
+          $required = @(
+            "sZIP_Setup_$version.exe",
+            "sZIP_Setup_latest.exe",
+            "sZIP-$version-source.zip",
+            "sZIP-$version-source.zip.sha256",
+            "sZIP-$version-build-info.md"
+          )
+          $actual = @($release.assets | ForEach-Object name)
+          foreach ($name in $required) {
+            if ($actual -notcontains $name) { throw "Published release is missing asset: $name" }
+          }
+
+      - name: Publish stable GitHub release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release edit $env:GITHUB_REF_NAME --draft=false --prerelease=false
+
+      - name: Verify published release structure
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = $env:GITHUB_REF_NAME
+          $release = gh release view $tag --json isDraft,isPrerelease | ConvertFrom-Json
+          if ($release.isDraft -or $release.isPrerelease) {
+            throw "The published release must be a public stable release."
+          }

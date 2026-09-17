@@ -24,6 +24,13 @@ Release notes are user-facing text shown in the app update window and on GitHub 
 - Do not include installer filenames, hashes, or test pass/fail details unless they directly help the user decide whether to update.
 - If a release has no user-visible changes, say that directly instead of describing internal preparation as a feature.
 
+## Release Assets
+
+- Publish one stable GitHub release per version. Do not create a separate source tag or source pre-release for new versions.
+- Attach the versioned installer, `latest` installer alias, matching source ZIP, source ZIP SHA-256 file, and dependency/build information document to the same release.
+- Prepare and validate the matching source assets before building binaries. Any source preparation or upload failure must fail the release.
+- State in the release body that the installer and matching source are available together in the release Assets.
+
 ## Style
 
 - Write concise English.
