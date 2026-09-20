@@ -35,6 +35,12 @@ SDK를 시스템에 설치하지 않고 **패키징 검사 도구만** 프로젝
 
 ## Store 제출용
 
+등록된 Store 제품은 9NX8XSVB054T이며, 실제 식별 정보를 담은 루트의 build_store_msix.ps1로 빌드합니다. 이 스크립트는 Store 전용이고 직접 배포의 식별 정보는 변경하지 않습니다.
+
+    .\build_store_msix.ps1
+
+탐색기의 기본 우클릭 sZIP 하위 메뉴에는 ZIP 압축, 7Z 압축, 압축 설정을 제공합니다. 지원하는 압축파일 선택 시 알아서 풀기와 여기에 풀기가 추가되고, 단일 압축파일에는 sZIP으로 열기가 추가됩니다. 일부만 풀기는 sZIP으로 연 뒤 항목을 선택해서 사용합니다. 실제 설치 후 Windows 11 메뉴 표시·실행 검증은 별도로 필요합니다.
+
 아래 꺾쇠 부분은 Partner Center의 실제 값으로 바꿉니다. 템플릿의 Name/Publisher는 제출용 신원이 아닙니다.
 
     .\build_msix.ps1 -Channel Store -IdentityName '<Partner Center Name>' -Publisher '<Partner Center Publisher>' -PublisherDisplayName '<게시자 표시 이름>'

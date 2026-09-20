@@ -1,3 +1,9 @@
+# Unreleased
+
+## Changes
+
+- Tightened the Settings window's vertical spacing and removed excess empty space below the language and automatic-extraction options.
+
 # sZIP 1.10.0 (2026-09-13)
 
 [한국어](CHANGELOG.ko.md)
