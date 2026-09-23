@@ -65,6 +65,12 @@ namespace sZIP.Watcher
             return new PathExclusion(_activeExclusions, normalized);
         }
 
+        public void MarkProcessed(string path)
+        {
+            ThrowIfDisposed();
+            RememberProcessed(path);
+        }
+
         public void Dispose()
         {
             if (_disposed)
@@ -132,10 +138,14 @@ namespace sZIP.Watcher
                 try
                 {
                     if (!IsExcluded(path)
+                        && !IsAlreadyProcessed(path)
                         && await ArchiveStabilityProbe.WaitUntilReadyAsync(path, _options, cancellationToken))
                     {
-                        RememberProcessed(path);
-                        ArchiveReady?.Invoke(this, path);
+                        if (!IsExcluded(path) && !IsAlreadyProcessed(path))
+                        {
+                            RememberProcessed(path);
+                            ArchiveReady?.Invoke(this, path);
+                        }
                     }
                 }
                 catch (IOException)
@@ -200,7 +210,9 @@ namespace sZIP.Watcher
         {
             var fullPath = Path.GetFullPath(path);
             return _activeExclusions.Keys.Any(root =>
-                fullPath.StartsWith(root, StringComparison.OrdinalIgnoreCase));
+                fullPath.Equals(root.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar),
+                    StringComparison.OrdinalIgnoreCase)
+                || fullPath.StartsWith(root, StringComparison.OrdinalIgnoreCase));
         }
 
         private bool IsAlreadyProcessed(string path)

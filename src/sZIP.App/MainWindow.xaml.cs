@@ -234,6 +234,7 @@ public partial class MainWindow : Window
             await _archiveEntryRenamer.RenameAsync(
                 archivePath, entry.FullName, dialog.NewName, _workspace.CurrentPassword,
                 progress, cancellationToken);
+            _automaticWatcher?.MarkProcessed(archivePath);
             var entries = await _workspace.OpenAsync(
                 archivePath, _workspace.CurrentPassword, cancellationToken);
             EntriesGrid.ItemsSource = entries;
@@ -380,6 +381,7 @@ public partial class MainWindow : Window
             outputPath = GetUniqueFilePath(Path.Combine(initialDirectory, defaultName));
         }
 
+        using var outputExclusion = _automaticWatcher?.ExcludePath(outputPath);
         var progress = new Progress<CompressionProgress>(value =>
             UpdateCompressionProgress(value));
 
@@ -403,6 +405,7 @@ public partial class MainWindow : Window
                     cancellationToken);
             }
             completed = true;
+            _automaticWatcher?.MarkProcessed(outputPath);
             SetOperationCompleted(L.T("ArchiveCreated"), outputPath);
         });
 
