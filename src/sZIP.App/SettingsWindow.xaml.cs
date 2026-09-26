@@ -56,6 +56,17 @@ public partial class SettingsWindow : Window
         }
     }
 
+    private void PrivacyPolicy_RequestNavigate(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
+    {
+        e.Handled = true;
+        try { Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri) { UseShellExecute = true }); }
+        catch (Exception exception)
+        {
+            System.Windows.MessageBox.Show(this, exception.Message, Localization.T("PrivacyPolicy"),
+                MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+    }
+
     private void BrowseFolder_Click(object sender, RoutedEventArgs e)
     {
         using var dialog = new System.Windows.Forms.FolderBrowserDialog

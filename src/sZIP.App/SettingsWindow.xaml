@@ -58,6 +58,11 @@
                 </CheckBox>
             </StackPanel>
         </ScrollViewer>
+        <TextBlock Grid.Row="1" VerticalAlignment="Center" Margin="0,16,190,0" TextWrapping="Wrap">
+            <Hyperlink NavigateUri="https://loselessss.github.io/sZIP/" RequestNavigate="PrivacyPolicy_RequestNavigate">
+                <Run Text="{DynamicResource Text.PrivacyPolicy}" />
+            </Hyperlink>
+        </TextBlock>
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
             <Button x:Name="CancelButton" Content="{DynamicResource Text.Cancel}" MinWidth="84" IsCancel="True" Margin="0,0,8,0" />
             <Button x:Name="SaveButton" Content="{DynamicResource Text.Save}" MinWidth="84" IsDefault="True"

@@ -1,11 +1,12 @@
-# sZIP 1.10.0 Release Notes (2026-09-13)
+# sZIP 1.10.1 Release Notes (2026-09-26)
 
 ## Changes
 
 The installer and the matching source archive are available together in this release's Assets.
 
-- Added item count, processed size, speed, elapsed time, and estimated remaining time to the compression progress card.
-- Large 7Z files now report progress continuously while each file is being compressed.
+- Fixed automatic extraction of archives created or edited by sZIP in a watched folder.
+- Refined vertical spacing in Settings.
+- Added a privacy policy link in Settings.
 
 ## Known Issues
 

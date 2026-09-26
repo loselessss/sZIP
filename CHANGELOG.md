@@ -1,7 +1,8 @@
-# Unreleased
+# sZIP 1.10.1 (2026-09-26)
 
 ## Changes
 
+- Added a link to the public privacy policy in Settings.
 - Archives created or edited by sZIP in a watched folder are no longer automatically extracted.
 - Tightened the Settings window's vertical spacing and removed excess empty space below the language and automatic-extraction options.
 

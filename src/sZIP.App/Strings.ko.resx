@@ -175,4 +175,5 @@
   <data name="ProgressSpeed" xml:space="preserve"><value>속도</value></data>
   <data name="ProgressElapsed" xml:space="preserve"><value>경과 시간</value></data>
   <data name="ProgressRemaining" xml:space="preserve"><value>남은 시간</value></data>
+  <data name="PrivacyPolicy" xml:space="preserve"><value>개인정보처리방침</value></data>
 </root>

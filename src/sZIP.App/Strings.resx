@@ -175,4 +175,5 @@ You can still check for updates manually at any time.</value></data>
   <data name="ProgressSpeed" xml:space="preserve"><value>Speed</value></data>
   <data name="ProgressElapsed" xml:space="preserve"><value>Elapsed</value></data>
   <data name="ProgressRemaining" xml:space="preserve"><value>Remaining</value></data>
+  <data name="PrivacyPolicy" xml:space="preserve"><value>Privacy policy</value></data>
 </root>

@@ -1,4 +1,4 @@
-# MSIX 배포 가이드 — 1.10.0 개발 미리보기
+# MSIX 배포 가이드 — 1.10.1 개발 미리보기
 
 현재 EXE 설치본과 업데이트는 유지합니다. 이 구성은 앱 전체를 담는 MSIX를 **Store / Direct 두 경로**로 빌드하기 위한 미리보기입니다. 아직 Store에 제출하거나 서명된 MSIX를 배포하지 않았습니다.
 
@@ -59,7 +59,7 @@ SDK를 시스템에 설치하지 않고 **패키징 검사 도구만** 프로젝
 
 인증서 생성·신뢰 등록·비밀키 업로드는 자동으로 수행하지 않습니다. 인증서 비밀번호나 개인키를 소스/채팅/릴리스 파일에 넣지 마세요.
 
-    .\build_msix.ps1 -Channel Direct -IdentityName '<직접 배포 Name>' -Publisher '<인증서 Subject>' -PublisherDisplayName '<게시자 표시 이름>' -CertificateThumbprint '<40자리 thumbprint>' -TimestampUri '<timestamp URL>' -AppInstallerUri 'https://example.org/sZIP.appinstaller' -PackageUri 'https://example.org/sZIP-1.10.0-Direct-x64.msix'
+    .\build_msix.ps1 -Channel Direct -IdentityName '<직접 배포 Name>' -Publisher '<인증서 Subject>' -PublisherDisplayName '<게시자 표시 이름>' -CertificateThumbprint '<40자리 thumbprint>' -TimestampUri '<timestamp URL>' -AppInstallerUri 'https://example.org/sZIP.appinstaller' -PackageUri 'https://example.org/sZIP-1.10.1-Direct-x64.msix'
 
 스크립트는 인증서 Subject 일치, 서명 및 신뢰 검증이 성공한 경우에만 배포용 .appinstaller를 만듭니다. 게시 시 패키지 파일을 먼저 올리고, 고정 feed를 마지막에 갱신합니다. 지정한 URL과 실제 파일 위치가 일치해야 합니다.
 
