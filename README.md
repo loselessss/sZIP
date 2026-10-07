@@ -6,6 +6,8 @@ sZIP is a lightweight archive utility for Windows. It brings compression, extrac
 
 It runs on Windows 10 and 11 and supports both Korean and English.
 
+[Get it from the Microsoft Store](https://apps.microsoft.com/detail/9NX8XSVB054T?hl=en-us&gl=KR&ocid=pdpshare)
+
 ## What You Can Do
 
 - Create ZIP and 7Z archives from files or folders.
@@ -38,7 +40,7 @@ Closing the main window keeps sZIP available in the system tray. Use the tray me
 
 ## Installation
 
-Download the installer from [GitHub Releases](https://github.com/loselessss/sZIP/releases/latest). sZIP installs for the current user, so administrator privileges are normally not required. A portable ZIP is also provided. Matching source, SHA-256 checksums and dependency/build information are bundled in the extras ZIP in the same release Assets.
+Install sZIP from the [Microsoft Store](https://apps.microsoft.com/detail/9NX8XSVB054T?hl=en-us&gl=KR&ocid=pdpshare) or [GitHub Releases](https://github.com/loselessss/sZIP/releases/latest). GitHub Releases also provides a per-user EXE installer, which normally does not require administrator privileges, and a portable ZIP. Matching source, SHA-256 checksums and dependency/build information are bundled in the extras ZIP in the same release Assets.
 
 The installer can add a desktop shortcut, launch sZIP with Windows, register Explorer menus, and associate supported archive formats.
 

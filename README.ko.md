@@ -6,6 +6,8 @@ sZIP은 Windows용 가벼운 압축·해제 프로그램입니다. 파일 압축
 
 Windows 10과 11에서 실행되며 한국어와 영어를 지원합니다.
 
+[Microsoft Store에서 받기](https://apps.microsoft.com/detail/9NX8XSVB054T?hl=ko-kr&gl=KR&ocid=pdpshare)
+
 ## 주요 기능
 
 - 파일과 폴더를 ZIP 또는 7Z로 압축
@@ -38,7 +40,7 @@ sZIP은 지정한 폴더와 그 하위 폴더에서 새로 내려받은 압축 �
 
 ## 설치
 
-[GitHub Releases](https://github.com/loselessss/sZIP/releases/latest)에서 설치 파일을 내려받으세요. 현재 사용자 영역에 설치되므로 일반적으로 관리자 권한이 필요하지 않습니다. 설치하지 않고 사용하는 포터블 ZIP도 함께 제공합니다. 대응 소스 ZIP, SHA-256 체크섬, 의존성·빌드 정보는 같은 Assets의 extras ZIP에 묶어 제공합니다.
+[Microsoft Store](https://apps.microsoft.com/detail/9NX8XSVB054T?hl=ko-kr&gl=KR&ocid=pdpshare) 또는 [GitHub Releases](https://github.com/loselessss/sZIP/releases/latest)에서 sZIP을 설치할 수 있습니다. 현재 사용자 영역에 설치되는 EXE 설치 파일과 설치 없이 사용하는 포터블 ZIP도 GitHub Releases에서 제공합니다. 대응 소스 ZIP, SHA-256 체크섬, 의존성·빌드 정보는 같은 Assets의 extras ZIP에 묶어 제공합니다.
 
 설치 과정에서 바탕 화면 바로가기, Windows 로그인 시 실행, 탐색기 메뉴, 지원 압축 파일 연결을 선택할 수 있습니다.
 
