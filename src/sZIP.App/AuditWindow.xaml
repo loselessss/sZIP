@@ -22,25 +22,53 @@
                            TextTrimming="CharacterEllipsis" />
             </StackPanel>
             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                <Button Content="{DynamicResource Text.Refresh}" Click="RefreshButton_Click" />
+                <Button x:Name="RefreshButton" Content="{DynamicResource Text.Refresh}" Click="RefreshButton_Click" />
             </StackPanel>
         </Grid>
 
         <DataGrid x:Name="AuditGrid" Grid.Row="1" Margin="0,16,0,0"
                   AutoGenerateColumns="False" IsReadOnly="True"
-                  CanUserAddRows="False" SelectionMode="Single">
+                  CanUserAddRows="False" SelectionMode="Single" SelectionChanged="AuditGrid_SelectionChanged">
+            <DataGrid.Resources>
+                <Style x:Key="AuditCellTextStyle" TargetType="TextBlock">
+                    <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+                    <Setter Property="ToolTip" Value="{Binding Text, RelativeSource={RelativeSource Self}}" />
+                </Style>
+            </DataGrid.Resources>
             <DataGrid.Columns>
-                <DataGridTextColumn Header="{DynamicResource Text.Time}" Binding="{Binding Time}" Width="160" />
-                <DataGridTextColumn Header="{DynamicResource Text.Status}" Binding="{Binding Status}" Width="95" />
-                <DataGridTextColumn Header="{DynamicResource Text.Archive}" Binding="{Binding ArchivePath}" Width="2*" />
-                <DataGridTextColumn Header="{DynamicResource Text.OutputFolder}" Binding="{Binding OutputPath}" Width="2*" />
-                <DataGridTextColumn Header="{DynamicResource Text.Source}" Binding="{Binding SourceArchive}" Width="85" />
-                <DataGridTextColumn Header="{DynamicResource Text.Details}" Binding="{Binding Detail}" Width="*" />
+                <DataGridTextColumn Header="{DynamicResource Text.Time}" Binding="{Binding Time}" Width="160" ElementStyle="{StaticResource AuditCellTextStyle}" />
+                <DataGridTextColumn Header="{DynamicResource Text.Status}" Binding="{Binding Status}" Width="95" ElementStyle="{StaticResource AuditCellTextStyle}" />
+                <DataGridTextColumn Header="{DynamicResource Text.Archive}" Binding="{Binding ArchivePath}" Width="2*" ElementStyle="{StaticResource AuditCellTextStyle}" />
+                <DataGridTextColumn Header="{DynamicResource Text.OutputFolder}" Binding="{Binding OutputPath}" Width="2*" ElementStyle="{StaticResource AuditCellTextStyle}" />
+                <DataGridTextColumn Header="{DynamicResource Text.Source}" Binding="{Binding SourceArchive}" Width="85" ElementStyle="{StaticResource AuditCellTextStyle}" />
+                <DataGridTextColumn Header="{DynamicResource Text.Details}" Binding="{Binding Detail}" Width="*" ElementStyle="{StaticResource AuditCellTextStyle}" />
             </DataGrid.Columns>
         </DataGrid>
 
-        <TextBlock Grid.Row="2" Margin="0,10,0,0"
-                   Text="{DynamicResource Text.LatestEntries}"
-                   Foreground="{DynamicResource MutedTextBrush}" />
+        <DockPanel Grid.Row="2" Margin="0,10,0,0" LastChildFill="True">
+            <WrapPanel DockPanel.Dock="Right" HorizontalAlignment="Right">
+                <Button x:Name="RetryButton" ToolTip="{DynamicResource Text.RetryExtraction}"
+                        AutomationProperties.Name="{DynamicResource Text.RetryExtraction}"
+                        IsEnabled="False" Margin="0,0,8,0" Click="RetryButton_Click">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE777;" VerticalAlignment="Center" />
+                        <TextBlock Text="{DynamicResource Text.RetryExtraction}" Margin="7,0,0,0" />
+                    </StackPanel>
+                </Button>
+                <Button x:Name="OpenOutputButton" ToolTip="{DynamicResource Text.OpenOutputFolder}"
+                        AutomationProperties.Name="{DynamicResource Text.OpenOutputFolder}"
+                        IsEnabled="False" Click="OpenOutputButton_Click">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE8DA;" VerticalAlignment="Center" />
+                        <TextBlock Text="{DynamicResource Text.OpenOutputFolder}" Margin="7,0,0,0" />
+                    </StackPanel>
+                </Button>
+            </WrapPanel>
+            <StackPanel>
+                <TextBlock Text="{DynamicResource Text.LatestEntries}"
+                           Foreground="{DynamicResource MutedTextBrush}" />
+                <TextBlock x:Name="RetryStatusText" TextWrapping="Wrap" />
+            </StackPanel>
+        </DockPanel>
     </Grid>
 </Window>

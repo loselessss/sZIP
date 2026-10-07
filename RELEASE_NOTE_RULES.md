@@ -27,7 +27,8 @@ Release notes are user-facing text shown in the app update window and on GitHub 
 ## Release Assets
 
 - Publish one stable GitHub release per version. Do not create a separate source tag or source pre-release for new versions.
-- Attach the versioned installer, `latest` installer alias, matching source ZIP, source ZIP SHA-256 file, and dependency/build information document to the same release.
+- Attach the versioned installer, `latest` installer alias and portable ZIP separately. Bundle matching source, all checksums and dependency/build information in `sZIP-<version>-extras.zip` on the same release.
+- Label the unsigned Store MSIX as a Partner Center submission package when attaching it. It is not a direct installation download.
 - Prepare and validate the matching source assets before building binaries. Any source preparation or upload failure must fail the release.
 - State in the release body that the installer and matching source are available together in the release Assets.
 

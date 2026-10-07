@@ -28,6 +28,8 @@ sZIP can watch a folder and its subfolders for newly downloaded archives. Files 
 
 Use the main ribbon to turn automatic archive extraction on or off. From Settings, you can choose the watch folder and size limit and decide whether the original archive should be deleted after successful extraction. The audit list shows completed and failed automatic operations.
 
+From the history list, retry failed or skipped extractions, enter a password when needed, or open an existing output folder. Retries use Smart Extract and follow the original archive deletion setting.
+
 ## Windows Integration
 
 Explorer integration adds an sZIP submenu for Smart Extract, Extract Here, opening archives, quick ZIP and 7Z compression, and compression settings. Multiple files can be compressed together, and supported archive formats can be associated with sZIP.
@@ -36,7 +38,7 @@ Closing the main window keeps sZIP available in the system tray. Use the tray me
 
 ## Installation
 
-Download the installer from [GitHub Releases](https://github.com/loselessss/sZIP/releases/latest). sZIP installs for the current user, so administrator privileges are normally not required. A portable ZIP is also provided. Each version release includes the matching source ZIP, its SHA-256 checksum, and dependency/build information in the same release Assets.
+Download the installer from [GitHub Releases](https://github.com/loselessss/sZIP/releases/latest). sZIP installs for the current user, so administrator privileges are normally not required. A portable ZIP is also provided. Matching source, SHA-256 checksums and dependency/build information are bundled in the extras ZIP in the same release Assets.
 
 The installer can add a desktop shortcut, launch sZIP with Windows, register Explorer menus, and associate supported archive formats.
 

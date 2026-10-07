@@ -198,6 +198,10 @@ jobs:
             throw "Temporary installer still exists after install cleanup: $testInstaller"
           }
 
+      - name: Build Store submission package
+        shell: pwsh
+        run: .\build_store_msix.ps1 -PublishDirectory artifacts\publish -OutputDirectory artifacts
+
       - name: Create release assets
         shell: pwsh
         run: |
@@ -214,6 +218,16 @@ jobs:
           Copy-Item -LiteralPath $installer -Destination $latestInstaller -Force
           $latestHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $latestInstaller).Hash.ToLowerInvariant()
           "$latestHash  sZIP_Setup_latest.exe" | Set-Content -Encoding ascii -LiteralPath "$latestInstaller.sha256"
+          $extras = @(
+            "$installer.sha256",
+            "$latestInstaller.sha256",
+            "$portable.sha256",
+            "artifacts\sZIP-$version-source.zip",
+            "artifacts\sZIP-$version-source.zip.sha256",
+            "artifacts\sZIP-$version-build-info.md",
+            "artifacts\sZIP-$version-Store-x64.msix.sha256"
+          )
+          Compress-Archive -LiteralPath $extras -DestinationPath "artifacts\sZIP-$version-extras.zip" -CompressionLevel Optimal
 
       - name: Verify release assets
         shell: pwsh
@@ -231,6 +245,7 @@ jobs:
             artifacts/sZIP-*-source.zip
             artifacts/sZIP-*-source.zip.sha256
             artifacts/sZIP-*-build-info.md
+            artifacts/sZIP-*-Store-x64.msix
           compression-level: 0
 
       - name: Publish GitHub release
@@ -244,20 +259,24 @@ jobs:
             "<!-- sZIP:lang=en -->"
             (Get-Content -LiteralPath RELEASE_NOTES.md -Raw).Trim()
             ""
+            "## Downloads"
+            "Install sZIP_Setup_$version.exe, or use sZIP-$version-net48.zip without installation. Matching source, checksums and build information are bundled in sZIP-$version-extras.zip in the same Assets."
+            "The Store MSIX is unsigned and provided for Partner Center submission. Use the EXE or portable ZIP for direct installation."
+            ""
             "<!-- sZIP:lang=ko -->"
             (Get-Content -LiteralPath RELEASE_NOTES.ko.md -Raw).Trim()
+            ""
+            "## 다운로드"
+            "sZIP_Setup_$version.exe를 설치하거나 sZIP-$version-net48.zip 포터블판을 사용하세요. 대응 소스, 체크섬, 빌드 정보는 같은 Assets의 sZIP-$version-extras.zip에 묶었습니다."
+            "Store MSIX는 Partner Center 제출용 미서명 파일입니다. 직접 사용하려면 EXE 또는 포터블 ZIP을 받으세요."
           ) -join [Environment]::NewLine
           $releaseNotes | Set-Content -LiteralPath artifacts\RELEASE_NOTES.md -Encoding utf8
           gh release create $tag `
             "artifacts\sZIP_Setup_$version.exe" `
-            "artifacts\sZIP_Setup_$version.exe.sha256" `
             "artifacts\sZIP_Setup_latest.exe" `
-            "artifacts\sZIP_Setup_latest.exe.sha256" `
             "artifacts\sZIP-$version-net48.zip" `
-            "artifacts\sZIP-$version-net48.zip.sha256" `
-            "artifacts\sZIP-$version-source.zip" `
-            "artifacts\sZIP-$version-source.zip.sha256" `
-            "artifacts\sZIP-$version-build-info.md" `
+            "artifacts\sZIP-$version-extras.zip" `
+            "artifacts\sZIP-$version-Store-x64.msix#Store submission only (unsigned)" `
             --verify-tag `
             --title "sZIP $version" `
             --draft `
@@ -277,9 +296,9 @@ jobs:
           $required = @(
             "sZIP_Setup_$version.exe",
             "sZIP_Setup_latest.exe",
-            "sZIP-$version-source.zip",
-            "sZIP-$version-source.zip.sha256",
-            "sZIP-$version-build-info.md"
+            "sZIP-$version-net48.zip",
+            "sZIP-$version-extras.zip",
+            "sZIP-$version-Store-x64.msix"
           )
           $actual = @($release.assets | ForEach-Object name)
           foreach ($name in $required) {

@@ -176,4 +176,9 @@ You can still check for updates manually at any time.</value></data>
   <data name="ProgressElapsed" xml:space="preserve"><value>Elapsed</value></data>
   <data name="ProgressRemaining" xml:space="preserve"><value>Remaining</value></data>
   <data name="PrivacyPolicy" xml:space="preserve"><value>Privacy policy</value></data>
+  <data name="RetryExtraction" xml:space="preserve"><value>Retry extraction</value></data>
+  <data name="OpenOutputFolder" xml:space="preserve"><value>Open output folder</value></data>
+  <data name="RetryExtracting" xml:space="preserve"><value>Retrying extraction...</value></data>
+  <data name="RetryPasswordFailed" xml:space="preserve"><value>The password is incorrect or this archive's encryption is unsupported. Use Retry extraction to try again.</value></data>
+  <data name="OutputFolderMissing" xml:space="preserve"><value>The output folder has been moved or deleted.</value></data>
 </root>

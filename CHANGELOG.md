@@ -1,3 +1,11 @@
+# sZIP 1.10.2 (2026-10-07)
+
+## Changes
+
+- Retry failed, skipped, or cancelled extractions from automatic extraction history and enter a password when needed.
+- Open output folders directly from history.
+- Long paths are shortened to fit and shown in full on hover.
+
 # sZIP 1.10.1 (2026-09-26)
 
 ## Changes

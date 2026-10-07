@@ -176,4 +176,9 @@
   <data name="ProgressElapsed" xml:space="preserve"><value>경과 시간</value></data>
   <data name="ProgressRemaining" xml:space="preserve"><value>남은 시간</value></data>
   <data name="PrivacyPolicy" xml:space="preserve"><value>개인정보처리방침</value></data>
+  <data name="RetryExtraction" xml:space="preserve"><value>다시 풀기</value></data>
+  <data name="OpenOutputFolder" xml:space="preserve"><value>결과 폴더 열기</value></data>
+  <data name="RetryExtracting" xml:space="preserve"><value>다시 압축 해제 중...</value></data>
+  <data name="RetryPasswordFailed" xml:space="preserve"><value>암호가 올바르지 않거나 이 압축 파일의 암호화를 지원하지 않습니다. 다시 풀기로 재시도할 수 있습니다.</value></data>
+  <data name="OutputFolderMissing" xml:space="preserve"><value>결과 폴더가 이동되었거나 삭제되었습니다.</value></data>
 </root>

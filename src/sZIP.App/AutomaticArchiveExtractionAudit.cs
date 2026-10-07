@@ -97,6 +97,7 @@ internal sealed class AutomaticArchiveExtractionAuditEntry
         string detail)
     {
         Time = time;
+        RawStatus = status;
         Status = Localization.Error(status);
         ArchivePath = archivePath;
         OutputPath = outputPath;
@@ -105,6 +106,10 @@ internal sealed class AutomaticArchiveExtractionAuditEntry
     }
 
     public string Time { get; }
+    public string RawStatus { get; }
+    public bool CanRetry => RawStatus == nameof(AutomaticArchiveExtractionAuditStatus.Failed)
+        || RawStatus == nameof(AutomaticArchiveExtractionAuditStatus.Skipped)
+        || RawStatus == nameof(AutomaticArchiveExtractionAuditStatus.Cancelled);
     public string Status { get; }
     public string ArchivePath { get; }
     public string OutputPath { get; }

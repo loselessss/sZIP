@@ -8,6 +8,9 @@ $artifacts = (Resolve-Path -LiteralPath $ArtifactsDirectory).Path
 $required = @(
     "sZIP_Setup_$Version.exe",
     'sZIP_Setup_latest.exe',
+    "sZIP-$Version-net48.zip",
+    "sZIP-$Version-extras.zip",
+    "sZIP-$Version-Store-x64.msix",
     "sZIP-$Version-source.zip",
     "sZIP-$Version-source.zip.sha256",
     "sZIP-$Version-build-info.md"
@@ -49,5 +52,26 @@ foreach ($requiredText in @("sZIP $Version", "sZIP-$Version-source.zip", '## Dep
         throw "Build information document is incomplete: $requiredText"
     }
 }
+
+$bundle = [IO.Compression.ZipFile]::OpenRead((Join-Path $artifacts "sZIP-$Version-extras.zip"))
+try {
+    $expectedNames = @(
+        "sZIP_Setup_$Version.exe.sha256", 'sZIP_Setup_latest.exe.sha256',
+        "sZIP-$Version-net48.zip.sha256", "sZIP-$Version-source.zip",
+        "sZIP-$Version-source.zip.sha256", "sZIP-$Version-build-info.md",
+        "sZIP-$Version-Store-x64.msix.sha256"
+    )
+    if (Compare-Object $expectedNames @($bundle.Entries | ForEach-Object FullName)) {
+        throw 'Extras ZIP contents do not match the required source and supporting files.'
+    }
+    foreach ($entry in $bundle.Entries) {
+        $stream = $entry.Open()
+        $sha = [Security.Cryptography.SHA256]::Create()
+        try { $entryHash = [BitConverter]::ToString($sha.ComputeHash($stream)).Replace('-', '') }
+        finally { $sha.Dispose(); $stream.Dispose() }
+        $fileHash = (Get-FileHash -Algorithm SHA256 -LiteralPath (Join-Path $artifacts $entry.FullName)).Hash
+        if ($entryHash -ne $fileHash) { throw "Extras ZIP changed file contents: $($entry.FullName)" }
+    }
+} finally { $bundle.Dispose() }
 
 Write-Output "Verified release assets for sZIP $Version."

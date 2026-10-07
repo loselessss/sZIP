@@ -1,6 +1,7 @@
 param(
     [string]$Configuration = 'Release',
-    [switch]$UpdateOnly
+    [switch]$UpdateOnly,
+    [switch]$AuditOnly
 )
 $ErrorActionPreference = 'Stop'
 $repo = Split-Path -Parent $PSScriptRoot
@@ -145,6 +146,95 @@ function Render-Window($window, [string]$name, [double]$scale) {
     $encoder.Frames.Add([System.Windows.Media.Imaging.BitmapFrame]::Create($bitmap))
     $stream = [IO.File]::Create((Join-Path $output "$name.png"))
     try { $encoder.Save($stream) } finally { $stream.Dispose() }
+}
+
+if ($AuditOnly) {
+    $auditFixture = Join-Path $output ('audit-fixture-' + [Guid]::NewGuid().ToString('N'))
+    New-Item -ItemType Directory -Path $auditFixture | Out-Null
+    $archivePath = Join-Path $auditFixture 'example.zip'
+    New-Item -ItemType File -Path $archivePath | Out-Null
+    $entryType = $assembly.GetType('sZIP.App.AutomaticArchiveExtractionAuditEntry')
+    $entryConstructor = $entryType.GetConstructors()[0]
+    $retryDelegate = [Func[string, System.Windows.Window, System.Threading.Tasks.Task]] {
+        param($path, $owner)
+        $script:retriedPath = $path
+        return [System.Threading.Tasks.Task]::FromResult($true)
+    }
+    $constructor = $assembly.GetType('sZIP.App.AuditWindow').GetConstructors([Reflection.BindingFlags]'Instance,NonPublic')[0]
+    foreach ($language in @('en', 'ko')) {
+        Set-Language $language
+        $window = $constructor.Invoke(@($retryDelegate))
+        $window.ShowActivated = $false
+        $window.ShowInTaskbar = $false
+        $window.Left = -10000
+        $window.Top = -10000
+        try {
+            $grid = $window.FindName('AuditGrid')
+            foreach ($status in @('Failed', 'Skipped', 'Cancelled', 'Completed')) {
+                $entry = $entryConstructor.Invoke([string[]]@('now', $status, $archivePath, $auditFixture, 'kept', ''))
+                $grid.ItemsSource = @($entry)
+                $grid.SelectedIndex = 0
+                $canRetry = $status -ne 'Completed'
+                if ($window.FindName('RetryButton').IsEnabled -ne $canRetry) { throw "Incorrect retry state: $status/$language" }
+                if (-not $window.FindName('OpenOutputButton').IsEnabled) { throw 'Existing output folder cannot be opened.' }
+            }
+            $missing = $entryConstructor.Invoke([string[]]@('now', 'Failed', "$archivePath.missing", "$auditFixture.missing", 'kept', ''))
+            $grid.ItemsSource = @($missing)
+            $grid.SelectedIndex = 0
+            if ($window.FindName('RetryButton').IsEnabled -or $window.FindName('OpenOutputButton').IsEnabled) { throw 'Missing paths enable actions.' }
+            $retryEntry = $entryConstructor.Invoke([string[]]@('now', 'Skipped', $archivePath, '', 'kept', 'password required'))
+            $grid.ItemsSource = @($retryEntry)
+            $grid.SelectedIndex = 0
+            foreach ($scale in @(1, 2)) { Render-Window $window "AuditActions-$language-$scale" $scale }
+            $handler = $window.GetType().GetMethod('RetryButton_Click', [Reflection.BindingFlags]'Instance,NonPublic')
+            $handler.Invoke($window, @($window.FindName('RetryButton'), [System.Windows.RoutedEventArgs]::new())) | Out-Null
+            if ($script:retriedPath -ne $archivePath) { throw 'Retry did not use the selected archive.' }
+            if (-not $window.FindName('RefreshButton').IsEnabled) { throw 'Retry did not restore controls.' }
+        } finally { $window.Close() }
+    }
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    $payload = Join-Path $auditFixture 'payload'
+    New-Item -ItemType Directory -Path $payload | Out-Null
+    [IO.File]::WriteAllText((Join-Path $payload 'hello.txt'), 'retry content')
+    $realArchive = Join-Path $auditFixture 'retry.zip'
+    [IO.Compression.ZipFile]::CreateFromDirectory($payload, $realArchive)
+    $logField = $assembly.GetType('sZIP.App.DiagnosticLog').GetField('<LogDirectory>k__BackingField', [Reflection.BindingFlags]'Static,NonPublic')
+    $originalLogDirectory = $logField.GetValue($null)
+    $logField.SetValue($null, (Join-Path $auditFixture 'logs'))
+    $main = New-TestWindow 'MainWindow'
+    $owner = New-TestWindow 'AuditWindow'
+    try {
+        $extract = $main.GetType().GetMethod('ExtractAutomaticallyAsync', [Reflection.BindingFlags]'Instance,NonPublic')
+        foreach ($deleteSource in @($false, $true)) {
+            $settings.AutomaticArchiveExtractionDeleteSourceArchive = $deleteSource
+            $task = $extract.Invoke($main, @([string]$realArchive, $owner))
+            $timeout = [Diagnostics.Stopwatch]::StartNew()
+            while (-not $task.IsCompleted) {
+                if ($timeout.Elapsed.TotalSeconds -gt 20) { throw 'Retry extraction timed out.' }
+                $frame = [System.Windows.Threading.DispatcherFrame]::new()
+                $tick = [EventHandler] { param($sender, $e) $frame.Continue = $false }
+                $timer = [System.Windows.Threading.DispatcherTimer]::new()
+                $timer.Interval = [TimeSpan]::FromMilliseconds(20)
+                $timer.add_Tick($tick)
+                $timer.Start()
+                try { [System.Windows.Threading.Dispatcher]::PushFrame($frame) }
+                finally { $timer.Stop(); $timer.remove_Tick($tick) }
+            }
+            $task.GetAwaiter().GetResult()
+            $auditType = $assembly.GetType('sZIP.App.AutomaticArchiveExtractionAudit')
+            $records = $auditType.GetMethod('ReadRecent').Invoke($null, @([int]500))
+            $latest = @($records)[0]
+            if ($latest.RawStatus -ne 'Completed') { throw 'Retry did not record completion.' }
+            if ([IO.File]::ReadAllText((Join-Path $latest.OutputPath 'hello.txt')) -ne 'retry content') { throw 'Retry produced incorrect output.' }
+            if ((Test-Path -LiteralPath $realArchive) -eq $deleteSource) { throw 'Retry did not follow source deletion preference.' }
+        }
+    } finally {
+        $owner.Close()
+        Close-TestWindow $main
+        $logField.SetValue($null, $originalLogDirectory)
+    }
+    Write-Output 'Verified audit actions, ZIP retry output/history/source deletion, localization and 100%/200% layouts.'
+    exit 0
 }
 
 foreach ($language in @('en', 'ko')) {

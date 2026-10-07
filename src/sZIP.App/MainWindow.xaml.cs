@@ -288,7 +288,7 @@ public partial class MainWindow : Window
 
     private void AuditButton_Click(object sender, RoutedEventArgs e)
     {
-        var window = new AuditWindow { Owner = this };
+        var window = new AuditWindow((path, owner) => ExtractAutomaticallyAsync(path, owner)) { Owner = this };
         window.Show();
     }
 
@@ -625,7 +625,7 @@ public partial class MainWindow : Window
     private void AutomaticWatcher_ArchiveReady(object? sender, string archivePath) =>
         _ = ExtractAutomaticallyAsync(archivePath);
 
-    private async Task ExtractAutomaticallyAsync(string archivePath)
+    private async Task ExtractAutomaticallyAsync(string archivePath, Window? retryOwner = null)
     {
         var lockTaken = false;
         string? temporaryPath = null;
@@ -644,10 +644,21 @@ public partial class MainWindow : Window
                 StatusHeadingText.Text = L.T("AutomaticExtracting");
                 StatusText.Text = Path.GetFileName(archivePath);
             });
-            await _automaticArchiveService.ExtractAsync(
-                archivePath,
-                temporaryPath,
-                cancellationToken: _shutdownCancellation.Token);
+            var service = retryOwner is null ? _automaticArchiveService : _manualExtractionService;
+            try
+            {
+                await service.ExtractAsync(archivePath, temporaryPath,
+                    cancellationToken: _shutdownCancellation.Token);
+            }
+            catch (ArchivePasswordRequiredException) when (retryOwner is not null)
+            {
+                var passwordDialog = new PasswordDialog { Owner = retryOwner };
+                if (passwordDialog.ShowDialog() != true)
+                    throw new OperationCanceledException(_shutdownCancellation.Token);
+                TryDeleteDirectory(temporaryPath);
+                await service.ExtractAsync(archivePath, temporaryPath, passwordDialog.Password,
+                    cancellationToken: _shutdownCancellation.Token);
+            }
 
             var outputPath = CompleteTemporaryExtraction(
                 temporaryPath, archivePath, archiveDirectory, smart: true);
@@ -676,6 +687,9 @@ public partial class MainWindow : Window
                 AutomaticArchiveExtractionAuditStatus.Skipped,
                 archivePath,
                 detail: "password required");
+            if (retryOwner is not null)
+                System.Windows.MessageBox.Show(retryOwner, L.T("RetryPasswordFailed"), L.T("AuditTitle"),
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
         }
         catch (OperationCanceledException)
         {
@@ -696,6 +710,9 @@ public partial class MainWindow : Window
                 AutomaticArchiveExtractionAuditStatus.Failed,
                 archivePath,
                 detail: exception.Message);
+            if (retryOwner is not null)
+                System.Windows.MessageBox.Show(retryOwner, L.Error(exception.Message), L.T("OperationFailed"),
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
         }
         finally
         {
