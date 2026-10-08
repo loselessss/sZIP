@@ -41,7 +41,7 @@ sZIP은 지정한 폴더와 그 하위 폴더에서 새로 내려받은 압축 �
 
 ## 설치
 
-[Microsoft Store](https://apps.microsoft.com/detail/9NX8XSVB054T?hl=ko-kr&gl=KR&ocid=pdpshare) 또는 [GitHub Releases](https://github.com/loselessss/sZIP/releases/latest)에서 sZIP을 설치할 수 있습니다. 현재 사용자 영역에 설치되는 EXE 설치 파일과 설치 없이 사용하는 포터블 ZIP도 GitHub Releases에서 제공합니다. 대응 소스 ZIP, SHA-256 체크섬, 의존성·빌드 정보는 같은 Assets의 extras ZIP에 묶어 제공합니다.
+[Microsoft Store](https://apps.microsoft.com/detail/9NX8XSVB054T?hl=ko-kr&gl=KR&ocid=pdpshare) 또는 [GitHub Releases](https://github.com/loselessss/sZIP/releases/latest)에서 sZIP을 설치할 수 있습니다. Microsoft Store에서는 안정 버전(stable)만 제공합니다. 현재 사용자 영역에 설치되는 EXE 설치 파일과 설치 없이 사용하는 포터블 ZIP도 GitHub Releases에서 제공합니다. 대응 소스 ZIP, SHA-256 체크섬, 의존성·빌드 정보는 같은 Assets의 extras ZIP에 묶어 제공합니다.
 
 설치 과정에서 바탕 화면 바로가기, Windows 로그인 시 실행, 탐색기 메뉴, 지원 압축 파일 연결을 선택할 수 있습니다.
 
