@@ -2,7 +2,7 @@
 
 [한국어](README.ko.md)
 
-sZIP is a lightweight archive utility for Windows. It brings compression, extraction, automatic archive extraction, and Explorer integration together in one focused app.
+sZIP is a lightweight archive utility for Windows. It creates and extracts archives, automatically extracts new downloads from a folder you choose, and integrates with File Explorer.
 
 It runs on Windows 10 and 11 and supports both Korean and English.
 
@@ -12,6 +12,7 @@ It runs on Windows 10 and 11 and supports both Korean and English.
 
 - Create ZIP and 7Z archives from files or folders.
 - Open and extract ZIP, 7Z, RAR, TAR, GZ, and TGZ/TAR.GZ archives.
+- Automatically extract new archives from a folder and its subfolders that you choose to watch.
 - Extract selected files and folders while preserving their paths.
 - Rename files and folders inside ZIP and 7Z archives.
 - Enter passwords for encrypted archives and cancel work in progress.
