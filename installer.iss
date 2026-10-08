@@ -1,5 +1,5 @@
 #define MyAppName "sZIP"
-#define MyAppVersion "1.10.2"
+#define MyAppVersion "1.11.0"
 #define MyAppPublisher "sZIP contributors"
 #define MyAppExeName "sZIP.App.exe"
 

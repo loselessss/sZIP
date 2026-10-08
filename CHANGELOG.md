@@ -1,4 +1,4 @@
-# Unreleased
+# sZIP 1.11.0 (2026-10-08)
 
 ## Changes
 
