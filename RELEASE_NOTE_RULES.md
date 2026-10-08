@@ -23,7 +23,7 @@ Release notes are user-facing text shown in the app update window and on GitHub 
 - Do not mention internal verification, CI, build environment changes, or workflow hardening.
 - Do not include installer filenames, hashes, or test pass/fail details unless they directly help the user decide whether to update.
 - Do not add download sections or lists of release asset filenames to release notes.
-- Do not carry over the EXE-only Windows 11 context menu limitation as a general known issue. If relevant, briefly direct users to the Microsoft Store edition instead.
+- Describe the Windows 11 context menu limitation only as a GitHub-edition known issue, not a general app issue. Include a Microsoft Store link and explain that installing the Store edition resolves it; the Store edition is unaffected.
 - If a release has no user-visible changes, say that directly instead of describing internal preparation as a feature.
 
 ## Release Assets
