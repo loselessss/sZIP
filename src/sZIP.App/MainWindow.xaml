@@ -78,6 +78,8 @@
                             <TextBlock Text="{DynamicResource Text.ExtractSelected}" Margin="7,0,0,0" />
                         </StackPanel>
                     </Button>
+                    <Button x:Name="PreviewEntryButton" Content="{DynamicResource Text.Preview}" MinWidth="94"
+                            IsEnabled="False" Click="PreviewEntryButton_Click" Margin="0,0,6,6" Padding="10,8" />
                     <Button x:Name="RenameEntryButton" MinWidth="94" ToolTip="{DynamicResource Text.RenameEntry}"
                             IsEnabled="False" Click="RenameEntryButton_Click" Margin="0,0,6,6" Padding="10,8">
                         <StackPanel Orientation="Horizontal">
@@ -131,10 +133,12 @@
                 <DataGrid x:Name="EntriesGrid" Grid.Row="1" AutoGenerateColumns="False"
                           IsReadOnly="True" CanUserAddRows="False" SelectionMode="Extended"
                           SelectionChanged="EntriesGrid_SelectionChanged"
+                          MouseDoubleClick="EntriesGrid_MouseDoubleClick"
                           PreviewKeyDown="EntriesGrid_PreviewKeyDown"
                           AlternationCount="2">
                     <DataGrid.ContextMenu>
                         <ContextMenu>
+                            <MenuItem Header="{DynamicResource Text.Preview}" Click="PreviewEntryButton_Click" />
                             <MenuItem Header="{DynamicResource Text.RenameEntry}" Click="RenameEntryMenuItem_Click" />
                         </ContextMenu>
                     </DataGrid.ContextMenu>

@@ -1,3 +1,10 @@
+# Unreleased
+
+## Changes
+
+- Double-click an archive entry, press Enter, or choose Preview to view file or folder contents.
+- Added image/text/media previews and Windows preview-handler integration, with hexadecimal fallback for other formats and an explicit option to open document copies in associated apps.
+
 # sZIP 1.10.2 (2026-10-07)
 
 ## Changes

@@ -196,12 +196,43 @@ public partial class MainWindow : Window
 
     private async void EntriesGrid_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
     {
+        if (e.Key == System.Windows.Input.Key.Enter && CanPreviewSelectedEntry())
+        {
+            e.Handled = true;
+            PreviewSelectedEntry();
+            return;
+        }
         if (e.Key != System.Windows.Input.Key.F2 || !CanRenameSelectedEntry())
         {
             return;
         }
         e.Handled = true;
         await RenameSelectedEntryAsync();
+    }
+
+    private bool CanPreviewSelectedEntry() => !CancelButton.IsEnabled
+        && _workspace.CurrentArchivePath is not null && EntriesGrid.SelectedItems.Count == 1;
+
+    private void PreviewEntryButton_Click(object sender, RoutedEventArgs e) => PreviewSelectedEntry();
+
+    private void EntriesGrid_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        if (e.ChangedButton != System.Windows.Input.MouseButton.Left
+            || e.OriginalSource is not DependencyObject source
+            || System.Windows.Controls.ItemsControl.ContainerFromElement(EntriesGrid, source)
+                is not System.Windows.Controls.DataGridRow) return;
+        e.Handled = true;
+        PreviewSelectedEntry();
+    }
+
+    private void PreviewSelectedEntry()
+    {
+        if (!CanPreviewSelectedEntry() || EntriesGrid.SelectedItem is not ArchiveEntryInfo entry) return;
+        var entries = (EntriesGrid.ItemsSource as IEnumerable<ArchiveEntryInfo>)?.ToArray()
+            ?? Array.Empty<ArchiveEntryInfo>();
+        var window = new PreviewWindow(_workspace.CurrentArchivePath!, entry, _workspace.CurrentPassword, entries)
+            { Owner = this };
+        window.ShowDialog();
     }
 
     private async Task RenameSelectedEntryAsync()
@@ -266,6 +297,7 @@ public partial class MainWindow : Window
 
     private void EntriesGrid_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
     {
+        PreviewEntryButton.IsEnabled = CanPreviewSelectedEntry();
         ExtractSelectedButton.IsEnabled = !CancelButton.IsEnabled
             && _workspace.CurrentArchivePath is not null
             && EntriesGrid.SelectedItems.Count > 0;
@@ -595,6 +627,8 @@ public partial class MainWindow : Window
                 supportedExtensions: _automaticArchiveService.SupportedExtensions,
                 requireZipSignature: false));
             _automaticWatcher.ArchiveReady += AutomaticWatcher_ArchiveReady;
+            // Never auto-extract sZIP's own temporary preview copies, even when watching Temp.
+            _automaticWatcher.ExcludePath(ArchivePreviewSession.RootDirectory);
             _automaticWatcher.Start();
             StatusText.Text = L.F("WatchingFolder", watchPath);
             AutomaticArchiveExtractionEnabledChanged?.Invoke(this, EventArgs.Empty);
@@ -776,6 +810,7 @@ public partial class MainWindow : Window
     private void SetBusy(bool isBusy)
     {
         CancelButton.IsEnabled = isBusy;
+        PreviewEntryButton.IsEnabled = CanPreviewSelectedEntry();
         OpenArchiveButton.IsEnabled = !isBusy;
         CreateFilesButton.IsEnabled = !isBusy;
         CreateFolderButton.IsEnabled = !isBusy;

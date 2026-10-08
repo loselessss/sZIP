@@ -181,4 +181,21 @@
   <data name="RetryExtracting" xml:space="preserve"><value>다시 압축 해제 중...</value></data>
   <data name="RetryPasswordFailed" xml:space="preserve"><value>암호가 올바르지 않거나 이 압축 파일의 암호화를 지원하지 않습니다. 다시 풀기로 재시도할 수 있습니다.</value></data>
   <data name="OutputFolderMissing" xml:space="preserve"><value>결과 폴더가 이동되었거나 삭제되었습니다.</value></data>
+  <data name="Close" xml:space="preserve"><value>닫기</value></data>
+  <data name="Preview" xml:space="preserve"><value>미리보기</value></data>
+  <data name="PreviewFolder" xml:space="preserve"><value>폴더 내용</value></data>
+  <data name="PreviewFileInfo" xml:space="preserve"><value>{0} 바이트 · 수정 {1}</value></data>
+  <data name="PreviewPreparing" xml:space="preserve"><value>미리보기용 임시 파일을 준비 중입니다. 창을 닫으면 취소됩니다.</value></data>
+  <data name="PreviewFailed" xml:space="preserve"><value>미리보기를 준비하지 못했습니다.</value></data>
+  <data name="PreviewOpenApp" xml:space="preserve"><value>연결 앱에서 열기</value></data>
+  <data name="PreviewReadOnly" xml:space="preserve"><value>읽기 전용 미리보기입니다. 원본 압축파일은 변경되지 않습니다.</value></data>
+  <data name="PreviewWindows" xml:space="preserve"><value>이 PC에 설치된 Windows 미리보기 처리기로 표시합니다.</value></data>
+  <data name="PreviewTextTruncated" xml:space="preserve"><value>텍스트의 처음 1MB를 표시합니다. 전체 내용은 연결 앱에서 열어 볼 수 있습니다.</value></data>
+  <data name="PreviewBinary" xml:space="preserve"><value>호환되는 뷰어가 없어 처음 4KB를 16진수로 표시합니다. 전체 내용은 연결 앱에서 열어 볼 수 있습니다.</value></data>
+  <data name="PreviewExecutable" xml:space="preserve"><value>파일 내용을 표시합니다. 실행 파일과 스크립트는 미리보기에서 실행할 수 없습니다.</value></data>
+  <data name="PreviewPlay" xml:space="preserve"><value>재생</value></data>
+  <data name="PreviewPause" xml:space="preserve"><value>일시 정지</value></data>
+  <data name="PreviewStop" xml:space="preserve"><value>정지</value></data>
+  <data name="PreviewMedia" xml:space="preserve"><value>재생 버튼을 누르면 미리 봅니다. 지원 형식은 설치된 Windows 코덱에 따라 달라집니다.</value></data>
+  <data name="PreviewExternal" xml:space="preserve"><value>임시 복사본을 열었습니다. 다른 앱에서 수정한 내용은 압축파일에 저장되지 않습니다.</value></data>
 </root>

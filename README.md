@@ -14,6 +14,7 @@ It runs on Windows 10 and 11 and supports both Korean and English.
 - Open and extract ZIP, 7Z, RAR, TAR, GZ, and TGZ/TAR.GZ archives.
 - Automatically extract new archives from a folder and its subfolders that you choose to watch.
 - Extract selected files and folders while preserving their paths.
+- Double-click an archive entry to preview it: images, text, media, Windows-supported document previews, and file contents for other formats. Document copies can be opened in associated apps.
 - Rename files and folders inside ZIP and 7Z archives.
 - Enter passwords for encrypted archives and cancel work in progress.
 - Preserve nested and empty folders and avoid overwriting existing output.
@@ -57,8 +58,3 @@ sZIP checks GitHub Releases for updates and verifies the downloaded installer si
 - [Release notes](RELEASE_NOTES.md)
 - [Third-party notices](THIRD-PARTY-NOTICES.md)
 - [MIT License](LICENSE)
-
-
-## MSIX distribution preview
-
-The development branch includes full-MSIX packaging for Microsoft Store and signed direct downloads. It does not replace the EXE installer yet. See the [MSIX distribution guide](packaging/msix/README.md) for signing requirements and remaining installation checks. Preview/test MSIX artifacts are not ready for end-user installation.
