@@ -151,7 +151,41 @@ try {
             } finally { $window.Close() }
         }
     }
-    Write-Output 'PASS: Korean/English image, text, binary, executable, folder, PDF, media previews and temporary file cleanup.'
+    $main = [Activator]::CreateInstance($assembly.GetType('sZIP.App.MainWindow'))
+    $previousContext = [System.Threading.SynchronizationContext]::Current
+    try {
+        [System.Threading.SynchronizationContext]::SetSynchronizationContext(
+            [System.Windows.Threading.DispatcherSynchronizationContext]::new($main.Dispatcher))
+        $main.WindowStartupLocation = 'Manual'
+        $main.Left = -10000
+        $main.Top = -10000
+        $main.ShowActivated = $false
+        $main.ShowInTaskbar = $false
+        $main.Show()
+        $operation = $main.HandleCommandLineAsync([string[]]@('--open', $archivePath))
+        $deadline = [DateTime]::UtcNow.AddSeconds(20)
+        while (-not $operation.IsCompleted) {
+            if ([DateTime]::UtcNow -gt $deadline) { throw 'Opening archive did not finish.' }
+            $main.Dispatcher.Invoke([Action]{}, [System.Windows.Threading.DispatcherPriority]::ApplicationIdle)
+            Start-Sleep -Milliseconds 20
+        }
+        $operation.GetAwaiter().GetResult()
+        if ($main.FindName('EntriesGrid').Items.Count -eq 0) { throw 'Archive list was not populated.' }
+        $main.Close()
+        $main.Show()
+        $workspace = $main.GetType().GetField('_workspace','NonPublic,Instance').GetValue($main)
+        if ($main.FindName('EntriesGrid').Items.Count -ne 0 -or $workspace.CurrentArchivePath -or $workspace.CurrentPassword) {
+            throw 'Closing/reopening retained the previous archive.'
+        }
+        foreach ($name in @('ExtractDirectButton','ExtractSmartButton','ExtractSelectedButton','PreviewEntryButton','RenameEntryButton')) {
+            if ($main.FindName($name).IsEnabled) { throw "Stale archive action enabled: $name" }
+        }
+    } finally {
+        [System.Threading.SynchronizationContext]::SetSynchronizationContext($previousContext)
+        $main.AllowExit()
+        $main.Close()
+    }
+    Write-Output 'PASS: file previews, temporary cleanup, and empty archive list after closing/reopening.'
 } finally {
     # This path is an explicitly created GUID child of the test output directory.
     if ([IO.Path]::GetDirectoryName([IO.Path]::GetFullPath($fixtures)) -ne [IO.Path]::GetFullPath($output)) {

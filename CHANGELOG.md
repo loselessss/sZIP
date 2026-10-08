@@ -1,3 +1,9 @@
+# sZIP 1.11.1 (2026-10-08)
+
+## Changes
+
+- Closing and reopening the main window now shows an empty archive list and clears the previous archive and password after any active operation finishes.
+
 # sZIP 1.11.0 (2026-10-08)
 
 ## Changes

@@ -4,6 +4,8 @@
 bin/
 obj/
 artifacts/
+/sZIP-*-Store-x64.msix
+/sZIP-*-Store-x64.msix.sha256
 *.user
 *.suo
 .vs/

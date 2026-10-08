@@ -29,6 +29,7 @@ public partial class MainWindow : Window
     private RecursiveArchiveWatcher? _automaticWatcher;
     private Stopwatch? _operationStopwatch;
     private bool _allowExit;
+    private bool _clearArchiveWhenIdle;
 
     public event EventHandler? AutomaticArchiveExtractionEnabledChanged;
     public event EventHandler? HiddenToTray;
@@ -804,6 +805,7 @@ public partial class MainWindow : Window
         {
             _operationStopwatch?.Stop();
             SetBusy(false);
+            if (_clearArchiveWhenIdle) ClearClosedArchive();
         }
     }
 
@@ -862,6 +864,7 @@ public partial class MainWindow : Window
         if (!_allowExit)
         {
             e.Cancel = true;
+            ClearClosedArchive();
             HideToTray();
             return;
         }
@@ -870,6 +873,36 @@ public partial class MainWindow : Window
     }
 
     public void AllowExit() => _allowExit = true;
+
+    private void ClearClosedArchive()
+    {
+        // Preserve the active operation's archive/password until it finishes.
+        _clearArchiveWhenIdle = CancelButton.IsEnabled;
+        if (!_clearArchiveWhenIdle) _workspace.Close();
+        EntriesGrid.ItemsSource = null;
+        ArchivePathText.SetResourceReference(System.Windows.Controls.TextBlock.TextProperty, "Text.OpenOrDrop");
+        ExtractDirectButton.IsEnabled = false;
+        ExtractSmartButton.IsEnabled = false;
+        ExtractSelectedButton.IsEnabled = false;
+        PreviewEntryButton.IsEnabled = false;
+        RenameEntryButton.IsEnabled = false;
+        if (!_clearArchiveWhenIdle && _automaticArchiveExtractionLock.CurrentCount > 0)
+        {
+            StatusHeadingText.SetResourceReference(System.Windows.Controls.TextBlock.TextProperty, "Text.Ready");
+            ProgressDetailsText.SetResourceReference(System.Windows.Controls.TextBlock.TextProperty, "Text.Waiting");
+            if (_automaticWatcher is not null)
+                StatusText.Text = L.F("WatchingFolder", GetAutomaticArchiveExtractionFolder());
+            else
+                StatusText.SetResourceReference(System.Windows.Controls.TextBlock.TextProperty, "Text.SelectArchive");
+            OperationProgress.Value = 0;
+            ProgressPercentText.Text = "0%";
+            ProgressItemsValueText.Text = "—";
+            ProgressSizeValueText.Text = "—";
+            ProgressSpeedValueText.Text = "—";
+            ProgressElapsedValueText.Text = "—";
+            ProgressRemainingValueText.Text = "—";
+        }
+    }
 
     public async Task HandleCommandLineAsync(IReadOnlyList<string> arguments)
     {

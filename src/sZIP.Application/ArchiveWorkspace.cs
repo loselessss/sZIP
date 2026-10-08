@@ -15,6 +15,12 @@ public sealed class ArchiveWorkspace
     public string? CurrentArchivePath { get; private set; }
     public string? CurrentPassword { get; private set; }
 
+    public void Close()
+    {
+        CurrentArchivePath = null;
+        CurrentPassword = null;
+    }
+
     public async Task<IReadOnlyList<ArchiveEntryInfo>> OpenAsync(
         string archivePath,
         string? password = null,
