@@ -259,16 +259,8 @@ jobs:
             "<!-- sZIP:lang=en -->"
             (Get-Content -LiteralPath RELEASE_NOTES.md -Raw).Trim()
             ""
-            "## Downloads"
-            "Install sZIP_Setup_$version.exe, or use sZIP-$version-net48.zip without installation. Matching source, checksums and build information are bundled in sZIP-$version-extras.zip in the same Assets."
-            "The Store MSIX is unsigned and provided for Partner Center submission. Use the EXE or portable ZIP for direct installation."
-            ""
             "<!-- sZIP:lang=ko -->"
             (Get-Content -LiteralPath RELEASE_NOTES.ko.md -Raw).Trim()
-            ""
-            "## 다운로드"
-            "sZIP_Setup_$version.exe를 설치하거나 sZIP-$version-net48.zip 포터블판을 사용하세요. 대응 소스, 체크섬, 빌드 정보는 같은 Assets의 sZIP-$version-extras.zip에 묶었습니다."
-            "Store MSIX는 Partner Center 제출용 미서명 파일입니다. 직접 사용하려면 EXE 또는 포터블 ZIP을 받으세요."
           ) -join [Environment]::NewLine
           $releaseNotes | Set-Content -LiteralPath artifacts\RELEASE_NOTES.md -Encoding utf8
           gh release create $tag `

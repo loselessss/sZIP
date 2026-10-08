@@ -22,6 +22,8 @@ Release notes are user-facing text shown in the app update window and on GitHub 
 - Example: if `1.5.1` follows `1.5.0`, include `1.5.0 Highlights` and `1.5.1 Fixes`.
 - Do not mention internal verification, CI, build environment changes, or workflow hardening.
 - Do not include installer filenames, hashes, or test pass/fail details unless they directly help the user decide whether to update.
+- Do not add download sections or lists of release asset filenames to release notes.
+- Do not carry over the EXE-only Windows 11 context menu limitation as a general known issue. If relevant, briefly direct users to the Microsoft Store edition instead.
 - If a release has no user-visible changes, say that directly instead of describing internal preparation as a feature.
 
 ## Release Assets
@@ -30,7 +32,6 @@ Release notes are user-facing text shown in the app update window and on GitHub 
 - Attach the versioned installer, `latest` installer alias and portable ZIP separately. Bundle matching source, all checksums and dependency/build information in `sZIP-<version>-extras.zip` on the same release.
 - Label the unsigned Store MSIX as a Partner Center submission package when attaching it. It is not a direct installation download.
 - Prepare and validate the matching source assets before building binaries. Any source preparation or upload failure must fail the release.
-- State in the release body that the installer and matching source are available together in the release Assets.
 
 ## Style
 
