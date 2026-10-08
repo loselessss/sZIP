@@ -41,7 +41,7 @@ Closing the main window keeps sZIP available in the system tray. Use the tray me
 
 ## Installation
 
-Install sZIP from the [Microsoft Store](https://apps.microsoft.com/detail/9NX8XSVB054T?hl=en-us&gl=KR&ocid=pdpshare) or [GitHub Releases](https://github.com/loselessss/sZIP/releases/latest). GitHub Releases also provides a per-user EXE installer, which normally does not require administrator privileges, and a portable ZIP. Matching source, SHA-256 checksums and dependency/build information are bundled in the extras ZIP in the same release Assets.
+Install sZIP from the [Microsoft Store](https://apps.microsoft.com/detail/9NX8XSVB054T?hl=en-us&gl=KR&ocid=pdpshare) or [GitHub Releases](https://github.com/loselessss/sZIP/releases/latest). The Microsoft Store provides stable releases only. GitHub Releases also provides a per-user EXE installer, which normally does not require administrator privileges, and a portable ZIP. Matching source, SHA-256 checksums and dependency/build information are bundled in the extras ZIP in the same release Assets.
 
 The installer can add a desktop shortcut, launch sZIP with Windows, register Explorer menus, and associate supported archive formats.
 
