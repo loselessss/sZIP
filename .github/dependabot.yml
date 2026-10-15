@@ -7,6 +7,9 @@ updates:
       time: "09:00"
       timezone: "Asia/Seoul"
     open-pull-requests-limit: 5
+    cooldown:
+      exclude:
+        - "SharpCompress"
 
   - package-ecosystem: "github-actions"
     directory: "/"
