@@ -165,7 +165,15 @@ namespace sZIP.Watcher
         {
             while (!cancellationToken.IsCancellationRequested)
             {
-                await Task.Delay(_options.ReconcileInterval, cancellationToken);
+                // .NET Framework limits each Task.Delay to Int32.MaxValue milliseconds.
+                var remaining = _options.ReconcileInterval;
+                var maxDelay = TimeSpan.FromMilliseconds(int.MaxValue);
+                while (remaining > maxDelay)
+                {
+                    await Task.Delay(maxDelay, cancellationToken);
+                    remaining -= maxDelay;
+                }
+                await Task.Delay(remaining, cancellationToken);
                 ReconcileOnce(cancellationToken);
             }
         }

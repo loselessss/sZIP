@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 using SharpCompress.Archives;
@@ -45,8 +46,7 @@ public sealed class MultiFormatArchiveService : IMultiFormatArchiveService
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 using var prepared = OpenArchiveSource(archivePath);
-                using var archive = ArchiveFactory.OpenArchive(
-                    prepared.Stream, CreateOptions(archivePath, password));
+                using var archive = OpenPreparedArchive(prepared, archivePath, password);
                 var entries = archive.Entries.ToArray();
                 EnsurePasswordProvided(entries.Any(entry => entry.IsEncrypted), password);
                 ValidateEntries(entries.Select(entry => new EntryMetrics(
@@ -122,8 +122,7 @@ public sealed class MultiFormatArchiveService : IMultiFormatArchiveService
         {
             EntryMetrics[] metrics;
             using (var prepared = OpenArchiveSource(archivePath))
-            using (var archive = ArchiveFactory.OpenArchive(
-                       prepared.Stream, CreateOptions(archivePath, password)))
+            using (var archive = OpenPreparedArchive(prepared, archivePath, password))
             {
                 metrics = archive.Entries.Select(entry => new EntryMetrics(
                     GetEntryKey(entry),
@@ -150,8 +149,7 @@ public sealed class MultiFormatArchiveService : IMultiFormatArchiveService
             var completedEntries = 0;
 
             using (var prepared = OpenArchiveSource(archivePath))
-            using (var archive = ArchiveFactory.OpenArchive(
-                       prepared.Stream, CreateOptions(archivePath, password)))
+            using (var archive = OpenPreparedArchive(prepared, archivePath, password))
             {
                 foreach (var entry in archive.Entries)
                 {
@@ -179,6 +177,7 @@ public sealed class MultiFormatArchiveService : IMultiFormatArchiveService
                             await CopyEntryAsync(
                                 source,
                                 destinationPath,
+                                entry.Size,
                                 copied => progress?.Report(new ExtractionProgress(
                                     entryName,
                                     completedEntries,
@@ -268,6 +267,7 @@ public sealed class MultiFormatArchiveService : IMultiFormatArchiveService
     private static async Task CopyEntryAsync(
         Stream source,
         string destinationPath,
+        long expectedBytes,
         Action<long> reportBytes,
         CancellationToken cancellationToken)
     {
@@ -295,6 +295,11 @@ public sealed class MultiFormatArchiveService : IMultiFormatArchiveService
                     copied += read;
                     reportBytes(copied);
                 }
+                if (copied != expectedBytes)
+                {
+                    throw new InvalidDataException(
+                        "The archive entry is incomplete. Check that all split archive parts are present and fully downloaded.");
+                }
             }
         }
         catch
@@ -305,6 +310,67 @@ public sealed class MultiFormatArchiveService : IMultiFormatArchiveService
             }
 
             throw;
+        }
+    }
+
+    private static IArchive OpenPreparedArchive(PreparedArchiveSource prepared, string archivePath, string? password)
+    {
+        var options = CreateOptions(archivePath, password);
+        if (string.Equals(Path.GetExtension(archivePath), ".zip", StringComparison.OrdinalIgnoreCase)
+            && FindSplitZipParts(archivePath, prepared.Stream) is not null)
+        {
+            return ArchiveFactory.OpenArchive(new FileInfo(archivePath), options);
+        }
+        return ArchiveFactory.OpenArchive(prepared.Stream, options);
+    }
+
+    private static IReadOnlyList<FileInfo>? FindSplitZipParts(string archivePath, Stream stream)
+    {
+        var originalPosition = stream.Position;
+        try
+        {
+            var tailLength = (int)Math.Min(65557L, stream.Length);
+            if (tailLength < 22) return null;
+            stream.Seek(-tailLength, SeekOrigin.End);
+            var tail = new byte[tailLength];
+            for (var read = 0; read < tailLength;)
+            {
+                var count = stream.Read(tail, read, tailLength - read);
+                if (count == 0) return null;
+                read += count;
+            }
+            for (var offset = tailLength - 22; offset >= 0; offset--)
+            {
+                if (BitConverter.ToUInt32(tail, offset) != 0x06054b50
+                    || offset + 22 + BitConverter.ToUInt16(tail, offset + 20) != tailLength) continue;
+                uint lastDisk = BitConverter.ToUInt16(tail, offset + 4);
+                if (lastDisk == ushort.MaxValue)
+                {
+                    if (offset < 20 || BitConverter.ToUInt32(tail, offset - 20) != 0x07064b50)
+                        throw new InvalidDataException("The split ZIP volume information is invalid.");
+                    var diskCount = BitConverter.ToUInt32(tail, offset - 4);
+                    if (diskCount == 0 || diskCount > ushort.MaxValue)
+                        throw new InvalidDataException("The split ZIP volume information is invalid.");
+                    lastDisk = diskCount - 1;
+                }
+                if (lastDisk == 0) return null;
+                var parts = new List<FileInfo>();
+                for (uint disk = 1; disk <= lastDisk; disk++)
+                {
+                    var part = new FileInfo(Path.ChangeExtension(archivePath,
+                        ".z" + disk.ToString("D2", CultureInfo.InvariantCulture)));
+                    if (!part.Exists)
+                        throw new IOException("A split ZIP part is missing. Keep all .z01, .z02, ... and .zip files in the same folder.");
+                    parts.Add(part);
+                }
+                parts.Add(new FileInfo(archivePath));
+                return parts;
+            }
+            return null;
+        }
+        finally
+        {
+            stream.Position = originalPosition;
         }
     }
 

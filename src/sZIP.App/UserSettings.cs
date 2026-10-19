@@ -28,6 +28,14 @@ internal sealed class UserSettings : ApplicationSettingsBase
 
     [UserScopedSetting]
     [DefaultSettingValue("True")]
+    public bool ExplorerIntegrationEnabled
+    {
+        get => (bool)this[nameof(ExplorerIntegrationEnabled)];
+        set => this[nameof(ExplorerIntegrationEnabled)] = value;
+    }
+
+    [UserScopedSetting]
+    [DefaultSettingValue("True")]
     public bool AutomaticArchiveExtractionEnabled
     {
         get => (bool)this[nameof(AutomaticArchiveExtractionEnabled)];
@@ -48,6 +56,14 @@ internal sealed class UserSettings : ApplicationSettingsBase
     {
         get => (int)this[nameof(AutomaticArchiveExtractionMaxArchiveMb)];
         set => this[nameof(AutomaticArchiveExtractionMaxArchiveMb)] = value;
+    }
+
+    [UserScopedSetting]
+    [DefaultSettingValue("10")]
+    public int AutomaticArchiveExtractionWatchIntervalSeconds
+    {
+        get => (int)this[nameof(AutomaticArchiveExtractionWatchIntervalSeconds)];
+        set => this[nameof(AutomaticArchiveExtractionWatchIntervalSeconds)] = value;
     }
 
     [UserScopedSetting]

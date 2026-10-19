@@ -88,6 +88,33 @@ public sealed class RecursiveArchiveWatcherTests : IDisposable
         }
     }
 
+    [Theory]
+    [InlineData(100)]
+    [InlineData(int.MaxValue)]
+    public async Task LongReconciliationInterval_DetectsNewArchivesAndCanStop(int seconds)
+    {
+        Directory.CreateDirectory(_testRoot);
+        var options = new ArchiveWatchOptions(
+            _testRoot,
+            stableFor: TimeSpan.FromMilliseconds(30),
+            probeInterval: TimeSpan.FromMilliseconds(10),
+            reconcileInterval: TimeSpan.FromSeconds(seconds));
+        var ready = new TaskCompletionSource<string>();
+        using (var watcher = new RecursiveArchiveWatcher(options))
+        {
+            watcher.ArchiveReady += (_, path) => ready.TrySetResult(path);
+            watcher.Start();
+            var archivePath = Path.Combine(_testRoot, "new.zip");
+            using (var archive = ZipFile.Open(archivePath, ZipArchiveMode.Create))
+            {
+                archive.CreateEntry("file.txt");
+            }
+            var completed = await Task.WhenAny(ready.Task, Task.Delay(TimeSpan.FromSeconds(3)));
+            Assert.Same(ready.Task, completed);
+            Assert.Equal(archivePath, await ready.Task);
+        }
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(_testRoot))

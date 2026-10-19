@@ -27,6 +27,15 @@
   <data name="WatchFolder" xml:space="preserve"><value>감시 폴더</value></data>
   <data name="BrowseFolder" xml:space="preserve"><value>폴더 선택</value></data>
   <data name="MaximumArchiveSize" xml:space="preserve"><value>자동 압축 해제 최대 용량</value></data>
+  <data name="WatchInterval" xml:space="preserve"><value>감시 주기</value></data>
+  <data name="SecondsUnit" xml:space="preserve"><value>초</value></data>
+  <data name="IncreaseWatchInterval" xml:space="preserve"><value>감시 주기 1초 늘리기</value></data>
+  <data name="DecreaseWatchInterval" xml:space="preserve"><value>감시 주기 1초 줄이기</value></data>
+  <data name="InvalidWatchInterval" xml:space="preserve"><value>감시 주기는 1초 이상의 정수로 입력해 주세요.</value></data>
+  <data name="SplitZipMissingPart" xml:space="preserve"><value>분할 ZIP 파일의 일부가 없습니다. .z01, .z02, ... 및 .zip 파일을 모두 같은 폴더에 두세요.</value></data>
+  <data name="SplitZipInvalidVolumes" xml:space="preserve"><value>분할 ZIP의 볼륨 정보가 올바르지 않습니다.</value></data>
+  <data name="IncompleteArchiveEntry" xml:space="preserve"><value>압축 해제 데이터가 부족합니다. 모든 분할 압축 파일이 완전히 다운로드되었고 같은 폴더에 있는지 확인해 주세요.</value></data>
+  <data name="WatchIntervalDescription" xml:space="preserve"><value>새 압축 파일은 바로 감지하며, 이 간격은 놓친 파일 변경을 다시 확인하는 주기입니다.</value></data>
   <data name="DeleteSource" xml:space="preserve"><value>완료 후 원본 압축 파일 삭제</value></data>
   <data name="StartWithWindows" xml:space="preserve"><value>Windows 로그인 시 실행</value></data>
   <data name="ExplorerIntegration" xml:space="preserve"><value>탐색기 메뉴 사용</value></data>

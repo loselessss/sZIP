@@ -1,4 +1,22 @@
-# sZIP 1.11.1 Release Notes (2026-10-08)
+# sZIP 1.11.4 Release Notes (2026-10-19)
+
+## 1.11.4 Changes
+
+- The main window title bar now shows the current version.
+- Set the automatic extraction watch interval in Settings, starting at 1 second. Type a value or adjust it with the up and down arrows.
+- Improved the size and text alignment of the language selector in Settings.
+- The GitHub edition selects Explorer menu integration by default and remembers when you turn it off.
+- Removed Check for updates from the Store edition's tray menu. Microsoft Store manages its updates.
+
+## 1.11.3 Fixes
+
+- Updated SharpCompress to 0.50.5, including fixes for uppercase split ZIP filenames, encrypted RAR5 header/comment handling and asynchronous RAR5 extraction.
+- The updated engine reuses encrypted RAR5 keys to reduce repeated processing, strengthens GZip/7Z header validation, and fixes TAR symbolic-link handling and internal stream positioning.
+
+## 1.11.2 Fixes
+
+- Fixed opening and extracting split ZIP archives with .z01, .z02, ... and .zip parts in the same folder.
+- Missing split files now display a helpful message. Incomplete extraction output is detected and removed.
 
 ## 1.11.1 Fixes
 

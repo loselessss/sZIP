@@ -48,6 +48,7 @@ public partial class MainWindow : Window
         _archiveEntryRenamer = new ArchiveEntryRenamer(
             _manualExtractionService, _manualArchiveService, _sevenZipArchiveService);
         InitializeComponent();
+        Title = $"sZIP {typeof(App).Assembly.GetName().Version!.ToString(3)}";
         UpdateAutomaticArchiveExtractionToggleLabel();
         Localization.Changed += Localization_Changed;
     }
@@ -625,6 +626,7 @@ public partial class MainWindow : Window
             _automaticWatcher = new RecursiveArchiveWatcher(new ArchiveWatchOptions(
                 watchPath,
                 maxArchiveBytes: maxArchiveBytes,
+                reconcileInterval: TimeSpan.FromSeconds(GetAutomaticArchiveExtractionWatchIntervalSeconds()),
                 supportedExtensions: _automaticArchiveService.SupportedExtensions,
                 requireZipSignature: false));
             _automaticWatcher.ArchiveReady += AutomaticWatcher_ArchiveReady;
@@ -1164,6 +1166,9 @@ public partial class MainWindow : Window
 
     private long GetAutomaticArchiveExtractionMaxArchiveBytes() =>
         GetAutomaticArchiveExtractionMaxArchiveMb() * 1024L * 1024L;
+
+    private static int GetAutomaticArchiveExtractionWatchIntervalSeconds() =>
+        Math.Max(1, UserSettings.Default.AutomaticArchiveExtractionWatchIntervalSeconds);
 
     private static string GetDefaultDownloadFolder() =>
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");

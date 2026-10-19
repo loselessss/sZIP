@@ -1,6 +1,6 @@
 # Third-party notices
 
-## SharpCompress 0.50.1
+## SharpCompress 0.50.5
 
 - Project: https://github.com/adamhathcock/sharpcompress
 - License: MIT

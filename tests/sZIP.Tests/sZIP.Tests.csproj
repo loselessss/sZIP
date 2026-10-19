@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <Using Include="Xunit" />
+    <None Update="Fixtures\SplitZip\*" CopyToOutputDirectory="PreserveNewest" />
     <Compile Include="..\..\src\sZIP.App\PackageDistribution.cs" Link="Packaging\PackageDistribution.cs" />
     <Compile Include="..\..\src\sZIP.App\MsixSettingsProvider.cs" Link="Packaging\MsixSettingsProvider.cs" />
     <None Include="..\..\packaging\msix\AppxManifest.xml" Link="Packaging\AppxManifest.xml" CopyToOutputDirectory="PreserveNewest" />

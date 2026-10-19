@@ -30,7 +30,7 @@ It runs on Windows 10 and 11 and supports both Korean and English.
 
 sZIP can watch a folder and its subfolders for newly downloaded archives. Files within the configured size limit are extracted automatically after the download has finished.
 
-Use the main ribbon to turn automatic archive extraction on or off. From Settings, you can choose the watch folder and size limit and decide whether the original archive should be deleted after successful extraction. The audit list shows completed and failed automatic operations.
+Use the main ribbon to turn automatic archive extraction on or off. From Settings, you can choose the watch folder, size limit, and recovery scan interval and decide whether the original archive should be deleted after successful extraction. New files are detected immediately; the interval controls checks for missed file events. The audit list shows completed and failed automatic operations.
 
 From the history list, retry failed or skipped extractions, enter a password when needed, or open an existing output folder. Retries use Smart Extract and follow the original archive deletion setting.
 

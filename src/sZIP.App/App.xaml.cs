@@ -240,8 +240,11 @@ public partial class App : System.Windows.Application
             }
         };
         menu.Items.Add(_automaticArchiveExtractionMenuItem);
-        menu.Items.Add(L.T("CheckForUpdates"), null, (_, _) =>
-            Dispatcher.BeginInvoke(new Action(() => _ = CheckForUpdatesAsync(manual: true))));
+        if (PackageDeployment.Distribution.ShowTrayUpdateCommand)
+        {
+            menu.Items.Add(L.T("CheckForUpdates"), null, (_, _) =>
+                Dispatcher.BeginInvoke(new Action(() => _ = CheckForUpdatesAsync(manual: true))));
+        }
         menu.Items.Add(L.T("Settings"), null, (_, _) => ShowSettings());
         menu.Items.Add(new Forms.ToolStripSeparator());
         menu.Items.Add(L.T("Exit"), null, (_, _) => ExitApplication());
@@ -258,6 +261,7 @@ public partial class App : System.Windows.Application
         var oldLanguage = UserSettings.Default.Language;
         var oldFolder = UserSettings.Default.AutomaticArchiveExtractionFolder;
         var oldMaxMb = UserSettings.Default.AutomaticArchiveExtractionMaxArchiveMb;
+        var oldWatchInterval = UserSettings.Default.AutomaticArchiveExtractionWatchIntervalSeconds;
         ShowMainWindow();
         var dialog = new SettingsWindow { Owner = _mainWindow };
         dialog.ShowDialog();
@@ -269,7 +273,8 @@ public partial class App : System.Windows.Application
             RefreshShellIntegrationRegistration();
         }
         _mainWindow.ApplySettings(oldFolder != UserSettings.Default.AutomaticArchiveExtractionFolder
-            || oldMaxMb != UserSettings.Default.AutomaticArchiveExtractionMaxArchiveMb);
+            || oldMaxMb != UserSettings.Default.AutomaticArchiveExtractionMaxArchiveMb
+            || oldWatchInterval != UserSettings.Default.AutomaticArchiveExtractionWatchIntervalSeconds);
         RefreshTrayMenu();
     }
 

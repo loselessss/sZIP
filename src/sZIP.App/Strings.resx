@@ -27,6 +27,15 @@
   <data name="WatchFolder" xml:space="preserve"><value>Watch Folder</value></data>
   <data name="BrowseFolder" xml:space="preserve"><value>Browse Folder</value></data>
   <data name="MaximumArchiveSize" xml:space="preserve"><value>Maximum Archive Size</value></data>
+  <data name="WatchInterval" xml:space="preserve"><value>Watch Interval</value></data>
+  <data name="SecondsUnit" xml:space="preserve"><value>sec</value></data>
+  <data name="IncreaseWatchInterval" xml:space="preserve"><value>Increase watch interval by 1 second</value></data>
+  <data name="DecreaseWatchInterval" xml:space="preserve"><value>Decrease watch interval by 1 second</value></data>
+  <data name="InvalidWatchInterval" xml:space="preserve"><value>Enter a whole number of seconds greater than zero.</value></data>
+  <data name="SplitZipMissingPart" xml:space="preserve"><value>A split ZIP part is missing. Keep all .z01, .z02, ... and .zip files in the same folder.</value></data>
+  <data name="SplitZipInvalidVolumes" xml:space="preserve"><value>The split ZIP volume information is invalid.</value></data>
+  <data name="IncompleteArchiveEntry" xml:space="preserve"><value>The archive entry is incomplete. Check that all split archive parts are present and fully downloaded.</value></data>
+  <data name="WatchIntervalDescription" xml:space="preserve"><value>New archives are detected right away. This interval controls how often sZIP checks for missed file changes.</value></data>
   <data name="DeleteSource" xml:space="preserve"><value>Delete source after completion</value></data>
   <data name="StartWithWindows" xml:space="preserve"><value>Start with Windows</value></data>
   <data name="ExplorerIntegration" xml:space="preserve"><value>Explorer menu integration</value></data>

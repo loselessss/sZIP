@@ -15,6 +15,7 @@ internal sealed class PackageDistribution
     }
 
     public DistributionChannel Channel { get; }
+    public bool ShowTrayUpdateCommand => Channel != DistributionChannel.Store;
     public Uri? UpdateUri { get; }
 
     public static PackageDistribution Read(bool packaged, string? configuration)

@@ -28,6 +28,14 @@ public sealed class MsixTests
         Assert.Equal("ms-windows-store://downloadsandupdates/",
             PackageDistribution.Read(true, "<Distribution Channel='Store'/>").UpdateUri!.AbsoluteUri);
 
+    [Theory]
+    [InlineData(false, "<Distribution Channel='Store'/>", true)]
+    [InlineData(true, "<Distribution Channel='Store'/>", false)]
+    [InlineData(true, "<Distribution Channel='Direct' AppInstallerUri='https://example.org/sZIP.appinstaller'/>", true)]
+    [InlineData(true, null, true)]
+    public void OnlyStoreEditionHidesTrayUpdateCommand(bool packaged, string? xml, bool expected) =>
+        Assert.Equal(expected, PackageDistribution.Read(packaged, xml).ShowTrayUpdateCommand);
+
     [Fact]
     public void FullPackageOwnsAppAndExplorerAndDoesNotForceStartupOrDefaults()
     {

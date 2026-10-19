@@ -73,7 +73,7 @@ jobs:
 
           ## Dependencies
 
-          - SharpCompress 0.50.1: https://github.com/adamhathcock/sharpcompress
+          - SharpCompress 0.50.5: https://github.com/adamhathcock/sharpcompress
           - Microsoft.Bcl.AsyncInterfaces 8.0.0: https://www.nuget.org/packages/Microsoft.Bcl.AsyncInterfaces/8.0.0
           - System.Buffers 4.6.1: https://www.nuget.org/packages/System.Buffers/4.6.1
           - System.Memory 4.6.3: https://www.nuget.org/packages/System.Memory/4.6.3

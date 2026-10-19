@@ -4,6 +4,8 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+using System.Windows.Input;
 
 namespace sZIP.App;
 
@@ -11,6 +13,7 @@ public partial class SettingsWindow : Window
 {
     private bool _changingShell;
     private bool _closed;
+    private string _lastValidWatchIntervalText = "10";
     public bool HasSavedSettings { get; private set; }
 
     public SettingsWindow()
@@ -23,9 +26,11 @@ public partial class SettingsWindow : Window
             ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads")
             : settings.AutomaticArchiveExtractionFolder;
         MaxArchiveMbTextBox.Text = settings.AutomaticArchiveExtractionMaxArchiveMb.ToString(CultureInfo.InvariantCulture);
+        WatchIntervalTextBox.Text = Math.Max(1, settings.AutomaticArchiveExtractionWatchIntervalSeconds)
+            .ToString(CultureInfo.InvariantCulture);
         DeleteSourceCheckBox.IsChecked = settings.AutomaticArchiveExtractionDeleteSourceArchive;
         StartupCheckBox.IsChecked = StartupRegistration.IsEnabled;
-        ShellIntegrationCheckBox.IsChecked = ShellIntegration.IsEnabled;
+        ShellIntegrationCheckBox.IsChecked = settings.ExplorerIntegrationEnabled;
         ConfigureDeploymentUi(PackageDeployment.IsPackaged);
         Closing += (_, e) => { if (_changingShell) e.Cancel = true; };
         Closed += (_, _) => _closed = true;
@@ -81,6 +86,60 @@ public partial class SettingsWindow : Window
         }
     }
 
+    private void WatchIntervalStep_Click(object sender, RoutedEventArgs e) =>
+        ChangeWatchInterval(int.Parse((string)((RepeatButton)sender).Tag, CultureInfo.InvariantCulture));
+
+    private void ChangeWatchInterval(int step)
+    {
+        if (!TryParseWatchInterval(WatchIntervalTextBox.Text, out var seconds))
+            seconds = Math.Max(1, UserSettings.Default.AutomaticArchiveExtractionWatchIntervalSeconds);
+        WatchIntervalTextBox.Text = Math.Max(1L, Math.Min(int.MaxValue, (long)seconds + step))
+            .ToString(CultureInfo.InvariantCulture);
+    }
+
+    private void WatchInterval_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+    {
+        if (e.Key != Key.Up && e.Key != Key.Down) return;
+        ChangeWatchInterval(e.Key == Key.Up ? 1 : -1);
+        e.Handled = true;
+    }
+
+    private void WatchInterval_PreviewTextInput(object sender, TextCompositionEventArgs e) =>
+        e.Handled = !TryParseWatchInterval(GetEditedWatchIntervalText(e.Text), out _);
+
+    private string GetEditedWatchIntervalText(string text) => WatchIntervalTextBox.Text
+        .Remove(WatchIntervalTextBox.SelectionStart, WatchIntervalTextBox.SelectionLength)
+        .Insert(WatchIntervalTextBox.SelectionStart, text);
+
+    private static bool TryParseWatchInterval(string text, out int seconds) =>
+        int.TryParse(text, NumberStyles.None, CultureInfo.InvariantCulture, out seconds) && seconds > 0;
+
+    private void WatchInterval_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        var field = (System.Windows.Controls.TextBox)sender;
+        if (field.Text.Length == 0) return;
+        if (TryParseWatchInterval(field.Text, out _))
+        {
+            _lastValidWatchIntervalText = field.Text;
+            return;
+        }
+        var caret = field.CaretIndex;
+        field.Text = _lastValidWatchIntervalText;
+        field.CaretIndex = Math.Min(caret, field.Text.Length);
+    }
+
+    private void WatchInterval_LostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
+    {
+        if (WatchIntervalTextBox.Text.Length == 0) WatchIntervalTextBox.Text = _lastValidWatchIntervalText;
+    }
+
+    private void WatchInterval_Pasting(object sender, DataObjectPastingEventArgs e)
+    {
+        var text = e.DataObject.GetData(System.Windows.DataFormats.UnicodeText) as string;
+        if (text is null || !TryParseWatchInterval(GetEditedWatchIntervalText(text), out _))
+            e.CancelCommand();
+    }
+
     private async void Save_Click(object sender, RoutedEventArgs e)
     {
         if (_changingShell) return;
@@ -89,6 +148,13 @@ public partial class SettingsWindow : Window
         {
             ShowValidation("InvalidArchiveSize");
             MaxArchiveMbTextBox.Focus();
+            return;
+        }
+        if (!TryParseWatchInterval(WatchIntervalTextBox.Text, out var watchInterval))
+        {
+            ShowValidation("InvalidWatchInterval");
+            WatchIntervalTextBox.Focus();
+            WatchIntervalTextBox.SelectAll();
             return;
         }
         var folder = WatchFolderTextBox.Text.Trim();
@@ -101,8 +167,10 @@ public partial class SettingsWindow : Window
 
         var settings = UserSettings.Default;
         var oldLanguage = settings.Language;
+        var oldExplorerIntegration = settings.ExplorerIntegrationEnabled;
         var oldFolder = settings.AutomaticArchiveExtractionFolder;
         var oldMaxMb = settings.AutomaticArchiveExtractionMaxArchiveMb;
+        var oldWatchInterval = settings.AutomaticArchiveExtractionWatchIntervalSeconds;
         var oldDeleteSource = settings.AutomaticArchiveExtractionDeleteSourceArchive;
         var oldStartup = StartupRegistration.IsEnabled;
         var oldShell = ShellIntegration.IsEnabled;
@@ -127,8 +195,10 @@ public partial class SettingsWindow : Window
                 shellResult = await Task.Run(() => ShellIntegration.SetEnabled(enabled, executable));
             }
             settings.Language = (string)((ComboBoxItem)LanguageComboBox.SelectedItem).Tag;
+            settings.ExplorerIntegrationEnabled = ShellIntegrationCheckBox.IsChecked == true;
             settings.AutomaticArchiveExtractionFolder = Path.GetFullPath(folder);
             settings.AutomaticArchiveExtractionMaxArchiveMb = maxMb;
+            settings.AutomaticArchiveExtractionWatchIntervalSeconds = watchInterval;
             settings.AutomaticArchiveExtractionDeleteSourceArchive = DeleteSourceCheckBox.IsChecked == true;
             settings.Save();
             HasSavedSettings = true;
@@ -142,8 +212,10 @@ public partial class SettingsWindow : Window
         catch (Exception exception)
         {
             settings.Language = oldLanguage;
+            settings.ExplorerIntegrationEnabled = oldExplorerIntegration;
             settings.AutomaticArchiveExtractionFolder = oldFolder;
             settings.AutomaticArchiveExtractionMaxArchiveMb = oldMaxMb;
+            settings.AutomaticArchiveExtractionWatchIntervalSeconds = oldWatchInterval;
             settings.AutomaticArchiveExtractionDeleteSourceArchive = oldDeleteSource;
             try
             {
