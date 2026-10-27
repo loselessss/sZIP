@@ -73,13 +73,13 @@ jobs:
 
           ## Dependencies
 
-          - SharpCompress 0.50.5: https://github.com/adamhathcock/sharpcompress
-          - Microsoft.Bcl.AsyncInterfaces 8.0.0: https://www.nuget.org/packages/Microsoft.Bcl.AsyncInterfaces/8.0.0
+          - SharpCompress 0.50.7: https://github.com/adamhathcock/sharpcompress
+          - Microsoft.Bcl.AsyncInterfaces 10.0.14: https://www.nuget.org/packages/Microsoft.Bcl.AsyncInterfaces/10.0.14
           - System.Buffers 4.6.1: https://www.nuget.org/packages/System.Buffers/4.6.1
           - System.Memory 4.6.3: https://www.nuget.org/packages/System.Memory/4.6.3
           - System.Runtime.CompilerServices.Unsafe 6.1.2: https://www.nuget.org/packages/System.Runtime.CompilerServices.Unsafe/6.1.2
-          - System.Text.Encoding.CodePages 8.0.0: https://www.nuget.org/packages/System.Text.Encoding.CodePages/8.0.0
-          - System.Threading.Tasks.Extensions 4.5.4: https://www.nuget.org/packages/System.Threading.Tasks.Extensions/4.5.4
+          - System.Text.Encoding.CodePages 10.0.14: https://www.nuget.org/packages/System.Text.Encoding.CodePages/10.0.14
+          - System.Threading.Tasks.Extensions 4.6.3: https://www.nuget.org/packages/System.Threading.Tasks.Extensions/4.6.3
           - Dependency license details: THIRD-PARTY-NOTICES.md in the source archive
 
           ## Build

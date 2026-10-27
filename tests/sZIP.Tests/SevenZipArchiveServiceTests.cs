@@ -28,6 +28,27 @@ public sealed class SevenZipArchiveServiceTests : IDisposable
         Assert.True(Directory.Exists(Path.Combine(outputPath, "Cafe", "Resume", "Empty Folder")));
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CreateAndExtract_PreservesEmptyFileOrDirectory(bool directoryOnly)
+    {
+        Directory.CreateDirectory(_testRoot);
+        var source = Path.Combine(_testRoot, directoryOnly ? "empty-folder" : "empty.txt");
+        if (directoryOnly) Directory.CreateDirectory(source);
+        else File.WriteAllBytes(source, Array.Empty<byte>());
+        var archive = Path.Combine(_testRoot, "empty.7z");
+        await new SevenZipArchiveService().CreateAsync(archive, new[] { source });
+        var service = new MultiFormatArchiveService();
+        var entry = Assert.Single(await service.ListEntriesAsync(archive));
+        Assert.Equal(directoryOnly, entry.IsDirectory);
+        var output = Path.Combine(_testRoot, "output");
+        await service.ExtractAsync(archive, output);
+        var extracted = Path.Combine(output, Path.GetFileName(source));
+        if (directoryOnly) Assert.True(Directory.Exists(extracted));
+        else Assert.Equal(0, new FileInfo(extracted).Length);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(_testRoot))

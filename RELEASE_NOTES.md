@@ -1,4 +1,10 @@
-# sZIP 1.11.4 Release Notes (2026-10-19)
+# sZIP 1.11.5 Release Notes (2026-10-27)
+
+## 1.11.5 Security and Fixes
+
+- Updated the archive engine to SharpCompress 0.50.7. Malformed 7z data no longer causes an endless decoding loop, and truncated 7z headers are rejected before excessive memory allocation.
+- Improved encrypted 7z detection and error reporting, and fixed creating empty or folder-only 7z archives.
+- Reduced memory use when opening password-protected RAR5 archives.
 
 ## 1.11.4 Changes
 

@@ -1,6 +1,6 @@
 # Third-party notices
 
-## SharpCompress 0.50.5
+## SharpCompress 0.50.7
 
 - Project: https://github.com/adamhathcock/sharpcompress
 - License: MIT
@@ -11,13 +11,13 @@
 The portable .NET Framework 4.8 package includes the following MIT-licensed
 support libraries distributed through NuGet:
 
-- Microsoft.Bcl.AsyncInterfaces 8.0.0
+- Microsoft.Bcl.AsyncInterfaces 10.0.14
 - System.Buffers 4.6.1
 - System.Memory 4.6.3
 - System.Numerics.Vectors 4.6.1
 - System.Runtime.CompilerServices.Unsafe 6.1.2
-- System.Text.Encoding.CodePages 8.0.0
-- System.Threading.Tasks.Extensions 4.5.4
+- System.Text.Encoding.CodePages 10.0.14
+- System.Threading.Tasks.Extensions 4.6.3
 
 The MIT license text below applies to SharpCompress and these Microsoft support
 libraries. Their respective copyright notices remain with their contributors.
