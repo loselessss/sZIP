@@ -38,7 +38,7 @@ jobs:
           .\build_msix.ps1 -Channel Store -IdentityName sZIP.Validation.Store -Publisher 'CN=sZIP Validation' -PublisherDisplayName 'sZIP Validation' -OutputDirectory artifacts\msix-validation\Store -SdkBinDirectory $sdk.DirectoryName -Unsigned
           .\build_msix.ps1 -Channel Direct -IdentityName sZIP.Validation.Direct -Publisher 'CN=sZIP Validation' -PublisherDisplayName 'sZIP Validation' -OutputDirectory artifacts\msix-validation\Direct -SdkBinDirectory $sdk.DirectoryName -AppInstallerUri https://example.invalid/sZIP.appinstaller -PackageUri https://example.invalid/sZIP.msix -Unsigned
       - name: Preserve validation artifacts only
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: msix-UNSIGNED-validation-only
           path: artifacts/msix-validation/
