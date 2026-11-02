@@ -207,4 +207,7 @@ You can still check for updates manually at any time.</value></data>
   <data name="PreviewStop" xml:space="preserve"><value>Stop</value></data>
   <data name="PreviewMedia" xml:space="preserve"><value>Press Play to preview. Supported formats depend on the installed Windows codecs.</value></data>
   <data name="PreviewExternal" xml:space="preserve"><value>Opened a temporary copy. Changes in the other app are not saved to the archive.</value></data>
+  <data name="RescanWatchFolder" xml:space="preserve"><value>Rescan watch folder</value></data>
+  <data name="RescanWatchFolderHint" xml:space="preserve"><value>Enable automatic extraction and check existing archives in the watch folder for extraction.</value></data>
+  <data name="ScanningWatchFolder" xml:space="preserve"><value>Checking archives in the watch folder.</value></data>
 </root>

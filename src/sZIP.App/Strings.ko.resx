@@ -207,4 +207,7 @@
   <data name="PreviewStop" xml:space="preserve"><value>정지</value></data>
   <data name="PreviewMedia" xml:space="preserve"><value>재생 버튼을 누르면 미리 봅니다. 지원 형식은 설치된 Windows 코덱에 따라 달라집니다.</value></data>
   <data name="PreviewExternal" xml:space="preserve"><value>임시 복사본을 열었습니다. 다른 앱에서 수정한 내용은 압축파일에 저장되지 않습니다.</value></data>
+  <data name="RescanWatchFolder" xml:space="preserve"><value>감시 폴더 다시 확인</value></data>
+  <data name="RescanWatchFolderHint" xml:space="preserve"><value>자동 압축 해제를 켜고, 감시 폴더에 이미 있는 압축파일도 확인해 해제합니다.</value></data>
+  <data name="ScanningWatchFolder" xml:space="preserve"><value>감시 폴더의 압축파일을 확인하고 있습니다.</value></data>
 </root>

@@ -659,6 +659,23 @@ public partial class MainWindow : Window
         AutomaticArchiveExtractionEnabledChanged?.Invoke(this, EventArgs.Empty);
     }
 
+    private async void RescanWatchFolderButton_Click(object sender, RoutedEventArgs e)
+    {
+        RescanWatchFolderButton.IsEnabled = false;
+        try
+        {
+            AutomaticArchiveExtractionCheckBox.IsChecked = true;
+            if (_automaticWatcher is null) return;
+            StatusText.Text = L.T("ScanningWatchFolder");
+            await _automaticWatcher.ScanExistingAsync();
+            if (StatusText.Text == L.T("ScanningWatchFolder"))
+                StatusText.Text = L.F("WatchingFolder", GetAutomaticArchiveExtractionFolder());
+        }
+        catch (OperationCanceledException) { }
+        catch (Exception exception) { ShowError(L.T("WatchFailed"), exception.Message); }
+        finally { RescanWatchFolderButton.IsEnabled = true; }
+    }
+
     private void AutomaticWatcher_ArchiveReady(object? sender, string archivePath) =>
         _ = ExtractAutomaticallyAsync(archivePath);
 

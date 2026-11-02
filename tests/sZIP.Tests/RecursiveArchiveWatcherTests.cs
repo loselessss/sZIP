@@ -9,6 +9,35 @@ public sealed class RecursiveArchiveWatcherTests : IDisposable
         Path.GetTempPath(), "szip-recursive-watcher-tests", Guid.NewGuid().ToString("N"));
 
     [Fact]
+    public async Task ManualScanFindsOldArchivesAndPreservesExclusionsAndDeduplication()
+    {
+        Directory.CreateDirectory(_testRoot);
+        foreach (var name in new[] { "old.zip", "processed.zip", "excluded.zip" })
+        {
+            var path = Path.Combine(_testRoot, name);
+            using (var archive = ZipFile.Open(path, ZipArchiveMode.Create)) archive.CreateEntry("file.txt");
+            File.SetLastWriteTimeUtc(path, DateTime.UtcNow.AddDays(-2));
+        }
+        using var watcher = new RecursiveArchiveWatcher(new ArchiveWatchOptions(_testRoot,
+            stableFor: TimeSpan.FromMilliseconds(30), probeInterval: TimeSpan.FromMilliseconds(10),
+            reconcileInterval: TimeSpan.FromMilliseconds(40)));
+        using var exclusion = watcher.ExcludePath(Path.Combine(_testRoot, "excluded.zip"));
+        watcher.MarkProcessed(Path.Combine(_testRoot, "processed.zip"));
+        var ready = new TaskCompletionSource<string>();
+        var count = 0;
+        watcher.ArchiveReady += (_, path) => { Interlocked.Increment(ref count); ready.TrySetResult(path); };
+        watcher.Start();
+        await Task.Delay(150);
+        Assert.False(ready.Task.IsCompleted);
+        await watcher.ScanExistingAsync();
+        Assert.Same(ready.Task, await Task.WhenAny(ready.Task, Task.Delay(3000)));
+        Assert.Equal(Path.Combine(_testRoot, "old.zip"), await ready.Task);
+        await watcher.ScanExistingAsync();
+        await Task.Delay(150);
+        Assert.Equal(1, Volatile.Read(ref count));
+    }
+
+    [Fact]
     public async Task NewZipInSubfolder_IsRaisedOnlyOnceAcrossReconciliation()
     {
         Directory.CreateDirectory(Path.Combine(_testRoot, "nested", "download"));

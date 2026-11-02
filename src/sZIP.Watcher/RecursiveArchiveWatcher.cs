@@ -16,6 +16,8 @@ namespace sZIP.Watcher
         private FileSystemWatcher? _watcher;
         private Task? _worker;
         private Task? _reconciliationWorker;
+        private readonly object _scanGate = new();
+        private Task _manualScan = Task.CompletedTask;
         private DateTime _startedAtUtc;
         private bool _disposed;
 
@@ -57,6 +59,18 @@ namespace sZIP.Watcher
             _watcher.EnableRaisingEvents = true;
         }
 
+        public Task ScanExistingAsync()
+        {
+            lock (_scanGate)
+            {
+                ThrowIfDisposed();
+                if (_watcher is null) throw new InvalidOperationException("Start the watcher before scanning.");
+                if (!_manualScan.IsCompleted) return _manualScan;
+                var token = _cancellation.Token;
+                return _manualScan = Task.Run(() => ReconcileOnce(token, includeExisting: true), token);
+            }
+        }
+
         public IDisposable ExcludePath(string rootPath)
         {
             ThrowIfDisposed();
@@ -78,11 +92,12 @@ namespace sZIP.Watcher
                 return;
             }
 
-            _disposed = true;
+            lock (_scanGate) { _disposed = true; }
             _watcher?.Dispose();
             _watcher = null;
             _cancellation.Cancel();
             _candidates.CompleteAdding();
+            WaitForCancellation(_manualScan);
 
             if (_worker is not null)
             {
@@ -178,7 +193,7 @@ namespace sZIP.Watcher
             }
         }
 
-        private void ReconcileOnce(CancellationToken cancellationToken)
+        private void ReconcileOnce(CancellationToken cancellationToken, bool includeExisting = false)
         {
             try
             {
@@ -190,7 +205,7 @@ namespace sZIP.Watcher
                     cancellationToken.ThrowIfCancellationRequested();
                     try
                     {
-                        if (File.GetLastWriteTimeUtc(path) >= _startedAtUtc.Subtract(_options.RequiredStableTime))
+                        if (includeExisting || File.GetLastWriteTimeUtc(path) >= _startedAtUtc.Subtract(_options.RequiredStableTime))
                         {
                             QueueCandidate(path);
                         }

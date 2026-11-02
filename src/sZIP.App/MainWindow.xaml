@@ -103,6 +103,13 @@
                             <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE713;" FontSize="16" />
                         </Button>
                     </StackPanel>
+                    <Button x:Name="RescanWatchFolderButton" Click="RescanWatchFolderButton_Click"
+                            Margin="6,0,6,0" Padding="10,6" ToolTip="{DynamicResource Text.RescanWatchFolderHint}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE72C;" FontSize="16" VerticalAlignment="Center" />
+                            <TextBlock Text="{DynamicResource Text.RescanWatchFolder}" Margin="7,0,0,0" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
                     <CheckBox x:Name="AutomaticArchiveExtractionCheckBox" Content="{DynamicResource Text.AutomaticArchiveExtractionOff}"
                               MinWidth="300" VerticalAlignment="Center"
                               Style="{StaticResource RibbonCheckBoxStyle}"
