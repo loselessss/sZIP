@@ -234,7 +234,7 @@ jobs:
         run: .\tests\Verify-ReleaseAssets.ps1 -ArtifactsDirectory artifacts -Version $env:GITHUB_REF_NAME.TrimStart("v")
 
       - name: Preserve release assets
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: sZIP-${{ github.ref_name }}-windows
           path: |
