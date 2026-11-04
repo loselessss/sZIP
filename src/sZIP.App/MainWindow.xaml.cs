@@ -27,6 +27,7 @@ public partial class MainWindow : Window
     private readonly CancellationTokenSource _shutdownCancellation = new();
     private CancellationTokenSource? _operationCancellation;
     private RecursiveArchiveWatcher? _automaticWatcher;
+    private bool _automaticExtractionActive;
     private Stopwatch? _operationStopwatch;
     private bool _allowExit;
     private bool _clearArchiveWhenIdle;
@@ -695,6 +696,9 @@ public partial class MainWindow : Window
 
             await Dispatcher.InvokeAsync(() =>
             {
+                _automaticExtractionActive = true;
+                UpdateOperationPanelVisibility();
+                if (!CancelButton.IsEnabled) OperationProgress.IsIndeterminate = true;
                 StatusHeadingText.Text = L.T("AutomaticExtracting");
                 StatusText.Text = Path.GetFileName(archivePath);
             });
@@ -786,7 +790,15 @@ public partial class MainWindow : Window
 
             if (lockTaken)
             {
-                _automaticArchiveExtractionLock.Release();
+                try
+                {
+                    await Dispatcher.InvokeAsync(() =>
+                    {
+                        _automaticExtractionActive = false;
+                        UpdateOperationPanelVisibility();
+                    });
+                }
+                finally { _automaticArchiveExtractionLock.Release(); }
             }
         }
     }
@@ -831,6 +843,7 @@ public partial class MainWindow : Window
     private void SetBusy(bool isBusy)
     {
         CancelButton.IsEnabled = isBusy;
+        UpdateOperationPanelVisibility();
         PreviewEntryButton.IsEnabled = CanPreviewSelectedEntry();
         OpenArchiveButton.IsEnabled = !isBusy;
         CreateFilesButton.IsEnabled = !isBusy;
@@ -852,6 +865,14 @@ public partial class MainWindow : Window
             ProgressElapsedValueText.Text = "—";
             ProgressRemainingValueText.Text = "—";
         }
+    }
+
+    private void UpdateOperationPanelVisibility()
+    {
+        var manualActive = CancelButton.IsEnabled;
+        OperationPanel.Visibility = manualActive || _automaticExtractionActive
+            ? Visibility.Visible : Visibility.Collapsed;
+        OperationProgress.IsIndeterminate = _automaticExtractionActive && !manualActive;
     }
 
     private void ShowError(string summary, string detail)

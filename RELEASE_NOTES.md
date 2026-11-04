@@ -1,3 +1,10 @@
+# sZIP 1.11.6 Release Notes (2026-11-04)
+
+## 1.11.6 Changes
+
+- Rescan the watch folder to extract archives downloaded while sZIP was closed.
+- The progress panel now disappears when work finishes, leaving more space for the file list.
+
 # sZIP 1.11.5 Release Notes (2026-10-27)
 
 ## 1.11.5 Security and Fixes

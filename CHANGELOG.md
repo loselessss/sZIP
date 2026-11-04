@@ -1,3 +1,10 @@
+# sZIP 1.11.6 (2026-11-04)
+
+## Changes
+
+- Added manual watch-folder rescanning for existing archives.
+- Hide the progress panel when work finishes.
+
 # sZIP 1.11.5 (2026-10-27)
 
 ## Security and Fixes

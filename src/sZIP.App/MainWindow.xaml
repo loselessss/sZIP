@@ -159,7 +159,7 @@
             </Grid>
         </Border>
 
-        <Border Grid.Row="2" Margin="0,14,0,0" Padding="18" CornerRadius="8"
+        <Border x:Name="OperationPanel" Grid.Row="2" Visibility="Collapsed" Margin="0,14,0,0" Padding="18" CornerRadius="8"
                 Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}"
                 BorderThickness="1">
             <Grid>
